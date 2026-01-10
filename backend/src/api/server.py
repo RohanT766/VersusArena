@@ -1,0 +1,1043 @@
+#!/usr/bin/env python3
+"""
+Unified VERSUS Server - Runs all game modes from a single server
+"""
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import asyncio
+import json
+import uvicorn
+from typing import Dict, List, Optional
+import uuid
+import random
+import sys
+import os
+from datetime import datetime
+import re
+import time
+
+# Add backend to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Import game implementations
+from src.games.battleship.battleship import BattleshipGame
+from src.games.trivia.trivia_game import TriviaGame
+from src.games.trivia.questions import TRIVIA_QUESTIONS, get_random_questions
+from src.games.wordle.wordle_game import WordleGame
+from src.games.nyt_connections.connections_game import ConnectionsGame
+from src.games.wordle.wordle_simple import app as wordle_flask_app, WordleGame as WordleSimpleGame, get_llm_guess, parse_reasoning_for_ui
+
+from src.engine.agent_loop import AgentLoop, GameRunner
+
+# Default model configurations
+DEFAULT_MODELS = {
+    "battleship": {"player1": "openai", "player2": "anthropic"},
+    "trivia": {"player1": "openai", "player2": "anthropic"},
+    "wordle": {"player1": "openai", "player2": "anthropic"},
+    "connections": {"player1": "openai", "player2": "anthropic"}
+}
+
+def get_models_for_game(game_type: str, player1_model: Optional[str] = None, player2_model: Optional[str] = None):
+    """Get models for a game, using defaults if not specified"""
+    defaults = DEFAULT_MODELS.get(game_type, {"player1": "openai", "player2": "anthropic"})
+    return {
+        "player1": player1_model or defaults["player1"],
+        "player2": player2_model or defaults["player2"]
+    }
+
+app = FastAPI(title="VERSUS Unified Game Server", version="2.0.0")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(cleanup_stale_games())
+
+# Store active games
+active_games = {}
+battleship_games = {}
+trivia_sessions: Dict[str, Dict] = {}
+wordle_games: Dict[str, WordleSimpleGame] = {}
+connections_games: Dict[str, ConnectionsGame] = {}
+
+# Store active game runners
+game_runners: Dict[str, GameRunner] = {}
+
+MAX_COMPLETED_GAME_AGE = 3600  # 1 hour
+
+async def cleanup_stale_games():
+    """Periodically remove finished game sessions to prevent memory leaks"""
+    while True:
+        await asyncio.sleep(300)
+        removed = 0
+        for store_name, store in [("trivia", trivia_sessions), ("connections", connections_games)]:
+            stale_ids = []
+            for gid, session in store.items():
+                if store_name == "trivia" and not session.get("is_active", True):
+                    stale_ids.append(gid)
+                elif store_name == "connections":
+                    game_data = session.get("player1_game")
+                    if game_data and getattr(game_data, "game_over", False):
+                        stale_ids.append(gid)
+            for gid in stale_ids:
+                del store[gid]
+                removed += 1
+        for gid in list(wordle_games.keys()):
+            if wordle_games[gid].game_over:
+                del wordle_games[gid]
+                removed += 1
+        if removed:
+            print(f"Cleaned up {removed} finished game session(s)")
+
+# Connection manager for WebSockets
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, game_id: str):
+        await websocket.accept()
+        if game_id not in self.active_connections:
+            self.active_connections[game_id] = []
+        self.active_connections[game_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, game_id: str):
+        if game_id in self.active_connections:
+            try:
+                self.active_connections[game_id].remove(websocket)
+            except ValueError:
+                pass
+            if not self.active_connections[game_id]:
+                del self.active_connections[game_id]
+
+    async def broadcast_to_game(self, message: str, game_id: str):
+        if game_id in self.active_connections:
+            for connection in self.active_connections[game_id]:
+                try:
+                    await connection.send_text(message)
+                except Exception:
+                    pass
+
+manager = ConnectionManager()
+
+# ====================
+# BATTLESHIP ENDPOINTS
+# ====================
+
+@app.websocket("/games/battleship/{game_id}")
+async def battleship_websocket(websocket: WebSocket, game_id: str):
+    """WebSocket endpoint for Battleship games"""
+    await websocket.accept()
+    print(f"Client connected to battleship game {game_id}")
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            
+            if data.get("type") == "start_game":
+                if game_id in battleship_games:
+                    game = battleship_games[game_id]
+                    print(f"Game {game_id} already exists, sending current state")
+                    
+                    await websocket.send_json({
+                        "type": "game_state",
+                        "status": game.status,
+                        "message": "Game already in progress",
+                        "currentPlayer": game.current_player,
+                        "player1Shots": game.game_state["player1_shots"],
+                        "player2Shots": game.game_state["player2_shots"],
+                        "player1Board": game.game_state["player1_board"],
+                        "player2Board": game.game_state["player2_board"],
+                        "shipsPlaced": game.ships_placed,
+                        "winner": game.winner
+                    })
+                    
+                    if game.status == "active" and not game.winner:
+                        asyncio.create_task(continue_battleship_game(game, websocket, game_id))
+                    continue
+                
+                player1_model = data.get("player1Model", "gpt-4o-mini")
+                player2_model = data.get("player2Model", "claude-3-haiku")
+                
+                print(f"Creating new battleship game {game_id} with models: {player1_model} vs {player2_model}")
+                
+                game = BattleshipGame(player1_model, player2_model)
+                battleship_games[game_id] = game
+                
+                await websocket.send_json({
+                    "type": "game_state",
+                    "status": "placement",
+                    "message": "Placing ships...",
+                    "currentPlayer": 1,
+                    "player1Shots": game.game_state["player1_shots"],
+                    "player2Shots": game.game_state["player2_shots"],
+                    "shipsPlaced": game.ships_placed
+                })
+                
+                for player in [1, 2]:
+                    await websocket.send_json({
+                        "type": "placement_start",
+                        "player": player,
+                        "message": f"Player {player} is placing ships..."
+                    })
+                    
+                    game.place_ships_for_player(player)
+                    
+                    await websocket.send_json({
+                        "type": "ship_placed",
+                        "player": player,
+                        "board": game.game_state[f'player{player}_board']
+                    })
+                    
+                    await asyncio.sleep(0.2)
+                
+                await websocket.send_json({
+                    "type": "placement_complete",
+                    "message": "All ships placed! Game starting...",
+                    "player1Board": game.game_state['player1_board'],
+                    "player2Board": game.game_state['player2_board']
+                })
+                
+                await asyncio.sleep(0.5)
+                
+                game.status = "active"
+                asyncio.create_task(run_battleship_game_loop(game, websocket, game_id))
+            
+            elif data.get("type") == "get_state":
+                if game_id in battleship_games:
+                    game = battleship_games[game_id]
+                    await websocket.send_json({
+                        "type": "game_state",
+                        "status": game.status,
+                        "currentPlayer": game.current_player,
+                        "player1Shots": game.game_state["player1_shots"],
+                        "player2Shots": game.game_state["player2_shots"],
+                        "player1Board": game.game_state["player1_board"],
+                        "player2Board": game.game_state["player2_board"],
+                        "winner": game.winner,
+                        "message": "Current game state"
+                    })
+                else:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Game not found"
+                    })
+            
+    except WebSocketDisconnect:
+        print(f"Client disconnected from battleship game {game_id}")
+    except Exception as e:
+        print(f"WebSocket error in game {game_id}: {e}")
+        import traceback
+        traceback.print_exc()
+
+async def continue_battleship_game(game: BattleshipGame, websocket: WebSocket, game_id: str):
+    """Continue an existing battleship game"""
+    try:
+        await websocket.send_json({
+            "type": "game_state",
+            "status": game.status,
+            "currentPlayer": game.current_player,
+            "player1Shots": game.game_state["player1_shots"],
+            "player2Shots": game.game_state["player2_shots"],
+            "winner": game.winner,
+            "message": "Continuing game..."
+        })
+        
+        await run_battleship_game_loop(game, websocket, game_id)
+    except Exception as e:
+        print(f"Error continuing game {game_id}: {e}")
+
+async def run_battleship_game_loop(game: BattleshipGame, websocket: WebSocket, game_id: str):
+    """Run the battleship game loop in a separate task"""
+    try:
+        while game.status == "active" and not game.winner:
+            current_player = game.current_player
+            max_retries = 5
+            retry_count = 0
+            
+            while retry_count < max_retries:
+                prompt = game.get_prompt_for_player(current_player)
+                
+                if current_player == 1:
+                    move_response = game.player1.get_move(prompt, game.game_state)
+                else:
+                    move_response = game.player2.get_move(prompt, game.game_state)
+                
+                try:
+                    move_str = move_response.strip().upper()
+                    move_str = move_str.split()[0] if move_str else ""
+                    
+                    coord_match = re.search(r'[A-H][1-8]', move_str)
+                    
+                    if coord_match:
+                        coord = coord_match.group(0)
+                        col_letter = coord[0]
+                        row_num = int(coord[1])
+                        col_idx = ord(col_letter) - ord('A')
+                        row_idx = row_num - 1
+                    else:
+                        raise ValueError(f"Could not parse move: {move_response}")
+                    
+                    if not (0 <= row_idx < game.board_size and 0 <= col_idx < game.board_size):
+                        raise ValueError(f"Move out of bounds: row={row_idx}, col={col_idx}")
+                    
+                    move_result = game.make_move(row_idx, col_idx)
+                    
+                    if move_result["success"]:
+                        col_letter = chr(col_idx + ord('A'))
+                        await websocket.send_json({
+                            "type": "game_state",
+                            "currentPlayer": game.current_player,
+                            "player1Shots": game.game_state["player1_shots"],
+                            "player2Shots": game.game_state["player2_shots"],
+                            "lastMove": f"{col_letter}{row_idx + 1}",
+                            "lastResult": move_result["result"],
+                            "message": f"Player {3 - game.current_player} fired at {col_letter}{row_idx + 1} - {move_result['result'].upper()}!",
+                            "status": "finished" if game.winner else "in_progress",
+                            "winner": game.winner
+                        })
+                        
+                        if game.winner:
+                            game.status = "finished"
+                            await websocket.send_json({
+                                "type": "game_over",
+                                "winner": game.winner,
+                                "message": f"Player {game.winner} wins!"
+                            })
+                            
+                            if game_id in battleship_games:
+                                del battleship_games[game_id]
+                            break
+                        
+                        await asyncio.sleep(0.3)
+                        break
+                    else:
+                        print(f"Invalid move from player {current_player}: {move_result.get('reason', move_result.get('result', 'unknown error'))}")
+                        retry_count += 1
+                        await asyncio.sleep(0.5)
+                        
+                except Exception as e:
+                    print(f"Error processing move from player {current_player}: {e}")
+                    print(f"Raw response was: {move_response}")
+                    retry_count += 1
+                    await asyncio.sleep(0.5)
+                    continue
+            
+            if retry_count >= max_retries:
+                print(f"Player {current_player} failed to make a valid move after {max_retries} attempts")
+                available_positions = []
+                shots = game.game_state[f'player{current_player}_shots']
+                for i in range(game.board_size):
+                    for j in range(game.board_size):
+                        if shots[i][j] is None:
+                            available_positions.append((i, j))
+                
+                if available_positions:
+                    row_idx, col_idx = random.choice(available_positions)
+                    move_result = game.make_move(row_idx, col_idx)
+                    
+                    if move_result["success"]:
+                        col_letter = chr(col_idx + ord('A'))
+                        await websocket.send_json({
+                            "type": "game_state",
+                            "currentPlayer": game.current_player,
+                            "player1Shots": game.game_state["player1_shots"],
+                            "player2Shots": game.game_state["player2_shots"],
+                            "lastMove": f"{col_letter}{row_idx + 1}",
+                            "lastResult": move_result["result"],
+                            "message": f"Player {3 - game.current_player} fired at {col_letter}{row_idx + 1} - {move_result['result'].upper()}! (random fallback)",
+                            "status": "finished" if game.winner else "in_progress",
+                            "winner": game.winner
+                        })
+                        
+                        if game.winner:
+                            game.status = "finished"
+                            await websocket.send_json({
+                                "type": "game_over",
+                                "winner": game.winner,
+                                "message": f"Player {game.winner} wins!"
+                            })
+                            
+                            if game_id in battleship_games:
+                                del battleship_games[game_id]
+                else:
+                    print(f"No available positions for player {current_player}")
+                    break
+                    
+    except Exception as e:
+        print(f"Error in game loop for {game_id}: {e}")
+        import traceback
+        traceback.print_exc()
+
+# =================
+# TRIVIA ENDPOINTS
+# =================
+
+class GameStartRequest(BaseModel):
+    player1_model: Optional[str] = None
+    player2_model: Optional[str] = None
+    question_count: Optional[int] = 20
+
+@app.post("/api/trivia/start")
+async def start_trivia_game(request: GameStartRequest):
+    """Start a new trivia game session"""
+    try:
+        game_id = str(uuid.uuid4())
+        questions = get_random_questions(request.question_count)
+        
+        player1_model = request.player1_model or "gpt-4o-mini"
+        player2_model = request.player2_model or "claude-3-haiku"
+        
+        print(f"Starting trivia game with models: {player1_model} vs {player2_model}")
+        
+        trivia_game = TriviaGame(
+            player1_model=player1_model,
+            player2_model=player2_model,
+            questions=questions
+        )
+        
+        trivia_sessions[game_id] = {
+            "game": trivia_game,
+            "is_active": True
+        }
+        
+        return {
+            "game_id": game_id,
+            "status": "started",
+            "total_questions": len(questions),
+            "player1_model": player1_model,
+            "player2_model": player2_model
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start game: {str(e)}")
+
+@app.websocket("/api/trivia/ws/{game_id}")
+async def trivia_websocket(websocket: WebSocket, game_id: str):
+    """WebSocket endpoint for trivia real-time updates"""
+    await manager.connect(websocket, game_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await websocket.send_text(json.dumps({"type": "pong"}))
+            except (json.JSONDecodeError, Exception):
+                pass
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, game_id)
+
+@app.post("/api/trivia/game/{game_id}/player/{player}/next-question")
+async def player_next_question(game_id: str, player: int):
+    """Process next question for a specific player"""
+    if game_id not in trivia_sessions:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    session = trivia_sessions[game_id]
+    game = session["game"]
+    
+    if game.game_over:
+        return {"error": "Race is already over"}
+    
+    if player not in [1, 2]:
+        raise HTTPException(status_code=400, detail="Player must be 1 or 2")
+    
+    try:
+        result = await game.ask_question_to_player(player)
+        
+        await manager.broadcast_to_game(
+            json.dumps({
+                "type": "player_question_result",
+                "data": result
+            }),
+            game_id
+        )
+        
+        if game.race_finished:
+            final_results = game.get_final_results()
+            await manager.broadcast_to_game(
+                json.dumps({
+                    "type": "race_finished",
+                    "data": final_results
+                }),
+                game_id
+            )
+            session["is_active"] = False
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/trivia/game/{game_id}/start-race")
+async def start_trivia_race(game_id: str):
+    """Start the autonomous trivia race with async agent loops"""
+    if game_id not in trivia_sessions:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    session = trivia_sessions[game_id]
+    game = session["game"]
+    
+    if game_id in game_runners:
+        return {"status": "already_running"}
+
+    async def broadcast_fn(gid, data):
+        await manager.broadcast_to_game(json.dumps(data), gid)
+
+    runner = GameRunner(game_id, broadcast_fn=broadcast_fn)
+
+    async def make_trivia_move(agent_id: str, state: dict):
+        player = 1 if agent_id == "player1" else 2
+        async with runner.lock:
+            if game.race_finished:
+                runner.mark_game_over()
+                return
+            result = await game.ask_question_to_player(player)
+            await runner.broadcast("player_question_result", {"data": result})
+            if game.race_finished:
+                final_results = game.get_final_results()
+                await runner.broadcast("race_finished", {"data": final_results})
+                session["is_active"] = False
+                runner.mark_game_over()
+
+    agent1 = AgentLoop(
+        agent_id="player1",
+        game_state_fn=lambda: game.game_state,
+        move_fn=make_trivia_move,
+        is_game_over_fn=lambda: runner.is_game_over,
+        think_delay=0.3,
+    )
+    agent2 = AgentLoop(
+        agent_id="player2",
+        game_state_fn=lambda: game.game_state,
+        move_fn=make_trivia_move,
+        is_game_over_fn=lambda: runner.is_game_over,
+        think_delay=0.5,
+    )
+
+    runner.add_agent(agent1)
+    runner.add_agent(agent2)
+    game_runners[game_id] = runner
+
+    asyncio.create_task(runner.run())
+    return {"status": "race_started", "game_id": game_id}
+
+@app.get("/api/trivia/game/{game_id}/player/{player}/current-question")
+async def get_player_current_question(game_id: str, player: int):
+    """Get the current question for a specific player"""
+    if game_id not in trivia_sessions:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    game = trivia_sessions[game_id]["game"]
+    
+    if player not in [1, 2]:
+        raise HTTPException(status_code=400, detail="Player must be 1 or 2")
+    
+    current_question = game.get_player_current_question(player)
+    question_index = game.player1_question_index if player == 1 else game.player2_question_index
+    
+    return {
+        "player": player,
+        "question_index": question_index,
+        "current_question": current_question,
+        "total_questions": len(game.questions),
+        "finished": question_index >= len(game.questions)
+    }
+
+# =================
+# WORDLE ENDPOINTS
+# =================
+
+current_wordle_game = None
+
+@app.post("/api/wordle/start")
+async def start_wordle_game(request: dict):
+    """Start a new Wordle game"""
+    global current_wordle_game
+    
+    secret_word = request.get('secret_word', '').upper()
+    
+    if len(secret_word) != 5 or not secret_word.isalpha():
+        raise HTTPException(status_code=400, detail="Must be a 5-letter word")
+    
+    current_wordle_game = WordleSimpleGame(secret_word)
+    
+    game_id = str(uuid.uuid4())
+    wordle_games[game_id] = current_wordle_game
+    
+    return {"success": True, "game_id": game_id}
+
+@app.get("/api/wordle/state/{game_id}")
+async def get_wordle_state(game_id: str):
+    """Get current Wordle game state"""
+    if game_id not in wordle_games:
+        raise HTTPException(status_code=404, detail="No active game")
+    
+    game = wordle_games[game_id]
+    return {
+        "models": game.models,
+        "game_over": game.game_over,
+        "winner": game.winner,
+        "secret_word": game.secret_word if game.game_over else None
+    }
+
+@app.get("/api/wordle/state")
+async def get_wordle_state_no_id():
+    """Get current Wordle game state (backward compatibility)"""
+    if not current_wordle_game:
+        raise HTTPException(status_code=404, detail="No active game")
+    
+    return {
+        "models": current_wordle_game.models,
+        "game_over": current_wordle_game.game_over,
+        "winner": current_wordle_game.winner,
+        "secret_word": current_wordle_game.secret_word if current_wordle_game.game_over else None
+    }
+
+@app.post("/api/wordle/guess/{game_id}")
+async def make_wordle_guess(game_id: str, request: dict):
+    """Make a guess for a Wordle model"""
+    if game_id not in wordle_games:
+        raise HTTPException(status_code=404, detail="No active game")
+    
+    model = request.get('model')
+    
+    if model not in ['openai', 'anthropic']:
+        raise HTTPException(status_code=400, detail="Invalid model")
+    
+    game = wordle_games[game_id]
+    model_data = game.models[model]
+    
+    try:
+        guess, reasoning = get_llm_guess(model, model_data['guesses'], model_data['feedback'])
+    except Exception as e:
+        print(f"Error getting guess from {model}: {e}")
+        fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND"]
+        guess = fallback_words[len(model_data['guesses']) % len(fallback_words)]
+        reasoning = f"API error - using fallback word: {guess}"
+    
+    result = game.make_guess(model, guess, reasoning)
+    
+    if "error" in result:
+        return {
+            "error": result["error"],
+            "game_over": True,
+            "winner": game.winner
+        }
+    
+    detailed_reasoning = parse_reasoning_for_ui(model, reasoning, model_data['guesses'], model_data['feedback'])
+    
+    if result['game_over'] and result['winner']:
+        print(f"Wordle game completed! {result['winner']} wins!")
+    
+    return {
+        "guess": guess,
+        "reasoning": reasoning,
+        "detailed_reasoning": detailed_reasoning,
+        "feedback": result['feedback'],
+        "game_over": result['game_over'],
+        "winner": result['winner']
+    }
+
+@app.post("/api/wordle/guess")
+async def make_wordle_guess_no_id(request: dict):
+    """Make a guess for a Wordle model (backward compatibility)"""
+    if not current_wordle_game:
+        raise HTTPException(status_code=404, detail="No active game")
+    
+    model = request.get('model')
+    
+    if model not in ['openai', 'anthropic']:
+        raise HTTPException(status_code=400, detail="Invalid model")
+    
+    model_data = current_wordle_game.models[model]
+    
+    try:
+        guess, reasoning = get_llm_guess(model, model_data['guesses'], model_data['feedback'])
+    except Exception as e:
+        print(f"Error getting guess from {model}: {e}")
+        fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND"]
+        guess = fallback_words[len(model_data['guesses']) % len(fallback_words)]
+        reasoning = f"API error - using fallback word: {guess}"
+    
+    result = current_wordle_game.make_guess(model, guess, reasoning)
+    
+    if "error" in result:
+        return {
+            "error": result["error"],
+            "game_over": True,
+            "winner": current_wordle_game.winner
+        }
+    
+    detailed_reasoning = parse_reasoning_for_ui(model, reasoning, model_data['guesses'], model_data['feedback'])
+    
+    if result['game_over'] and result['winner']:
+        print(f"Wordle game completed! {result['winner']} wins!")
+    
+    return {
+        "guess": guess,
+        "reasoning": reasoning,
+        "detailed_reasoning": detailed_reasoning,
+        "feedback": result['feedback'],
+        "game_over": result['game_over'],
+        "winner": result['winner']
+    }
+
+# =======================
+# NYT CONNECTIONS ENDPOINTS
+# =======================
+
+class ConnectionsStartRequest(BaseModel):
+    player1_model: Optional[str] = None
+    player2_model: Optional[str] = None
+
+@app.post("/api/connections/start")
+async def start_connections_game(request: ConnectionsStartRequest):
+    """Start a new NYT Connections game"""
+    try:
+        game_id = str(uuid.uuid4())
+        
+        player1_model = request.player1_model or "gpt-4o-mini"
+        player2_model = request.player2_model or "claude-3-haiku"
+        
+        game1 = ConnectionsGame()
+        game2 = ConnectionsGame(puzzle_data=game1.puzzle)
+        
+        connections_games[game_id] = {
+            "player1_game": game1,
+            "player2_game": game2,
+            "player1_model": player1_model,
+            "player2_model": player2_model
+        }
+        
+        return {
+            "game_id": game_id,
+            "status": "started",
+            "puzzle_id": game1.id,
+            "date": game1.date,
+            "words": game1.all_words,
+            "player1_model": player1_model,
+            "player2_model": player2_model
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start game: {str(e)}")
+
+@app.websocket("/api/connections/ws/{game_id}")
+async def connections_websocket(websocket: WebSocket, game_id: str):
+    """WebSocket endpoint for NYT Connections real-time updates"""
+    await manager.connect(websocket, game_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await websocket.send_text(json.dumps({"type": "pong"}))
+            except (json.JSONDecodeError, Exception):
+                pass
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, game_id)
+
+@app.post("/api/connections/game/{game_id}/player/{player}/ai-turn")
+async def connections_ai_turn(game_id: str, player: str, request: dict):
+    """Process an AI turn for NYT Connections"""
+    try:
+        player_num = int(player)
+        if player_num not in [1, 2]:
+            raise ValueError("Player must be 1 or 2")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Player must be 1 or 2")
+    
+    if game_id not in connections_games:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    session = connections_games[game_id]
+    
+    if player_num == 1:
+        game = session["player1_game"]
+        model_id = session["player1_model"]
+    else:
+        game = session["player2_game"]
+        model_id = session["player2_model"]
+    
+    if game.game_over:
+        return {"error": "Game is already over"}
+    
+    try:
+        guess = game.get_ai_guess(model_id)
+        
+        if not guess:
+            return {"error": "Failed to get AI guess"}
+        
+        result = game.make_guess(model_id, guess)
+        
+        await manager.broadcast_to_game(
+            json.dumps({
+                "type": "game_update",
+                "data": {
+                    "player": player_num,
+                    "model": model_id,
+                    "guess": guess,
+                    "result": result,
+                    "game_state": game.get_game_state()
+                }
+            }),
+            game_id
+        )
+        
+        return {
+            "player": player_num,
+            "model": model_id,
+            "guess": guess,
+            "result": result,
+            "game_state": game.get_game_state()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/connections/game/{game_id}/start-race")
+async def start_connections_race(game_id: str):
+    """Start the autonomous connections race with async agent loops"""
+    if game_id not in connections_games:
+        raise HTTPException(status_code=404, detail="Game not found")
+
+    session = connections_games[game_id]
+    
+    if game_id in game_runners:
+        return {"status": "already_running"}
+
+    async def broadcast_fn(gid, data):
+        await manager.broadcast_to_game(json.dumps(data), gid)
+
+    runner = GameRunner(game_id, broadcast_fn=broadcast_fn)
+
+    async def make_connections_move(agent_id: str, state: dict):
+        player_num = 1 if agent_id == "player1" else 2
+        game = session[f"player{player_num}_game"]
+        model_id = session[f"player{player_num}_model"]
+
+        async with runner.lock:
+            if game.game_over:
+                both_done = session["player1_game"].game_over and session["player2_game"].game_over
+                if both_done:
+                    runner.mark_game_over()
+                return
+
+            try:
+                guess = game.get_ai_guess(model_id)
+                if not guess:
+                    return
+                result = game.make_guess(model_id, guess)
+                await runner.broadcast("game_update", {
+                    "data": {
+                        "player": player_num,
+                        "model": model_id,
+                        "guess": guess,
+                        "result": result,
+                        "game_state": game.get_game_state()
+                    }
+                })
+            except Exception as e:
+                print(f"Connections agent {agent_id} error: {e}")
+
+    agent1 = AgentLoop(
+        agent_id="player1",
+        game_state_fn=lambda: session["player1_game"].get_game_state(),
+        move_fn=make_connections_move,
+        is_game_over_fn=lambda: runner.is_game_over,
+        think_delay=1.0,
+    )
+    agent2 = AgentLoop(
+        agent_id="player2",
+        game_state_fn=lambda: session["player2_game"].get_game_state(),
+        move_fn=make_connections_move,
+        is_game_over_fn=lambda: runner.is_game_over,
+        think_delay=1.5,
+    )
+
+    runner.add_agent(agent1)
+    runner.add_agent(agent2)
+    game_runners[game_id] = runner
+
+    asyncio.create_task(runner.run())
+    return {"status": "race_started", "game_id": game_id}
+
+@app.get("/api/connections/game/{game_id}/state")
+async def get_connections_state(game_id: str):
+    """Get current NYT Connections game state"""
+    if game_id not in connections_games:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    session = connections_games[game_id]
+    return {
+        "player1_state": session["player1_game"].get_game_state(),
+        "player2_state": session["player2_game"].get_game_state(),
+        "player1_model": session["player1_model"],
+        "player2_model": session["player2_model"]
+    }
+
+# ===================
+# VOTING ENDPOINTS
+# ===================
+
+vote_storage: Dict[str, Dict[str, int]] = {}
+
+class Vote(BaseModel):
+    gameId: str
+    model: str
+
+@app.post("/api/vote")
+async def submit_vote(vote: Vote):
+    """Submit a vote for a model in a specific game"""
+    if vote.model.lower() not in ["gpt-4o", "claude"]:
+        raise HTTPException(status_code=400, detail="Invalid model. Must be 'gpt-4o' or 'claude'")
+    
+    if vote.gameId not in vote_storage:
+        vote_storage[vote.gameId] = {"gpt-4o": 0, "claude": 0}
+    
+    model_key = vote.model.lower()
+    vote_storage[vote.gameId][model_key] += 1
+    
+    votes = vote_storage[vote.gameId]
+    total = votes["gpt-4o"] + votes["claude"]
+    
+    await manager.broadcast_to_game(
+        json.dumps({
+            "type": "vote_update",
+            "data": {
+                "gameId": vote.gameId,
+                "votes": votes,
+                "total": total,
+                "percentages": {
+                    "gpt_4o": round((votes["gpt-4o"] / total * 100) if total > 0 else 0, 1),
+                    "claude": round((votes["claude"] / total * 100) if total > 0 else 0, 1)
+                }
+            }
+        }),
+        f"votes-{vote.gameId}"
+    )
+    
+    return {"message": "Vote recorded", "gameId": vote.gameId}
+
+@app.get("/api/vote/stats")
+async def get_vote_stats(gameId: str):
+    """Get voting statistics for a specific game"""
+    if gameId not in vote_storage:
+        vote_storage[gameId] = {"gpt-4o": 0, "claude": 0}
+    
+    votes = vote_storage[gameId]
+    total = votes["gpt-4o"] + votes["claude"]
+    
+    return {
+        "gameId": gameId,
+        "gpt_4o": votes["gpt-4o"],
+        "claude": votes["claude"],
+        "total": total,
+        "percentages": {
+            "gpt_4o": round((votes["gpt-4o"] / total * 100) if total > 0 else 0, 1),
+            "claude": round((votes["claude"] / total * 100) if total > 0 else 0, 1)
+        }
+    }
+
+@app.websocket("/api/vote/ws/{game_id}")
+async def vote_websocket(websocket: WebSocket, game_id: str):
+    """WebSocket endpoint for real-time vote updates"""
+    await manager.connect(websocket, f"votes-{game_id}")
+    try:
+        if game_id in vote_storage:
+            votes = vote_storage[game_id]
+            total = votes["gpt-4o"] + votes["claude"]
+            await websocket.send_text(json.dumps({
+                "type": "vote_update",
+                "data": {
+                    "gameId": game_id,
+                    "votes": votes,
+                    "total": total,
+                    "percentages": {
+                        "gpt_4o": round((votes["gpt-4o"] / total * 100) if total > 0 else 0, 1),
+                        "claude": round((votes["claude"] / total * 100) if total > 0 else 0, 1)
+                    }
+                }
+            }))
+        
+        while True:
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await websocket.send_text(json.dumps({"type": "pong"}))
+            except (json.JSONDecodeError, Exception):
+                pass
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, f"votes-{game_id}")
+
+# ====================
+# COMMON ENDPOINTS
+# ====================
+
+@app.get("/")
+async def root():
+    """Root endpoint with server info"""
+    return {
+        "server": "VERSUS Unified Game Server",
+        "version": "2.0.0",
+        "games": {
+            "battleship": {"active": len([g for g in active_games.items() if g[1].get("type") == "battleship"])},
+            "trivia": {"active": len(trivia_sessions)},
+            "wordle": {"active": len(wordle_games)},
+            "connections": {"active": len(connections_games)}
+        },
+        "endpoints": {
+            "battleship": "/games/battleship/{game_id}",
+            "trivia": "/api/trivia/*",
+            "wordle": "/api/wordle/*",
+            "connections": "/api/connections/*"
+        }
+    }
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "games": {
+            "battleship": "ready",
+            "trivia": "ready",
+            "wordle": "ready",
+            "connections": "ready"
+        }
+    }
+
+@app.get("/api/default-models")
+async def get_default_models():
+    """Get default model configurations for all games"""
+    return {
+        "default_models": DEFAULT_MODELS,
+        "supported_models": ["openai", "anthropic", "gemini"]
+    }
+
+if __name__ == "__main__":
+    print("Starting VERSUS Unified Game Server...")
+    print("Server running on http://localhost:8000")
+    print("API docs available at http://localhost:8000/docs")
+    print("Press Ctrl+C to stop the server")
+    print("-" * 50)
+    print("Available games:")
+    print("  - Battleship: WebSocket at /games/battleship/{game_id}")
+    print("  - Trivia: API at /api/trivia/*")
+    print("  - Wordle: API at /api/wordle/*")
+    print("  - NYT Connections: API at /api/connections/*")
+    print("-" * 50)
+    
+    uvicorn.run(app, host="0.0.0.0", port=8000)
