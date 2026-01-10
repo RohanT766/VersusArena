@@ -1,0 +1,406 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Main page styles */
+.main-header {
+  display: none;
+}
+
+.title {
+  font-size: 5rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.subtitle {
+  font-size: 1.8rem;
+  color: #999;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.selected-models-display {
+  display: none;
+}
+
+/* Game selection page specific */
+.game-selection-page {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: 120px; /* Add space for fixed header */
+}
+
+/* Models header at the top */
+.models-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #000;
+  border-bottom: 3px solid #333;
+  padding: 1.5rem 2rem;
+  font-size: 2.5rem;
+  text-align: center;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  height: 90px; /* Fixed height for consistent spacing */
+}
+
+.models-header .model-name {
+  color: #ffcc00;
+  font-weight: 400;
+  text-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.models-header .vs-text {
+  color: #666;
+  font-size: 2rem;
+}
+
+/* Game grid */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1000px;
+  width: 100%;
+  animation: fadeIn 1s ease-out 0.4s both;
+  place-items: center;
+}
+
+/* Remove the complex centering for last row - it's causing overlap */
+/* Just let the grid handle the layout naturally */
+
+.game-card {
+  background: #000;
+  border: 2px solid #333;
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 280px;
+}
+
+.game-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-card:hover {
+  border-color: #ffcc00;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(255, 204, 0, 0.2);
+}
+
+.game-card:hover::before {
+  opacity: 1;
+}
+
+.game-emoji {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: grayscale(0.2);
+}
+
+.game-card:hover .game-emoji {
+  filter: grayscale(0);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+.game-card h3 {
+  font-size: 1.6rem;
+  margin-bottom: 0.3rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+
+.game-description {
+  color: #666;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.game-card:hover .game-description {
+  color: #999;
+}
+
+/* Back button */
+.back-button {
+  background: transparent;
+  border: 2px solid #333;
+  color: #999;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  font-family: 'VT323', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: fixed;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 200;
+}
+
+.back-button:hover {
+  color: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* Game setup page */
+.game-setup {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.selected-game-header {
+  margin-bottom: 3rem;
+}
+
+.game-emoji.large {
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+
+.selected-game-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+/* Model selection */
+.ai-battle-info {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-battle-info .vs-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.model-name {
+  color: #ffcc00;
+  font-weight: 400;
+}
+
+.battle-description {
+  color: #aaa;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.model-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.player-section {
+  text-align: center;
+}
+
+.player-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #888;
+  font-weight: 400;
+}
+
+.model-dropdown {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 8px;
+  min-width: 200px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.model-dropdown:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.model-dropdown:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.model-dropdown option {
+  background: #111;
+  color: #fff;
+}
+
+/* Start button */
+.start-button {
+  background: linear-gradient(135deg, #fff, #ccc);
+  color: #000;
+  border: none;
+  padding: 1.25rem 3rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.start-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+}
+
+.start-button:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Game not implemented */
+.game-not-implemented {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.game-not-implemented h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #888;
+}
+
+.game-not-implemented p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .games-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  .game-card {
+    max-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .models-header {
+    font-size: 1.6rem;
+    padding: 1rem;
+  }
+  
+  .models-header .vs-text {
+    font-size: 1.4rem;
+  }
+  
+  .game-card {
+    padding: 1.5rem 1rem;
+  }
+  
+  .game-emoji {
+    font-size: 2.5rem;
+  }
+  
+  .game-card h3 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .models-header {
+    font-size: 1.3rem;
+    gap: 1rem;
+  }
+}
