@@ -1,0 +1,544 @@
+/* Import VT323 font */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* Main Container */
+.trivia-container {
+  background: #000;
+  color: #fff;
+  font-family: 'VT323', monospace;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Allow scrolling if needed */
+  position: relative; /* For absolute positioning of back button */
+}
+
+/* Add a global style to ensure body allows scrolling */
+body {
+  overflow-y: auto !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure the React root also allows scrolling */
+#root {
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* Back Button */
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-family: 'VT323', monospace;
+  z-index: 10;
+}
+
+.back-button:hover {
+  color: #fff;
+}
+
+/* Loading & Error Screens */
+.loading-screen,
+.error-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  width: 100%;
+}
+
+.loading-text {
+  font-size: 48px;
+  letter-spacing: 4px;
+  animation: pulse 1.5s infinite;
+  color: #fff;
+}
+
+.loading-subtext {
+  font-size: 24px;
+  color: #666;
+  margin-top: 20px;
+  letter-spacing: 2px;
+}
+
+.error-screen h1 {
+  font-size: 72px;
+  color: #ff0000;
+  margin-bottom: 20px;
+  letter-spacing: 4px;
+}
+
+.error-screen p {
+  font-size: 24px;
+  color: #999;
+  margin-bottom: 40px;
+}
+
+.back-button-styled {
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 15px 40px;
+  font-size: 20px;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+}
+
+.back-button-styled:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Countdown */
+.trivia-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.trivia-countdown h1 {
+  font-size: 120px;
+  letter-spacing: 8px;
+  margin-bottom: 40px;
+  color: #fff;
+}
+
+.countdown-text {
+  font-size: 36px;
+  color: #666;
+  letter-spacing: 4px;
+  animation: blink 1s infinite;
+}
+
+/* Header */
+.trivia-header {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+  padding-top: 40px; /* Space for back button */
+}
+
+.trivia-header h1 {
+  font-size: 64px;
+  letter-spacing: 8px;
+  margin: 0;
+  color: #fff;
+}
+
+.race-status {
+  font-size: 24px;
+  color: #666;
+  letter-spacing: 2px;
+  margin-top: 10px;
+}
+
+/* Split Screen Layout */
+.trivia-split {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  max-width: 1400px;
+  align-items: stretch;
+  justify-content: center;
+  flex: 1;
+  padding-bottom: 60px; /* Increased padding to prevent cutoff */
+  margin-bottom: 20px; /* Add margin for extra space */
+}
+
+/* Player Sides */
+.player-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  min-width: 400px;
+  height: 100%; /* Ensure full height usage */
+}
+
+.player-info h2 {
+  font-size: 32px;
+  margin: 0;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.provider {
+  font-size: 18px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+/* Progress */
+.progress-section {
+  width: 100%;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: #111;
+  border: 1px solid #333;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 18px;
+  color: #999;
+  margin-top: 10px;
+  letter-spacing: 1px;
+}
+
+/* Question Area */
+.question-area {
+  min-height: 250px;
+  max-height: 350px;
+  border: 1px solid #333;
+  padding: 20px;
+  background: #000;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.thinking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 200px;
+}
+
+.thinking-text {
+  font-size: 32px;
+  letter-spacing: 3px;
+  animation: pulse 1s infinite;
+  color: #fff;
+}
+
+.question-display {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.question-number {
+  font-size: 20px;
+  color: #666;
+  letter-spacing: 2px;
+}
+
+.question-text {
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.choice {
+  font-size: 18px;
+  padding: 8px 12px;
+  border: 1px solid #222;
+  background: #000;
+  letter-spacing: 1px;
+  color: #fff;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.choice.selected {
+  border-width: 2px;
+  font-weight: bold;
+}
+
+.choice.selected.correct {
+  border-color: #0f0;
+  background: rgba(0, 255, 0, 0.1);
+  color: #0f0;
+}
+
+.choice.selected.incorrect {
+  border-color: #f00;
+  background: rgba(255, 0, 0, 0.1);
+  color: #f00;
+}
+
+.selected-answer {
+  font-size: 22px;
+  margin-top: 15px;
+  padding: 12px;
+  border: 2px solid #333;
+  letter-spacing: 1px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.selected-answer.correct {
+  color: #0f0;
+  border-color: #0f0;
+  background: rgba(0, 255, 0, 0.1);
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.selected-answer.incorrect {
+  color: #f00;
+  border-color: #f00;
+  background: rgba(255, 0, 0, 0.1);
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.selected-answer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.finished {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.finished h2 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  letter-spacing: 4px;
+  color: #fff;
+}
+
+.finished p {
+  font-size: 24px;
+  color: #999;
+  letter-spacing: 2px;
+}
+
+/* Recent Answers */
+.recent-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 10px;
+}
+
+.answer-line {
+  font-size: 14px;
+  padding: 4px 8px;
+  letter-spacing: 1px;
+  border: 1px solid #222;
+}
+
+.answer-line.correct {
+  color: #0f0;
+  border-color: #0f0;
+}
+
+.answer-line.incorrect {
+  color: #f00;
+  border-color: #f00;
+}
+
+/* VS Divider */
+.vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.vs-text {
+  font-size: 40px;
+  font-weight: 400;
+  color: #333;
+  letter-spacing: 3px;
+}
+
+/* Results Screen */
+.trivia-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.trivia-results h1 {
+  font-size: 72px;
+  letter-spacing: 6px;
+  margin-bottom: 40px;
+  color: #fff;
+}
+
+.results-grid {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.result-card {
+  padding: 40px;
+  border: 1px solid #333;
+  background: #000;
+  text-align: center;
+  position: relative;
+}
+
+.result-card.winner {
+  border-color: #fff;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.result-card h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.score {
+  font-size: 48px;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  color: #fff;
+}
+
+.accuracy {
+  font-size: 20px;
+  color: #999;
+  letter-spacing: 1px;
+}
+
+.winner-label {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  padding: 5px 20px;
+  font-size: 20px;
+  letter-spacing: 2px;
+  border: 1px solid #fff;
+  color: #fff;
+}
+
+.race-time {
+  font-size: 24px;
+  color: #666;
+  margin-bottom: 40px;
+  letter-spacing: 2px;
+}
+
+.play-again-button {
+  background: #000;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 15px 40px;
+  font-size: 20px;
+  font-family: 'VT323', monospace;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.play-again-button:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .trivia-split {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .vs-divider {
+    transform: rotate(90deg);
+    margin: 20px 0;
+  }
+  
+  .trivia-header h1 {
+    font-size: 48px;
+  }
+  
+  .results-grid {
+    flex-direction: column;
+  }
+  
+  .player-side {
+    max-width: 100%;
+    min-width: auto;
+  }
+  
+  .question-area {
+    max-height: 350px;
+  }
+} 
