@@ -3,6 +3,7 @@ Common utilities and base classes for all games
 """
 
 import os
+import time
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, Tuple
 from enum import Enum
@@ -34,8 +35,8 @@ class LLMClient:
         """Parse model ID to determine provider and model name"""
         model_id_lower = model_id.lower()
         
-        # OpenAI models
-        if any(x in model_id_lower for x in ['gpt', 'o1', 'davinci', 'curie', 'babbage', 'ada']):
+        # OpenAI models (including o-series reasoning models)
+        if any(x in model_id_lower for x in ['gpt', 'o1', 'o3', 'o4', 'davinci']):
             return "OPENAI", model_id
         
         # Claude models
@@ -49,6 +50,11 @@ class LLMClient:
         # Default to OpenAI
         else:
             return "OPENAI", model_id
+    
+    def _is_new_openai_model(self) -> bool:
+        """GPT-5.x and o-series models use max_completion_tokens instead of max_tokens"""
+        m = self.model_name.lower()
+        return any(m.startswith(p) for p in ['gpt-5', 'o1', 'o3', 'o4'])
     
     def _initialize_client(self):
         """Initialize the appropriate API client"""
@@ -77,125 +83,110 @@ class LLMClient:
         else:
             raise ValueError(f"Unknown model type: {self.model_type}")
     
-    def get_response(self, prompt: str, max_tokens: int = 100, temperature: float = 0.7) -> str:
-        """Get a generic response from the LLM"""
-        try:
-            if self.model_type == "OPENAI":
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=temperature,
-                    max_tokens=max_tokens
-                )
-                return response.choices[0].message.content.strip()
-                
-            elif self.model_type == "ANTHROPIC":
-                response = self.client.messages.create(
-                    model=self.model_name,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=temperature,
-                    max_tokens=max_tokens
-                )
-                return response.content[0].text.strip()
-                
-            elif self.model_type == "GOOGLE":
-                # Google Gemini uses a different API structure
-                response = self.client.generate_content(prompt)
-                return response.text.strip()
-                
-            elif self.model_type == "GEMINI":
-                model = self.client.GenerativeModel(self.model_name)
-                response = model.generate_content(prompt)
-                return response.text.strip()
-                
-            else:
-                raise ValueError(f"Unknown model type: {self.model_type}")
-                
-        except Exception as e:
-            print(f"Error getting response from {self.model_id}: {e}")
-            return None
+    def get_response(self, prompt: str, max_tokens: int = 100, temperature: float = 0.7, max_retries: int = 3) -> str:
+        """Get a response from the LLM with retry and backoff"""
+        for attempt in range(max_retries):
+            try:
+                if self.model_type == "OPENAI":
+                    params = {
+                        "model": self.model_name,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "timeout": 30,
+                    }
+                    if self._is_new_openai_model():
+                        params["max_completion_tokens"] = max_tokens
+                    else:
+                        params["temperature"] = temperature
+                        params["max_tokens"] = max_tokens
+                    response = self.client.chat.completions.create(**params)
+                    return response.choices[0].message.content.strip()
+                elif self.model_type == "ANTHROPIC":
+                    response = self.client.messages.create(
+                        model=self.model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    )
+                    return response.content[0].text.strip()
+                elif self.model_type == "GOOGLE":
+                    response = self.client.generate_content(prompt)
+                    return response.text.strip()
+                else:
+                    raise ValueError(f"Unknown model type: {self.model_type}")
+            except Exception as e:
+                print(f"LLM call attempt {attempt+1}/{max_retries} failed for {self.model_id}: {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                else:
+                    print(f"All {max_retries} attempts failed for {self.model_id}")
+                    return None
     
-    def get_move(self, prompt: str, game_state: dict = None) -> str:
-        """Get a move from the LLM (sync version for battleship)"""
-        try:
-            # First, try to get a move from the LLM
-            if self.model_type == "OPENAI":
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=[
-                        {"role": "system", "content": "You are playing Battleship. Reply with ONLY a coordinate like 'A5'. No other text."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    temperature=0.7,
-                    max_tokens=10
-                )
-                content = response.choices[0].message.content.strip()
-                
-            elif self.model_type == "ANTHROPIC":
-                response = self.client.messages.create(
-                    model=self.model_name,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=10,
-                    temperature=0.7
-                )
-                content = response.content[0].text.strip()
-                
-            elif self.model_type == "GOOGLE":
-                response = self.client.generate_content(prompt)
-                content = response.text.strip()
-                
-            else:
-                # Fallback - use suggested position from prompt
-                import re
+    def get_move(self, prompt: str, game_state: dict = None, max_retries: int = 3) -> str:
+        """Get a move from the LLM with retry and backoff (sync version for battleship)"""
+        import re
+        import random
+        import string
+
+        def _random_move():
+            col = random.choice(string.ascii_uppercase[:8])
+            row = random.randint(1, 8)
+            return f"{col}{row}"
+
+        def _fallback_move():
+            suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
+            if suggested_match:
+                return suggested_match.group(1)
+            return _random_move()
+
+        for attempt in range(max_retries):
+            try:
+                if self.model_type == "OPENAI":
+                    params = {
+                        "model": self.model_name,
+                        "messages": [
+                            {"role": "system", "content": "You are playing Battleship. Reply with ONLY a coordinate like 'A5'. No other text."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "timeout": 30,
+                    }
+                    if self._is_new_openai_model():
+                        params["max_completion_tokens"] = 10
+                    else:
+                        params["temperature"] = 0.7
+                        params["max_tokens"] = 10
+                    response = self.client.chat.completions.create(**params)
+                    content = response.choices[0].message.content.strip()
+                elif self.model_type == "ANTHROPIC":
+                    response = self.client.messages.create(
+                        model=self.model_name,
+                        messages=[{"role": "user", "content": prompt}],
+                        max_tokens=10,
+                        temperature=0.7,
+                    )
+                    content = response.content[0].text.strip()
+                elif self.model_type == "GOOGLE":
+                    response = self.client.generate_content(prompt)
+                    content = response.text.strip()
+                else:
+                    return _fallback_move()
+
+                coord_match = re.search(r'[A-Ha-h][1-8]', content)
+                if coord_match:
+                    return coord_match.group(0).upper()
+
                 suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
                 if suggested_match:
                     return suggested_match.group(1)
+
+                return _random_move()
+
+            except Exception as e:
+                print(f"get_move attempt {attempt+1}/{max_retries} failed for {self.model_type} ({self.model_name}): {e}")
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
                 else:
-                    # Random fallback
-                    import random
-                    import string
-                    col = random.choice(string.ascii_uppercase[:8])
-                    row = random.randint(1, 8)
-                    return f"{col}{row}"
-            
-            # Clean up the response - extract just the coordinate
-            import re
-            # Look for pattern like A5, H8, etc.
-            coord_match = re.search(r'[A-Ha-h][1-8]', content)
-            if coord_match:
-                return coord_match.group(0).upper()
-            
-            # If no valid coordinate found, use suggested from prompt
-            suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
-            if suggested_match:
-                return suggested_match.group(1)
-            
-            # Last resort - random valid move
-            import random
-            import string
-            col = random.choice(string.ascii_uppercase[:8])
-            row = random.randint(1, 8)
-            return f"{col}{row}"
-                
-        except Exception as e:
-            print(f"Error getting move from {self.model_type} ({self.model_name}): {e}")
-            # Extract suggested position from prompt as fallback
-            import re
-            suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
-            if suggested_match:
-                return suggested_match.group(1)
-            # Final fallback - random move
-            import random
-            import string
-            col = random.choice(string.ascii_uppercase[:8])
-            row = random.randint(1, 8)
-            return f"{col}{row}"
+                    print(f"All {max_retries} get_move attempts failed, falling back to random")
+                    return _fallback_move()
     
     async def get_move_async(self, prompt: str, game_state: dict = None) -> str:
         """Get a move from the LLM (async version for other games)"""

@@ -210,43 +210,46 @@ class ConnectionsGame:
         # Strategy 4: Random selection as last resort
         return random.sample(self.remaining_words, 4)
     
+    MAX_INCORRECT_GUESSES = 15
+
     def get_ai_guess(self, model_id: str) -> Optional[List[str]]:
         """Get an AI guess for the current state"""
-        # Create LLM client with the model ID
+        if len(self.remaining_words) < 4:
+            return None
+
+        if len(self.incorrect_guesses) >= self.MAX_INCORRECT_GUESSES:
+            self.game_over = True
+            return None
+
         llm_client = LLMClient(model_id)
-        
-        # Build prompt
+
         correct_history = ""
         if self.correct_guesses:
             correct_history = "\n\nAlready found groups (DO NOT use these words):\n" + "\n".join(
-                f"✓ {', '.join(g)}" for g in self.correct_guesses
+                f"- FOUND: {', '.join(g)}" for g in self.correct_guesses
             )
-        
+
         incorrect_history = ""
-        recent_incorrect = self.incorrect_guesses[-3:] if len(self.incorrect_guesses) > 3 else self.incorrect_guesses
-        if recent_incorrect:
-            incorrect_history = "\n\nRecent incorrect attempts (avoid these exact combinations):\n" + "\n".join(
-                f"✗ {', '.join(g)}" for g in recent_incorrect
+        if self.incorrect_guesses:
+            incorrect_history = "\n\nALL previous incorrect attempts (you MUST NOT repeat any of these):\n" + "\n".join(
+                f"- WRONG: {', '.join(g)}" for g in self.incorrect_guesses
             )
-        
-        # Special strategy when 2 groups found (8 words left)
+
         strategy_hint = ""
         if len(self.found_groups) == 2:
-            strategy_hint = "\n\n⚠️ CRITICAL: Only 2 groups remain (8 words total). The connections might be:\n" \
-                          "- Less obvious wordplay or double meanings\n" \
-                          "- Words that can complete phrases (e.g., ___ BELL)\n" \
-                          "- Homophones or words that sound like other words\n" \
-                          "- Pop culture references or slang meanings\n" \
-                          "Try DIFFERENT types of connections than what you've already found!"
+            strategy_hint = "\n\nCRITICAL: Only 2 groups remain (8 words total). The connections might be:" \
+                          "\n- Less obvious wordplay or double meanings" \
+                          "\n- Words that can complete phrases (e.g., ___ BELL)" \
+                          "\n- Homophones or words that sound like other words" \
+                          "\n- Pop culture references or slang meanings" \
+                          "\nTry DIFFERENT types of connections than what you've already found!"
         elif len(self.incorrect_guesses) > 10:
             strategy_hint = "\n\nHINT: Look for less obvious connections like wordplay, homophones, or phrases that contain these words."
         elif len(self.incorrect_guesses) > 5:
             strategy_hint = "\n\nHINT: Consider different types of connections - categories, word associations, or common phrases."
-        
-        # Add pattern analysis
+
         pattern_analysis = self._analyze_patterns()
-        
-        # Enhanced prompt for when 2 groups are found
+
         if len(self.found_groups) == 2:
             prompt = f"""NYT Connections: Find 4 words that share a common theme.
 
@@ -263,6 +266,7 @@ The remaining groups are likely to be TRICKY. Consider:
 5. Double meanings or wordplay
 
 Think step by step about EACH remaining word and its possible connections.
+DO NOT repeat any combination listed above as WRONG.
 
 Respond with ONLY 4 words separated by commas."""
         else:
@@ -280,44 +284,59 @@ Think step by step:
 1. Look for obvious categories first (animals, colors, etc.)
 2. Check for words that can complete phrases (e.g., ___ BELL, ___ CAKE)
 3. Consider less obvious connections (homophones, slang meanings)
+DO NOT repeat any combination listed above as WRONG.
 
 Respond with ONLY 4 words separated by commas. Example format:
 WORD1, WORD2, WORD3, WORD4"""
-        
+
         try:
-            # Get response using the common get_response method
-            # Use lower temperature for more focused guessing
             response = llm_client.get_response(prompt, max_tokens=50, temperature=0.3)
-            
-            # Clean and parse response
-            # Remove any common prefixes the model might add
+
             response = response.strip()
             for prefix in ["Answer:", "Guess:", "Response:", "My guess:", "I choose:"]:
                 if response.startswith(prefix):
                     response = response[len(prefix):].strip()
-            
-            # Parse response - handle various separators
+
             import re
-            # Split on comma, semicolon, or multiple spaces
             parts = re.split(r'[,;]\s*|\s{2,}', response)
             parts = [w.strip().upper() for w in parts if w.strip()]
-            
-            # Filter to only valid words from remaining_words
+
             valid_parts = [w for w in parts if w in [rw.upper() for rw in self.remaining_words]]
-            
+
             if len(valid_parts) >= 4:
+                candidate = sorted(valid_parts[:4])
+                prev_guesses_sorted = [sorted([w.upper() for w in g]) for g in self.incorrect_guesses]
+                if candidate in prev_guesses_sorted:
+                    print(f"[Dedup] {model_id} tried to repeat a guess, using smart fallback")
+                    return self._get_unique_guess()
                 return valid_parts[:4]
             else:
-                # If we don't have enough valid words, try a fallback strategy
                 print(f"[Warning] {model_id} gave incomplete guess: {parts}")
-                
-                # Fallback: use smart guessing strategy
-                return self._get_smart_guess()
-                
+                return self._get_unique_guess()
+
         except Exception as e:
             print(f"Error getting AI guess from {model_id}: {e}")
-            # Fallback strategy on error
-            return self._get_smart_guess()
+            return self._get_unique_guess()
+
+    def _get_unique_guess(self) -> Optional[List[str]]:
+        """Get a smart guess that hasn't been tried before"""
+        if len(self.remaining_words) < 4:
+            return None
+
+        prev_sorted = [sorted([w.upper() for w in g]) for g in self.incorrect_guesses]
+
+        candidate = self._get_smart_guess()
+        if candidate:
+            if sorted([w.upper() for w in candidate]) not in prev_sorted:
+                return candidate
+
+        remaining_upper = [w.upper() for w in self.remaining_words]
+        import itertools
+        for combo in itertools.combinations(remaining_upper, 4):
+            if sorted(combo) not in prev_sorted:
+                return list(combo)
+
+        return None
     
     def get_game_state(self) -> Dict:
         """Get the current game state"""

@@ -18,9 +18,9 @@ openai_api_key = os.getenv('OPENAI_API_KEY')
 anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
 
 if not openai_api_key:
-    print("⚠️  OPENAI_API_KEY not found! Set it with: export OPENAI_API_KEY='your_key_here'")
+    print("OPENAI_API_KEY not found! Set it with: export OPENAI_API_KEY='your_key_here'")
 if not anthropic_api_key:
-    print("⚠️  ANTHROPIC_API_KEY not found! Set it with: export ANTHROPIC_API_KEY='your_key_here'")
+    print("ANTHROPIC_API_KEY not found! Set it with: export ANTHROPIC_API_KEY='your_key_here'")
 
 # Only initialize clients if keys are provided
 openai_client = openai.OpenAI(api_key=openai_api_key) if openai_api_key else None
@@ -92,20 +92,20 @@ class WordleGame:
             if not self.game_over:  # First to solve wins
                 self.game_over = True
                 self.winner = model
-                print(f"\n🎉 {model.upper()} WINS! Found '{self.secret_word}' in {current_guesses} guesses")
+                print(f"\n{model.upper()} WINS! Found '{self.secret_word}' in {current_guesses} guesses")
             else:  # Both solved in same round - compare guess counts
                 other_model = 'anthropic' if model == 'openai' else 'openai'
                 other_guesses = len(self.models[other_model]['guesses'])
                 
                 if current_guesses < other_guesses:
                     self.winner = model
-                    print(f"\n🎉 {model.upper()} WINS! Both found '{self.secret_word}' but {model.upper()} used fewer guesses ({current_guesses} vs {other_guesses})")
+                    print(f"\n{model.upper()} WINS! Both found '{self.secret_word}' but {model.upper()} used fewer guesses ({current_guesses} vs {other_guesses})")
                 elif current_guesses > other_guesses:
                     # Other model already won with fewer guesses
                     print(f"\n{model.upper()} found '{self.secret_word}' in {current_guesses} guesses but {other_model.upper()} already won with {other_guesses}")
                 else:
                     self.winner = "TIE"
-                    print(f"\n🤝 TIE! Both found '{self.secret_word}' in {current_guesses} guesses")
+                    print(f"\nTIE! Both found '{self.secret_word}' in {current_guesses} guesses")
         else:
             if all(len(self.models[m]["guesses"]) >= 6 for m in self.models):
                 self.game_over = True
@@ -164,15 +164,15 @@ def make_guess():
     try:
         guess, reasoning = get_llm_guess(model, model_data['guesses'], model_data['feedback'])
     except Exception as e:
-        print(f"❌ Error getting guess from {model}: {e}")
+        print(f"Error getting guess from {model}: {e}")
         # Fallback to prevent crashes
         fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND", "LIGHT", "PRINT", "WORLD", "PARTY", "KNIFE"]
         guess = fallback_words[len(model_data['guesses']) % len(fallback_words)]
         
         if "API key not configured" in str(e):
-            reasoning = f"🔑 API key missing for {model.upper()} - using fallback word: {guess}"
+            reasoning = f"API key missing for {model.upper()} - using fallback word: {guess}"
         else:
-            reasoning = f"⚠️ {model.upper()} API error - using fallback word: {guess}"
+            reasoning = f"{model.upper()} API error - using fallback word: {guess}"
     
     # Make the guess
     result = current_game.make_guess(model, guess, reasoning)
@@ -321,19 +321,18 @@ def get_llm_guess(model: str, previous_guesses: List[str], previous_feedback: Li
     try:
         if model == "openai":
             response = openai_client.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-5.5",
                 messages=[
                     {"role": "system", "content": "You are an expert Wordle player. You always respond with exactly one 5-letter word in ALL CAPS, nothing else."},
                     {"role": "user", "content": prompt}
                 ],
-                max_tokens=10,
-                temperature=0.7
+                max_completion_tokens=10,
             )
             guess = response.choices[0].message.content.strip().upper()
             
         else:  # anthropic
             response = anthropic_client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+                model="claude-sonnet-4-6",
                 max_tokens=10,
                 temperature=0.7,
                 messages=[
@@ -357,11 +356,11 @@ def get_llm_guess(model: str, previous_guesses: List[str], previous_feedback: Li
         
         reasoning = f"Turn {len(previous_guesses) + 1} - {model.upper()}'s strategic choice"
         
-        print(f"🤖 {model.upper()} chose: {guess}")
+        print(f"{model.upper()} chose: {guess}")
         return guess, reasoning
         
     except Exception as e:
-        print(f"❌ Error calling {model} API: {e}")
+        print(f"Error calling {model} API: {e}")
         # Fallback
         fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND", "LIGHT", "PRINT", "WORLD"]
         guess = fallback_words[len(previous_guesses) % len(fallback_words)]
@@ -434,12 +433,12 @@ def parse_reasoning_for_ui(model: str, reasoning: str, previous_guesses: List[st
 
 
 if __name__ == '__main__':
-    print("🎮 Starting AI vs AI Wordle server on port 5001...")
-    print("📋 Testing GPT-4o vs Claude-3.5-Sonnet")
+    print("Starting AI vs AI Wordle server on port 5001...")
+    print("Testing GPT-5.5 vs Claude Sonnet 4.6")
     print()
     
     if not openai_api_key or not anthropic_api_key:
-        print("🚨 SETUP REQUIRED:")
+        print("SETUP REQUIRED:")
         print("You need to set up API keys to test the LLMs:")
         print()
         if not openai_api_key:
@@ -449,10 +448,10 @@ if __name__ == '__main__':
             print("2. Get Anthropic API key from: https://console.anthropic.com/")
             print("   Then run: export ANTHROPIC_API_KEY='your_key_here'")
         print()
-        print("💡 The server will start but API calls will fail until keys are set.")
+        print("The server will start but API calls will fail until keys are set.")
         print("   You can test with fallback words in the meantime.")
         print()
     else:
-        print("✅ API keys configured - ready to test real LLM intelligence!")
+        print("API keys configured - ready to test real LLM intelligence!")
     
     app.run(debug=True, port=5002, threaded=True) 

@@ -132,10 +132,13 @@ manager = ConnectionManager()
 # BATTLESHIP ENDPOINTS
 # ====================
 
+battleship_ws_alive: Dict[str, bool] = {}
+
 @app.websocket("/games/battleship/{game_id}")
 async def battleship_websocket(websocket: WebSocket, game_id: str):
     """WebSocket endpoint for Battleship games"""
     await websocket.accept()
+    battleship_ws_alive[game_id] = True
     print(f"Client connected to battleship game {game_id}")
     
     try:
@@ -164,8 +167,8 @@ async def battleship_websocket(websocket: WebSocket, game_id: str):
                         asyncio.create_task(continue_battleship_game(game, websocket, game_id))
                     continue
                 
-                player1_model = data.get("player1Model", "gpt-4o-mini")
-                player2_model = data.get("player2Model", "claude-3-haiku")
+                player1_model = data.get("player1Model", "gpt-5.5")
+                player2_model = data.get("player2Model", "claude-sonnet-4-6")
                 
                 print(f"Creating new battleship game {game_id} with models: {player1_model} vs {player2_model}")
                 
@@ -233,8 +236,12 @@ async def battleship_websocket(websocket: WebSocket, game_id: str):
             
     except WebSocketDisconnect:
         print(f"Client disconnected from battleship game {game_id}")
+        battleship_ws_alive[game_id] = False
+        if game_id in battleship_games:
+            battleship_games[game_id].status = "finished"
     except Exception as e:
         print(f"WebSocket error in game {game_id}: {e}")
+        battleship_ws_alive[game_id] = False
         import traceback
         traceback.print_exc()
 
@@ -258,12 +265,25 @@ async def continue_battleship_game(game: BattleshipGame, websocket: WebSocket, g
 async def run_battleship_game_loop(game: BattleshipGame, websocket: WebSocket, game_id: str):
     """Run the battleship game loop in a separate task"""
     try:
+        total_moves = 0
+        MAX_TOTAL_MOVES = 200
         while game.status == "active" and not game.winner:
+            if not battleship_ws_alive.get(game_id, False):
+                print(f"Client disconnected, stopping battleship game {game_id}")
+                game.status = "finished"
+                break
+            total_moves += 1
+            if total_moves > MAX_TOTAL_MOVES:
+                print(f"Game {game_id} exceeded max moves, ending")
+                game.status = "finished"
+                break
             current_player = game.current_player
             max_retries = 5
             retry_count = 0
             
             while retry_count < max_retries:
+                if not battleship_ws_alive.get(game_id, False):
+                    break
                 prompt = game.get_prompt_for_player(current_player)
                 
                 if current_player == 1:
@@ -393,8 +413,8 @@ async def start_trivia_game(request: GameStartRequest):
         game_id = str(uuid.uuid4())
         questions = get_random_questions(request.question_count)
         
-        player1_model = request.player1_model or "gpt-4o-mini"
-        player2_model = request.player2_model or "claude-3-haiku"
+        player1_model = request.player1_model or "gpt-5.5"
+        player2_model = request.player2_model or "claude-sonnet-4-6"
         
         print(f"Starting trivia game with models: {player1_model} vs {player2_model}")
         
@@ -435,6 +455,11 @@ async def trivia_websocket(websocket: WebSocket, game_id: str):
                 pass
     except WebSocketDisconnect:
         manager.disconnect(websocket, game_id)
+        if game_id not in manager.active_connections or not manager.active_connections.get(game_id):
+            if game_id in game_runners:
+                print(f"All clients disconnected from trivia {game_id}, stopping runner")
+                game_runners[game_id].stop_all()
+                del game_runners[game_id]
 
 @app.post("/api/trivia/game/{game_id}/player/{player}/next-question")
 async def player_next_question(game_id: str, player: int):
@@ -706,8 +731,8 @@ async def start_connections_game(request: ConnectionsStartRequest):
     try:
         game_id = str(uuid.uuid4())
         
-        player1_model = request.player1_model or "gpt-4o-mini"
-        player2_model = request.player2_model or "claude-3-haiku"
+        player1_model = request.player1_model or "gpt-5.5"
+        player2_model = request.player2_model or "claude-sonnet-4-6"
         
         game1 = ConnectionsGame()
         game2 = ConnectionsGame(puzzle_data=game1.puzzle)
@@ -747,6 +772,11 @@ async def connections_websocket(websocket: WebSocket, game_id: str):
                 pass
     except WebSocketDisconnect:
         manager.disconnect(websocket, game_id)
+        if game_id not in manager.active_connections or not manager.active_connections.get(game_id):
+            if game_id in game_runners:
+                print(f"All clients disconnected from connections {game_id}, stopping runner")
+                game_runners[game_id].stop_all()
+                del game_runners[game_id]
 
 @app.post("/api/connections/game/{game_id}/player/{player}/ai-turn")
 async def connections_ai_turn(game_id: str, player: str, request: dict):
