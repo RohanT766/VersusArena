@@ -15,14 +15,14 @@ const TriviaGame = () => {
   const storedPlayer2 = JSON.parse(sessionStorage.getItem('player2Model') || '{}')
   
   const player1Model = {
-    id: storedPlayer1.id || 'gpt-4o-mini',
-    name: storedPlayer1.name || 'GPT-4o Mini',
+    id: storedPlayer1.id || 'gpt-5.5',
+    name: storedPlayer1.name || 'GPT-5.5',
     provider: storedPlayer1.provider || 'openai'
   }
   
   const player2Model = {
-    id: storedPlayer2.id || 'claude-3-haiku-20240307',
-    name: storedPlayer2.name || 'Claude 3 Haiku',
+    id: storedPlayer2.id || 'claude-sonnet-4-6',
+    name: storedPlayer2.name || 'Claude Sonnet 4.6',
     provider: storedPlayer2.provider || 'anthropic'
   }
 

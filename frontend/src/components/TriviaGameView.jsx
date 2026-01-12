@@ -1,36 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react'
 import SidebarVote from './SidebarVote'
+import GameCountdown from './common/GameCountdown'
 import './TriviaGameView.css'
 
 const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
-  // Get display names and info for models
+  const mountedRef = useRef(true);
+  useEffect(() => { return () => { mountedRef.current = false; }; }, []);
+
   const getModelInfo = (modelId) => {
-    if (!modelId) return { name: 'Unknown', color: '#6b7280', emoji: '🤖' }
+    if (!modelId) return { name: 'Unknown', color: '#6b7280' }
     
     const id = (typeof modelId === 'object' ? (modelId.id || '') : String(modelId)).toLowerCase()
     
     // OpenAI models
-    if (id.includes('gpt-4o')) return { name: 'GPT-4o', color: '#10a37f', emoji: '🤖' }
-    if (id.includes('gpt-4-turbo')) return { name: 'GPT-4 Turbo', color: '#10a37f', emoji: '🤖' }
-    if (id.includes('gpt-3.5')) return { name: 'GPT-3.5', color: '#10a37f', emoji: '🤖' }
-    if (id.includes('gpt') || id.includes('openai')) return { name: 'GPT-4', color: '#10a37f', emoji: '🤖' }
+    if (id.includes('gpt-5.5')) return { name: 'GPT-5.5', color: '#10a37f' }
+    if (id.includes('gpt-5.4-mini')) return { name: 'GPT-5.4 Mini', color: '#10a37f' }
+    if (id.includes('gpt-4o')) return { name: 'GPT-4o', color: '#10a37f' }
+    if (id.includes('o4-mini')) return { name: 'o4-mini', color: '#10a37f' }
+    if (id.includes('gpt') || id.includes('openai')) return { name: 'GPT', color: '#10a37f' }
     
     // Anthropic models
-    if (id.includes('claude-3-opus')) return { name: 'Claude 3 Opus', color: '#d97706', emoji: '🧠' }
-    if (id.includes('claude-3-sonnet')) return { name: 'Claude 3 Sonnet', color: '#d97706', emoji: '🧠' }
-    if (id.includes('claude-3-haiku')) return { name: 'Claude 3 Haiku', color: '#d97706', emoji: '🧠' }
-    if (id.includes('claude') || id.includes('anthropic')) return { name: 'Claude 3', color: '#d97706', emoji: '🧠' }
+    if (id.includes('claude-opus-4-7')) return { name: 'Claude Opus 4.7', color: '#d97706' }
+    if (id.includes('claude-sonnet-4-6')) return { name: 'Claude Sonnet 4.6', color: '#d97706' }
+    if (id.includes('claude-haiku-4-5')) return { name: 'Claude Haiku 4.5', color: '#d97706' }
+    if (id.includes('claude-sonnet-4')) return { name: 'Claude Sonnet 4', color: '#d97706' }
+    if (id.includes('claude') || id.includes('anthropic')) return { name: 'Claude', color: '#d97706' }
     
     // Google models
-    if (id.includes('gemini-1.5-pro')) return { name: 'Gemini 1.5 Pro', color: '#4285f4', emoji: '✨' }
-    if (id.includes('gemini-1.5-flash')) return { name: 'Gemini 1.5 Flash', color: '#4285f4', emoji: '✨' }
-    if (id.includes('gemini')) return { name: 'Gemini Pro', color: '#4285f4', emoji: '✨' }
+    if (id.includes('gemini-3.1-pro')) return { name: 'Gemini 3.1 Pro', color: '#4285f4' }
+    if (id.includes('gemini-2.5-pro')) return { name: 'Gemini 2.5 Pro', color: '#4285f4' }
+    if (id.includes('gemini-2.5-flash')) return { name: 'Gemini 2.5 Flash', color: '#4285f4' }
+    if (id.includes('gemini')) return { name: 'Gemini', color: '#4285f4' }
     
     const displayName = typeof modelId === 'object' ? (modelId.name || modelId.id || 'Unknown') : String(modelId)
     return { 
       name: displayName.charAt(0).toUpperCase() + displayName.slice(1), 
-      color: '#6b7280', 
-      emoji: '🤖' 
+      color: '#6b7280'
     }
   }
 
@@ -66,12 +71,13 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
   })
   
   const [websocket, setWebsocket] = useState(null)
+  const [showCountdown, setShowCountdown] = useState(false)
   
   const wsRef = useRef(null)
 
   // Handle when voting period ends
   const handleGameStart = () => {
-    console.log('🎮 Voting complete, showing trivia start screen...')
+    console.log('Voting complete, showing trivia start screen...')
     setRaceState(prev => ({ ...prev, votingComplete: true }))
   }
 
@@ -140,12 +146,11 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
       }))
     }
     
-    // Continue the race for this player if they haven't finished
-    setTimeout(() => {
-      if (!raceState.raceFinished) {
+    const timer = setTimeout(() => {
+      if (mountedRef.current && !raceState.raceFinished) {
         askNextQuestion(player)
       }
-    }, 2000) // 2 second delay to show the result
+    }, 2000)
   }
 
   const handleRaceFinished = (finalResults) => {
@@ -214,9 +219,12 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
   }
 
   const startRace = () => {
+    setShowCountdown(true)
+  }
+
+  const handleCountdownComplete = () => {
+    setShowCountdown(false)
     setRaceState(prev => ({ ...prev, raceStarted: true }))
-    
-    // Start asking questions to both players
     askNextQuestion(1)
     askNextQuestion(2)
   }
@@ -231,11 +239,10 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
         />
         
         <div className="game-start-screen">
-          <h1>🏁 TRIVIA RACE</h1>
+          <h1>TRIVIA RACE</h1>
           
           <div className="vs-setup">
             <div className="player-card">
-              <div className="player-emoji">{player1Info.emoji}</div>
               <h3>{player1Info.name}</h3>
               <p>Player 1</p>
             </div>
@@ -243,14 +250,13 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
             <div className="vs-divider">VS</div>
             
             <div className="player-card">
-              <div className="player-emoji">{player2Info.emoji}</div>
               <h3>{player2Info.name}</h3>
               <p>Player 2</p>
             </div>
           </div>
           
           <div className="game-info">
-            <p>🏁 RACE TO FINISH 20 QUESTIONS FIRST!</p>
+            <p>RACE TO FINISH 20 QUESTIONS FIRST!</p>
             <p>Pre-game voting in progress...</p>
           </div>
         </div>
@@ -261,12 +267,18 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
   if (!raceState.raceStarted) {
     return (
       <div className="trivia-game-container">
+        {showCountdown && (
+          <GameCountdown
+            player1Name={player1Info.name}
+            player2Name={player2Info.name}
+            onComplete={handleCountdownComplete}
+          />
+        )}
         <div className="game-start-screen">
-          <h1>🏁 TRIVIA RACE</h1>
+          <h1>TRIVIA RACE</h1>
           
           <div className="vs-setup">
             <div className="player-card">
-              <div className="player-emoji">{player1Info.emoji}</div>
               <h3>{player1Info.name}</h3>
               <p>Player 1</p>
             </div>
@@ -274,14 +286,13 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
             <div className="vs-divider">VS</div>
             
             <div className="player-card">
-              <div className="player-emoji">{player2Info.emoji}</div>
               <h3>{player2Info.name}</h3>
               <p>Player 2</p>
             </div>
           </div>
           
           <div className="game-info">
-            <p>🏁 RACE TO FINISH 20 QUESTIONS FIRST!</p>
+            <p>RACE TO FINISH 20 QUESTIONS FIRST!</p>
             <p>Each model answers independently • First to complete wins!</p>
           </div>
           
@@ -297,11 +308,10 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
     return (
       <div className="trivia-game-container">
         <div className="game-over-screen">
-          <h1>🏆 RACE FINISHED!</h1>
+          <h1>RACE FINISHED!</h1>
           
           <div className="final-scores">
             <div className={`final-score-card ${raceState.winner === 1 ? 'winner' : ''}`}>
-              <div className="player-emoji">{player1Info.emoji}</div>
               <h3>{player1Info.name}</h3>
               <div className="score">{player1State.score}/20</div>
               <div className="questions-completed">{player1State.questionIndex} questions</div>
@@ -309,7 +319,6 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
             </div>
             
             <div className={`final-score-card ${raceState.winner === 2 ? 'winner' : ''}`}>
-              <div className="player-emoji">{player2Info.emoji}</div>
               <h3>{player2Info.name}</h3>
               <div className="score">{player2State.score}/20</div>
               <div className="questions-completed">{player2State.questionIndex} questions</div>
@@ -335,7 +344,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
     <div className="trivia-race-container">
       {/* Race Header */}
       <div className="race-header">
-        <h1>🏁 TRIVIA RACE</h1>
+        <h1>TRIVIA RACE</h1>
         <div className="race-status">
           {raceState.raceFinished ? 'RACE FINISHED!' : 'RACING...'}
         </div>
@@ -347,7 +356,6 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
         <div className="player-race-side" style={{ borderColor: player1Info.color }}>
           <div className="player-header">
             <div className="player-info">
-              <span className="player-emoji">{player1Info.emoji}</span>
               <h2>{player1Info.name}</h2>
             </div>
             <div className="player-progress">
@@ -391,7 +399,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
 
             {player1State.finished && (
               <div className="finished-state">
-                <h2>🏁 FINISHED!</h2>
+                <h2>FINISHED!</h2>
                 <p>Final Score: {player1State.score}/20</p>
               </div>
             )}
@@ -404,7 +412,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
                 key={index} 
                 className={`mini-response ${response.correct ? 'correct' : 'incorrect'}`}
               >
-                Q{response.question_number}: {response.correct ? '✅' : '❌'} ({(response.time || 0).toFixed(1)}s)
+                Q{response.question_number}: {response.correct ? 'correct' : 'wrong'} ({(response.time || 0).toFixed(1)}s)
               </div>
             ))}
           </div>
@@ -419,7 +427,6 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
         <div className="player-race-side" style={{ borderColor: player2Info.color }}>
           <div className="player-header">
             <div className="player-info">
-              <span className="player-emoji">{player2Info.emoji}</span>
               <h2>{player2Info.name}</h2>
             </div>
             <div className="player-progress">
@@ -463,7 +470,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
 
             {player2State.finished && (
               <div className="finished-state">
-                <h2>🏁 FINISHED!</h2>
+                <h2>FINISHED!</h2>
                 <p>Final Score: {player2State.score}/20</p>
               </div>
             )}
@@ -476,7 +483,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd }) => {
                 key={index} 
                 className={`mini-response ${response.correct ? 'correct' : 'incorrect'}`}
               >
-                Q{response.question_number}: {response.correct ? '✅' : '❌'} ({(response.time || 0).toFixed(1)}s)
+                Q{response.question_number}: {response.correct ? 'correct' : 'wrong'} ({(response.time || 0).toFixed(1)}s)
               </div>
             ))}
           </div>

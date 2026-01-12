@@ -1,27 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { X, Users, Clock, SkipForward } from 'lucide-react';
+import { SkipForward } from 'lucide-react';
 import QRCodeVote from './QRCodeVote';
-import VoteChart from './VoteChart';
 import { useVoteStats } from '../hooks/useVoteStats';
 
 const SidebarVote = ({ gameId, onGameStart }) => {
-  const [votingPhase, setVotingPhase] = useState('waiting'); // 'waiting', 'voting', 'completed'
+  const [votingPhase, setVotingPhase] = useState('waiting');
   const [timeLeft, setTimeLeft] = useState(30);
   const [isVisible, setIsVisible] = useState(false);
   
   const { voteStats, isLoading, error } = useVoteStats(gameId);
 
-  // Auto-start voting period when component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
       setVotingPhase('voting');
       setIsVisible(true);
-    }, 1000); // Small delay for smooth entrance
-
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Countdown timer during voting phase
   useEffect(() => {
     if (votingPhase !== 'voting') return;
 
@@ -31,8 +27,8 @@ const SidebarVote = ({ gameId, onGameStart }) => {
           setVotingPhase('completed');
           setTimeout(() => {
             setIsVisible(false);
-            onGameStart?.(); // Notify parent that game can start
-          }, 2000); // Show results for 2 seconds before closing
+            onGameStart?.();
+          }, 1500);
           return 0;
         }
         return prev - 1;
@@ -42,163 +38,206 @@ const SidebarVote = ({ gameId, onGameStart }) => {
     return () => clearInterval(interval);
   }, [votingPhase, onGameStart]);
 
-  // Handle skip demo
-  const handleSkipDemo = () => {
+  const handleSkip = () => {
     setVotingPhase('completed');
     setTimeout(() => {
       setIsVisible(false);
-      onGameStart?.(); // Start game immediately
-    }, 500);
-  };
-
-  const getPhaseMessage = () => {
-    switch (votingPhase) {
-      case 'waiting':
-        return { text: "🎮 Game Loading...", color: "text-blue-400" };
-      case 'voting':
-        return { text: `⏰ Vote Now! ${timeLeft}s remaining`, color: "text-green-400" };
-      case 'completed':
-        return { text: "✅ Voting Complete! Starting game...", color: "text-purple-400" };
-      default:
-        return { text: "", color: "" };
-    }
+      onGameStart?.();
+    }, 300);
   };
 
   const totalVotes = voteStats.total || 0;
-  const phaseMessage = getPhaseMessage();
 
-  if (!isVisible && votingPhase === 'waiting') {
-    return null; // Hidden until voting starts
-  }
+  if (!isVisible && votingPhase === 'waiting') return null;
 
   return (
     <>
-      {/* FULL SCREEN BLACK OVERLAY */}
       {isVisible && (
         <div style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           width: '100vw',
           height: '100vh',
-                      backgroundColor: 'black',
-            zIndex: 9999,
-            overflow: 'hidden'
+          backgroundColor: '#000',
+          zIndex: 9999,
+          overflow: 'hidden',
+          fontFamily: "'VT323', monospace",
+          display: 'flex',
+          flexDirection: 'column',
         }}>
-          <div style={{ padding: '20px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-              {/* Header with Skip Button */}
-              <div className="flex items-center justify-between mb-4" style={{ flexShrink: 0 }}>
-                <div className="flex items-center">
-                  <Users className="mr-3" size={28} />
-                  <h2 className="text-2xl font-bold text-white">Pre-Game Voting</h2>
-                </div>
-                <div className="flex items-center space-x-4">
-                  {votingPhase === 'voting' && (
-                    <>
-                      <div className="flex items-center text-white bg-black border border-gray-600 px-4 py-2 rounded-full">
-                        <Clock size={18} className="mr-2" />
-                        <span className="font-mono text-xl font-bold">{timeLeft}</span>
-                      </div>
-                      <button
-                        onClick={handleSkipDemo}
-                        className="flex items-center px-4 py-2 bg-black border border-gray-600 hover:bg-gray-900 text-white rounded-full transition-colors"
-                      >
-                        <SkipForward size={16} className="mr-2" />
-                        SKIP DEMO
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Phase Status */}
-              <div className={`text-center mb-4 p-3 rounded-xl bg-black border-2 ${
-                votingPhase === 'voting' ? 'border-green-500' : 
-                votingPhase === 'completed' ? 'border-purple-500' : 'border-blue-500'
-              }`} style={{ flexShrink: 0 }}>
-                <p className={`font-bold text-lg ${phaseMessage.color}`}>
-                  {phaseMessage.text}
-                </p>
-                {votingPhase === 'voting' && (
-                  <p className="text-sm text-yellow-400 mt-2">
-                    💡 Scan QR with phone • Vote multiple times!
-                  </p>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', gap: '40px', flex: 1, minHeight: 0, alignItems: 'center' }}>
-                {/* QR Code on LEFT - only show during voting */}
-                {votingPhase === 'voting' && (
-                  <div style={{ flex: '0 0 50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <QRCodeVote gameId={gameId} size={300} />
-                  </div>
-                )}
-
-                {/* Vote Results on RIGHT */}
-                <div style={{ 
-                  flex: votingPhase === 'voting' ? '0 0 50%' : '1', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  justifyContent: 'center',
-                  maxWidth: votingPhase === 'voting' ? 'none' : '600px',
-                  margin: votingPhase === 'voting' ? '0' : '0 auto'
-                }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-white">Live Results</h3>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${error ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                      <span className="text-sm text-gray-400">
-                        {error ? 'Disconnected' : 'Connected'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div style={{ transform: 'scale(1.2)', transformOrigin: 'center' }}>
-                    <VoteChart voteStats={voteStats} isLoading={isLoading} />
-                  </div>
-                  
-                  <div className="mt-6 text-center">
-                    <p className="text-lg text-gray-300">
-                      Total Votes: <span className="font-bold text-white text-xl">{totalVotes}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Compact Instructions */}
+          {/* Top bar: timer + skip */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 32px',
+            borderBottom: '1px solid #333',
+          }}>
+            <div style={{ fontSize: '28px', color: '#fff', letterSpacing: '2px' }}>
+              AUDIENCE VOTE
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               {votingPhase === 'voting' && (
-                <div className="mt-4 text-center" style={{ flexShrink: 0 }}>
-                  <p className="text-sm text-gray-400">
-                    📱 Scan QR → 🤖 Choose Model → 📊 Watch Results → 🔄 Vote Again!
-                  </p>
-                </div>
-              )}
-
-              {/* Final Results */}
-              {votingPhase === 'completed' && totalVotes > 0 && (
-                <div className="mt-4 bg-black rounded-xl p-4 border-2 border-purple-500 text-center" style={{ flexShrink: 0 }}>
-                  <h4 className="text-xl font-bold text-white mb-2">🏆 Final Results</h4>
-                  <div className="text-center">
-                    {voteStats.gpt_4o > voteStats.claude ? (
-                      <p className="text-green-400 font-bold text-lg">GPT-4o Wins!</p>
-                    ) : voteStats.claude > voteStats.gpt_4o ? (
-                      <p className="text-blue-400 font-bold text-lg">Claude Wins!</p>
-                    ) : (
-                      <p className="text-yellow-400 font-bold text-lg">It's a Tie!</p>
-                    )}
-                    <p className="text-md text-gray-300 mt-2">
-                      GPT-4o: <span className="font-bold">{voteStats.gpt_4o}</span> | Claude: <span className="font-bold">{voteStats.claude}</span>
-                    </p>
+                <>
+                  <div style={{
+                    fontSize: '48px',
+                    color: timeLeft <= 5 ? '#ef4444' : '#4ade80',
+                    fontVariantNumeric: 'tabular-nums',
+                    lineHeight: 1,
+                    transition: 'color 0.3s',
+                  }}>
+                    {timeLeft}
                   </div>
+                  <button
+                    onClick={handleSkip}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 20px',
+                      background: 'transparent',
+                      border: '2px solid #555',
+                      color: '#aaa',
+                      fontSize: '18px',
+                      fontFamily: "'VT323', monospace",
+                      cursor: 'pointer',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.target.style.borderColor = '#fff'; e.target.style.color = '#fff'; }}
+                    onMouseLeave={e => { e.target.style.borderColor = '#555'; e.target.style.color = '#aaa'; }}
+                  >
+                    <SkipForward size={18} />
+                    SKIP
+                  </button>
+                </>
+              )}
+              {votingPhase === 'completed' && (
+                <div style={{ fontSize: '28px', color: '#a78bfa', letterSpacing: '2px' }}>
+                  STARTING GAME...
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Main content */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '80px',
+            padding: '40px',
+          }}>
+            {/* QR Code side */}
+            {votingPhase === 'voting' && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '20px',
+              }}>
+                <div style={{ fontSize: '24px', color: '#aaa', letterSpacing: '2px' }}>
+                  SCAN TO VOTE
+                </div>
+                <QRCodeVote gameId={gameId} size={280} />
+              </div>
+            )}
+
+            {/* Vote results side */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '24px',
+              minWidth: '320px',
+            }}>
+              <div style={{ fontSize: '24px', color: '#aaa', letterSpacing: '2px' }}>
+                LIVE RESULTS
+              </div>
+
+              {totalVotes === 0 ? (
+                <div style={{
+                  fontSize: '22px',
+                  color: '#555',
+                  textAlign: 'center',
+                  padding: '40px 0',
+                }}>
+                  NO VOTES YET
+                </div>
+              ) : (
+                <div style={{ width: '100%', maxWidth: '360px' }}>
+                  {/* GPT bar */}
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '22px', color: '#10b981' }}>GPT-4o</span>
+                      <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.gpt_4o || 0}</span>
+                    </div>
+                    <div style={{ width: '100%', height: '12px', background: '#222', borderRadius: '2px' }}>
+                      <div style={{
+                        width: `${voteStats.percentages?.gpt_4o || 0}%`,
+                        height: '100%',
+                        background: '#10b981',
+                        borderRadius: '2px',
+                        transition: 'width 0.5s',
+                      }} />
+                    </div>
+                  </div>
+                  {/* Claude bar */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '22px', color: '#8b5cf6' }}>Claude</span>
+                      <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.claude || 0}</span>
+                    </div>
+                    <div style={{ width: '100%', height: '12px', background: '#222', borderRadius: '2px' }}>
+                      <div style={{
+                        width: `${voteStats.percentages?.claude || 0}%`,
+                        height: '100%',
+                        background: '#8b5cf6',
+                        borderRadius: '2px',
+                        transition: 'width 0.5s',
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ fontSize: '20px', color: '#666' }}>
+                TOTAL: <span style={{ color: '#fff', fontSize: '24px' }}>{totalVotes}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Completed overlay */}
+          {votingPhase === 'completed' && totalVotes > 0 && (
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.85)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+            }}>
+              <div style={{ fontSize: '36px', color: '#a78bfa', letterSpacing: '3px', marginBottom: '24px' }}>
+                VOTES IN
+              </div>
+              <div style={{ fontSize: '28px', color: '#fff', textAlign: 'center' }}>
+                {(voteStats.gpt_4o || 0) > (voteStats.claude || 0) ? (
+                  <span style={{ color: '#10b981' }}>GPT-4o WINS THE VOTE</span>
+                ) : (voteStats.claude || 0) > (voteStats.gpt_4o || 0) ? (
+                  <span style={{ color: '#8b5cf6' }}>CLAUDE WINS THE VOTE</span>
+                ) : (
+                  <span style={{ color: '#fbbf24' }}>IT'S A TIE</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
   );
 };
 
-export default SidebarVote; 
+export default SidebarVote;
