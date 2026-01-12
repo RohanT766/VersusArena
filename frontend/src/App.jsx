@@ -8,12 +8,13 @@ import ConnectionsGame from "./components/games/ConnectionsGame"
 import NewLandingPage from "./pages/LandingPage"
 import ModelSelection from "./pages/ModelSelection"
 import VotePage from "./pages/VotePage"
+import { WordleIcon, TriviaIcon, ConnectionsIcon, BattleshipIcon } from "./components/common/PixelIcons"
 
 const GAMES = [
-  { name: "Wordle", emoji: "📝", description: "Speed & Strategy" },
-  { name: "Trivia", emoji: "🧠", description: "Knowledge Race" },
-  { name: "NYT Connections", emoji: "🔗", description: "Pattern Recognition" },
-  { name: "Battleship", emoji: "🚢", description: "Strategic Warfare" },
+  { name: "Wordle", description: "Speed & Strategy", Icon: WordleIcon },
+  { name: "Trivia", description: "Knowledge Race", Icon: TriviaIcon },
+  { name: "NYT Connections", description: "Pattern Recognition", Icon: ConnectionsIcon },
+  { name: "Battleship", description: "Strategic Warfare", Icon: BattleshipIcon },
 ]
 
 function MainMenu() {
@@ -24,8 +25,8 @@ function MainMenu() {
   const storedPlayer1 = JSON.parse(sessionStorage.getItem('player1Model') || '{}')
   const storedPlayer2 = JSON.parse(sessionStorage.getItem('player2Model') || '{}')
   
-  const [player1Model, setPlayer1Model] = useState(storedPlayer1.id || "gpt-4o-mini")
-  const [player2Model, setPlayer2Model] = useState(storedPlayer2.id || "claude-3-haiku-20240307")
+  const [player1Model, setPlayer1Model] = useState(storedPlayer1.id || "gpt-5.5")
+  const [player2Model, setPlayer2Model] = useState(storedPlayer2.id || "claude-sonnet-4-6")
   const [gameStarted, setGameStarted] = useState(false)
 
   const handleGameSelect = (game) => {
@@ -173,7 +174,9 @@ function MainMenu() {
         <div className="games-grid">
           {GAMES.map((game) => (
             <button key={game.name} className="game-card" onClick={() => handleGameSelect(game)}>
-              <div className="game-emoji">{game.emoji}</div>
+              <div className="game-icon-svg">
+                <game.Icon size={72} />
+              </div>
               <h3>{game.name}</h3>
               <p className="game-description">{game.description}</p>
             </button>
