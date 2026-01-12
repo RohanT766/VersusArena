@@ -88,11 +88,11 @@ const ShipPlacement = ({ onComplete }) => {
     const cellValue = board[row][col];
     
     if (cellValue) {
-      return <div className="placed-ship">🚢</div>;
+      return <div className="placed-ship">S</div>;
     }
     
     if (isHovered) {
-      return <div className="ship-preview">⚓</div>;
+      return <div className="ship-preview">+</div>;
     }
     
     return null;

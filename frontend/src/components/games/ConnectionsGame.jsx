@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SidebarVote from '../SidebarVote';
+import GameCountdown from '../common/GameCountdown';
 import './ConnectionsGame.css';
 
 const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.history.back() }) => {
@@ -11,16 +12,30 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const [player1Processing, setPlayer1Processing] = useState(false);
   const [player2Processing, setPlayer2Processing] = useState(false);
   const [ws, setWs] = useState(null);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [votingDone, setVotingDone] = useState(false);
+  const abortRef = React.useRef(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    abortRef.current = controller;
+    return () => { controller.abort(); };
+  }, []);
 
   // Get display names for models
   const getDisplayName = (modelId) => {
     if (!modelId) return 'Unknown'
+    if (modelId.includes('gpt-5.5')) return 'GPT-5.5'
+    if (modelId.includes('gpt-5.4-mini')) return 'GPT-5.4 Mini'
     if (modelId.includes('gpt-4o')) return 'GPT-4o'
-    if (modelId.includes('gpt-4-turbo')) return 'GPT-4 Turbo'
-    if (modelId.includes('gpt-3.5')) return 'GPT-3.5'
-    if (modelId.includes('claude-3-opus')) return 'Claude 3 Opus'
-    if (modelId.includes('claude-3-sonnet')) return 'Claude 3 Sonnet'
-    if (modelId.includes('claude-3-haiku')) return 'Claude 3 Haiku'
+    if (modelId.includes('o4-mini')) return 'o4-mini'
+    if (modelId.includes('claude-opus-4-7')) return 'Claude Opus 4.7'
+    if (modelId.includes('claude-sonnet-4-6')) return 'Claude Sonnet 4.6'
+    if (modelId.includes('claude-haiku-4-5')) return 'Claude Haiku 4.5'
+    if (modelId.includes('claude-sonnet-4')) return 'Claude Sonnet 4'
+    if (modelId.includes('gemini-3.1-pro')) return 'Gemini 3.1 Pro'
+    if (modelId.includes('gemini-2.5-pro')) return 'Gemini 2.5 Pro'
+    if (modelId.includes('gemini-2.5-flash')) return 'Gemini 2.5 Flash'
     if (modelId.includes('gemini')) return 'Gemini'
     return modelId.charAt(0).toUpperCase() + modelId.slice(1)
   }
@@ -163,6 +178,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
+        signal: abortRef.current?.signal,
       });
 
       const data = await response.json();
@@ -190,32 +206,40 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
 
   const gameStatus = checkGameOver();
 
-  // Auto-play for player 1
+  // Auto-play for player 1 (waits for countdown to finish)
   useEffect(() => {
+    if (showCountdown) return;
     if (player1State && !player1State.game_over && !player1Processing && !gameStatus.gameOver) {
       const timer = setTimeout(() => {
         processAITurn(1);
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [player1State, player1Processing, gameStatus.gameOver]);
+  }, [player1State, player1Processing, gameStatus.gameOver, showCountdown]);
 
-  // Auto-play for player 2
+  // Auto-play for player 2 (waits for countdown to finish)
   useEffect(() => {
+    if (showCountdown) return;
     if (player2State && !player2State.game_over && !player2Processing && !gameStatus.gameOver) {
       const timer = setTimeout(() => {
         processAITurn(2);
-      }, 1500); // Slight offset to avoid simultaneous requests
+      }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [player2State, player2Processing, gameStatus.gameOver]);
+  }, [player2State, player2Processing, gameStatus.gameOver, showCountdown]);
+
+  const handleVotingDone = () => {
+    setVotingDone(true);
+    setShowCountdown(true);
+  };
 
   if (loading) {
     return (
       <div className="connections-game" style={{ paddingRight: '60px' }}>
         <SidebarVote 
           gameId={gameId} 
-          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`} 
+          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
+          onGameStart={handleVotingDone}
         />
         <div className="connections-container">
           <button onClick={onBack} className="back-button">
@@ -234,7 +258,8 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       <div className="connections-game" style={{ paddingRight: '60px' }}>
         <SidebarVote 
           gameId={gameId} 
-          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`} 
+          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
+          onGameStart={handleVotingDone}
         />
         <div className="connections-container">
           <button onClick={onBack} className="back-button">
@@ -255,9 +280,18 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
 
   return (
     <div className="connections-game" style={{ paddingRight: '60px' }}>
+      {showCountdown && (
+        <GameCountdown
+          player1Name={getDisplayName(player1Model)}
+          player2Name={getDisplayName(player2Model)}
+          onComplete={() => setShowCountdown(false)}
+        />
+      )}
+
       <SidebarVote 
         gameId={gameId} 
-        gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`} 
+        gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
+        onGameStart={handleVotingDone}
       />
       
       <div className="connections-container">
@@ -316,7 +350,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
           <div className={`player-side ${player1Processing ? 'active' : ''}`}>
             <div className="player-header">
               <h2>{getDisplayName(player1Model)}</h2>
-              {player1Processing && <span className="thinking">🤔 Thinking...</span>}
+              {player1Processing && <span className="thinking">Thinking...</span>}
             </div>
             
             <div className="player-stats">
@@ -379,11 +413,16 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
             </div>
           </div>
 
+          {/* VS Divider */}
+          <div className="center-info">
+            <div className="vs-divider">VS</div>
+          </div>
+
           {/* Player 2 Side */}
           <div className={`player-side ${player2Processing ? 'active' : ''}`}>
             <div className="player-header">
               <h2>{getDisplayName(player2Model)}</h2>
-              {player2Processing && <span className="thinking">🤔 Thinking...</span>}
+              {player2Processing && <span className="thinking">Thinking...</span>}
             </div>
             
             <div className="player-stats">

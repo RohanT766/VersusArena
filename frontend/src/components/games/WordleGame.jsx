@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import GameCountdown from '../common/GameCountdown';
 import './wordle/Wordle.css';
 
 const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBack }) => {
   const navigate = useNavigate();
+  const mountedRef = useRef(true);
+  const abortRef = useRef(null);
   const [gameState, setGameState] = useState({
     player1: {
       guesses: [],
@@ -28,14 +31,22 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   const [selectedWord, setSelectedWord] = useState('');
   const [gameId, setGameId] = useState(null);
   const [showStartModal, setShowStartModal] = useState(true);
+  const [showCountdown, setShowCountdown] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
   const storedPlayer1 = JSON.parse(sessionStorage.getItem('player1Model') || '{}');
   const storedPlayer2 = JSON.parse(sessionStorage.getItem('player2Model') || '{}');
   const player1Model = propPlayer1
-    ? { id: propPlayer1, name: propPlayer1, provider: 'openai' }
-    : { id: storedPlayer1.id || 'gpt-4o-mini', name: storedPlayer1.name || 'GPT-4o Mini', provider: storedPlayer1.provider || 'openai' };
+    ? { id: propPlayer1, name: propPlayer1, provider: 'OpenAI' }
+    : { id: storedPlayer1.id || 'gpt-5.5', name: storedPlayer1.name || 'GPT-5.5', provider: storedPlayer1.provider || 'OpenAI' };
   const player2Model = propPlayer2
-    ? { id: propPlayer2, name: propPlayer2, provider: 'anthropic' }
-    : { id: storedPlayer2.id || 'claude-3-haiku', name: storedPlayer2.name || 'Claude 3 Haiku', provider: storedPlayer2.provider || 'anthropic' };
+    ? { id: propPlayer2, name: propPlayer2, provider: 'Anthropic' }
+    : { id: storedPlayer2.id || 'claude-sonnet-4-6', name: storedPlayer2.name || 'Claude Sonnet 4.6', provider: storedPlayer2.provider || 'Anthropic' };
 
   const getApiBase = () => {
     const h = window.location.hostname;
@@ -56,6 +67,8 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
     'VOICE', 'WATER', 'YOUTH', 'ZEBRA', 'TESTS'
   ];
 
+  const pendingGameRef = useRef(null);
+
   const startGame = async () => {
     const word = selectedWord || wordList[Math.floor(Math.random() * wordList.length)];
     
@@ -70,70 +83,84 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
         const data = await response.json();
         setGameId(data.game_id);
         setShowStartModal(false);
-        setGameState(prev => ({ ...prev, gameStarted: true }));
-        
-        // Start the game loop
-        setTimeout(() => runGameLoop(data.game_id), 1000);
+        setGameState(prev => ({ ...prev, gameStarted: true, secretWord: word }));
+        pendingGameRef.current = data.game_id;
+        setShowCountdown(true);
       }
     } catch (error) {
       console.error('Error starting game:', error);
     }
   };
 
-  const runGameLoop = async (gameId) => {
-    let gameActive = true;
+  const handleCountdownComplete = () => {
+    setShowCountdown(false);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setTimeout(() => runGameLoop(pendingGameRef.current, controller.signal), 300);
+  };
+
+  const runGameLoop = async (gid, signal) => {
     const models = ['openai', 'anthropic'];
     
-    while (gameActive) {
-      // Make moves for both players in parallel
-      const movePromises = models.map(model => makeGuess(gameId, model));
+    while (!signal.aborted) {
+      const movePromises = models.map(model => makeGuess(gid, model, signal));
       const results = await Promise.allSettled(movePromises);
       
-      // Check if game is over
+      if (signal.aborted) break;
+
       const gameOver = results.some(result => 
         result.status === 'fulfilled' && result.value && result.value.game_over
       );
       
       if (gameOver) {
-        gameActive = false;
-        // Get final state
-        const stateResponse = await fetch(`${getApiBase()}/api/wordle/state/${gameId}`);
-        if (stateResponse.ok) {
-          const finalState = await stateResponse.json();
-          setGameState(prev => ({
-            ...prev,
-            gameOver: true,
-            winner: finalState.winner,
-            secretWord: finalState.secret_word
-          }));
+        try {
+          const stateResponse = await fetch(`${getApiBase()}/api/wordle/state/${gid}`, { signal });
+          if (stateResponse.ok) {
+            const finalState = await stateResponse.json();
+            if (mountedRef.current) {
+              setGameState(prev => ({
+                ...prev,
+                gameOver: true,
+                winner: finalState.winner,
+                secretWord: finalState.secret_word
+              }));
+            }
+          }
+        } catch (e) {
+          if (e.name === 'AbortError') break;
         }
+        break;
       }
       
-      // Small delay between rounds
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 1500);
+        signal.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+      });
     }
   };
 
-  const makeGuess = async (gameId, model) => {
+  const makeGuess = async (gid, model, signal) => {
     const playerKey = model === 'openai' ? 'player1' : 'player2';
     
-    // Show thinking state
-    setGameState(prev => ({
-      ...prev,
-      [playerKey]: { ...prev[playerKey], isThinking: true }
-    }));
+    if (mountedRef.current) {
+      setGameState(prev => ({
+        ...prev,
+        [playerKey]: { ...prev[playerKey], isThinking: true }
+      }));
+    }
     
     try {
-      const response = await fetch(`${getApiBase()}/api/wordle/guess/${gameId}`, {
+      const response = await fetch(`${getApiBase()}/api/wordle/guess/${gid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model })
+        body: JSON.stringify({ model }),
+        signal,
       });
       
       if (response.ok) {
         const result = await response.json();
         
-        if (!result.error) {
+        if (!result.error && mountedRef.current) {
           setGameState(prev => ({
             ...prev,
             [playerKey]: {
@@ -149,11 +176,14 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
         return result;
       }
     } catch (error) {
+      if (error.name === 'AbortError') return;
       console.error(`Error making guess for ${model}:`, error);
-      setGameState(prev => ({
-        ...prev,
-        [playerKey]: { ...prev[playerKey], isThinking: false }
-      }));
+      if (mountedRef.current) {
+        setGameState(prev => ({
+          ...prev,
+          [playerKey]: { ...prev[playerKey], isThinking: false }
+        }));
+      }
     }
   };
 
@@ -191,6 +221,14 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
 
   return (
     <div className="wordle-container">
+      {showCountdown && (
+        <GameCountdown
+          player1Name={player1Model.name}
+          player2Name={player2Model.name}
+          onComplete={handleCountdownComplete}
+        />
+      )}
+
       {/* Back Button */}
       <button 
         className="back-button"
@@ -228,10 +266,18 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           {/* Header */}
           <div className="wordle-header">
             <h1>WORDLE BATTLE</h1>
+            <div className="secret-word-display" style={{
+              fontSize: '1.5rem',
+              letterSpacing: '0.5rem',
+              fontWeight: 'bold',
+              color: gameState.gameOver ? '#22c55e' : '#94a3b8',
+              margin: '0.5rem 0'
+            }}>
+              {gameState.secretWord}
+            </div>
             {gameState.gameOver && (
               <div className="game-result">
-                <h2>{gameState.winner === 'openai' ? player1Model.name : player2Model.name} Wins!</h2>
-                <p>The word was: <strong>{gameState.secretWord}</strong></p>
+                <h2>{gameState.winner === 'openai' ? player1Model.name : gameState.winner === 'anthropic' ? player2Model.name : 'Nobody'} Wins!</h2>
               </div>
             )}
           </div>
