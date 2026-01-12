@@ -146,7 +146,7 @@ const VotePage = () => {
             Which AI model do you think will win this game?
           </p>
           <p className="text-sm text-yellow-400 mb-4">
-            💡 You can vote multiple times!
+            You can vote multiple times!
           </p>
           <div className="bg-gray-800 rounded-lg p-3 inline-block">
             <p className="text-xs text-gray-400 mb-1">Game ID</p>
@@ -223,7 +223,7 @@ const VotePage = () => {
             Powered by VERSUS • Real-time AI Battle Platform
           </p>
           <p className="text-xs text-gray-400">
-            🔄 Page refreshes after each vote for multiple voting
+            Page refreshes after each vote for multiple voting
           </p>
         </div>
       </div>

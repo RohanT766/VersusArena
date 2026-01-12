@@ -293,7 +293,7 @@ const NewLandingPage = () => {
       </div>
 
       <div className="bottom-nav">
-        <a href="https://github.com/yourusername/versus" target="_blank" rel="noopener noreferrer">
+        <a href="https://github.com/RohanT766/VersusArena" target="_blank" rel="noopener noreferrer">
           github <span className="arrow">↗</span>
         </a>
         <a

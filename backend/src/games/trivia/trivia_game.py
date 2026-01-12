@@ -207,15 +207,19 @@ class TriviaGame(BaseGame):
                 import asyncio
                 def openai_call():
                     try:
-                        response = model.client.chat.completions.create(
-                            model=model.model_name,
-                            messages=[
+                        params = {
+                            "model": model.model_name,
+                            "messages": [
                                 {"role": "system", "content": "You are competing in a trivia contest. Give short, direct answers only. Do not explain your reasoning."},
                                 {"role": "user", "content": prompt}
                             ],
-                            max_tokens=50,
-                            temperature=0.1
-                        )
+                        }
+                        if model._is_new_openai_model():
+                            params["max_completion_tokens"] = 50
+                        else:
+                            params["max_tokens"] = 50
+                            params["temperature"] = 0.1
+                        response = model.client.chat.completions.create(**params)
                         return response.choices[0].message.content.strip()
                     except Exception as e:
                         import traceback
@@ -223,7 +227,9 @@ class TriviaGame(BaseGame):
                         traceback.print_exc()
                         return f"OpenAI Error: {str(e)}"
                 
-                return await asyncio.to_thread(openai_call)
+                result = await asyncio.to_thread(openai_call)
+                await asyncio.sleep(0.1)
+                return result
             
             elif model.model_type == "ANTHROPIC":
                 import asyncio
@@ -256,6 +262,7 @@ class TriviaGame(BaseGame):
                             return f"API Error: {result}"
                 
                 response_text = await anthropic_api_call()
+                await asyncio.sleep(0.1)
                 return response_text.strip()
             
             elif model.model_type == "GEMINI":
@@ -268,7 +275,9 @@ class TriviaGame(BaseGame):
                     )
                     return response.text.strip()
                 
-                return await asyncio.to_thread(gemini_call)
+                result = await asyncio.to_thread(gemini_call)
+                await asyncio.sleep(0.1)
+                return result
             
             else:
                 return "Unsupported model type"
