@@ -33,7 +33,7 @@ const KnowledgeBoard = ({ knowledge, modelName }) => {
   return (
     <div className="mt-4 p-5 bg-gradient-to-br from-gray-800/30 to-gray-900/30 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-lg">
       <h4 className={`text-sm font-bold mb-4 flex items-center ${modelColor === 'green' ? 'text-green-400' : 'text-blue-400'}`}>
-        <span className="mr-2">🔤</span>
+        <span className="mr-2">#</span>
         {modelName}'s Letter Knowledge
       </h4>
       <div className="flex flex-wrap gap-2 justify-center">

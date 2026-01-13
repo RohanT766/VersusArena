@@ -55,7 +55,7 @@ const ModelIcon = ({ model, size = 'normal' }) => {
       'Microsoft': {
         background: '#FFFFFF',
         color: '#0078D4',
-        symbol: '⬜',
+        symbol: 'MS',
         fontSize: isLarge ? '2.5rem' : '1.8rem',
         isGrid: true
       },
@@ -129,16 +129,16 @@ const ModelIcon = ({ model, size = 'normal' }) => {
     
     // Model-specific overrides
     const modelSymbols = {
+      'gpt-5.5': 'GPT-5.5',
+      'gpt-5.4-mini': 'GPT-5.4m',
       'gpt-4o': 'GPT-4o',
-      'gpt-4-turbo': 'GPT-4T',
-      'gpt-3.5-turbo': 'GPT-3.5',
-      'claude-3-opus': 'Opus',
-      'claude-3-sonnet': 'Sonnet',
-      'claude-3-haiku': 'Haiku',
-      'gemini-1.5-pro': 'Gemini Pro',
-      'gemini-1.5-flash': 'Gemini',
-      'phi-3-medium': 'Φ-3',
-      'phi-3-mini': 'Φ-3m'
+      'o4-mini': 'o4-mini',
+      'claude-opus-4-7': 'Opus 4.7',
+      'claude-sonnet-4-6': 'Sonnet 4.6',
+      'claude-haiku-4-5': 'Haiku 4.5',
+      'gemini-3.1-pro-preview': 'Gem 3.1',
+      'gemini-2.5-pro': 'Gem 2.5P',
+      'gemini-2.5-flash': 'Gem 2.5F'
     }
     
     return modelSymbols[model.id] || companyStyle.symbol

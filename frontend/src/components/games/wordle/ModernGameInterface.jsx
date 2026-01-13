@@ -62,7 +62,7 @@ const GameRules = ({ isExpanded, onToggle }) => {
       >
         <div className="flex items-center justify-between">
           <h3 className="text-white font-bold text-lg flex items-center gap-2">
-            <span className="text-2xl">📖</span>
+            <span className="text-2xl"></span>
             Game Rules
           </h3>
           <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
@@ -110,7 +110,7 @@ const AIStrategy = ({ modelName, strategy, thinking, constraints = [] }) => {
   return (
     <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl rounded-2xl p-5 border border-slate-700/50">
       <div className="flex items-center gap-3 mb-4">
-        <div className="text-2xl">{isGPT ? '🤖' : '🧠'}</div>
+        <div className="text-2xl">{isGPT ? 'AI' : 'AI'}</div>
         <h3 className={`font-bold text-lg ${isGPT ? 'text-emerald-400' : 'text-blue-400'}`}>
           {modelName}'s Strategy
         </h3>
@@ -132,7 +132,7 @@ const AIStrategy = ({ modelName, strategy, thinking, constraints = [] }) => {
       {constraints.length > 0 && (
         <div className="bg-purple-900/20 rounded-xl p-4 border border-purple-700/30">
           <div className="text-purple-400 font-semibold text-sm mb-3 flex items-center gap-2">
-            <span>🎯</span>
+            <span></span>
             Current Constraints
           </div>
           <div className="space-y-2">
