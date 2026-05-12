@@ -9,21 +9,16 @@ import claudeIcon from "../assets/claude.png"
 import geminiIcon from "../assets/gemini.png"
 
 const AI_MODELS_DATA = [
-  // OpenAI Models (Currently Available)
-  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", tier: "flagship", icon: openaiIcon },
-  { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "OpenAI", tier: "fast", icon: openaiIcon },
-  { id: "gpt-4-turbo", name: "GPT-4 Turbo", provider: "OpenAI", tier: "balanced", icon: openaiIcon },
-  { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", provider: "OpenAI", tier: "fast", icon: openaiIcon },
-  
-  // Claude Models (Currently Available)
-  { id: "claude-3-5-sonnet-20241022", name: "Claude 3.5 Sonnet", provider: "Anthropic", tier: "flagship", icon: claudeIcon },
-  { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku", provider: "Anthropic", tier: "fast", icon: claudeIcon },
-  
-  // Gemini Models (Currently Available)
-  { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro", provider: "Google", tier: "balanced", icon: geminiIcon },
-  { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash", provider: "Google", tier: "fast", icon: geminiIcon },
-  
-  // Random option
+  { id: "gpt-5.5", name: "GPT-5.5", provider: "OpenAI", tier: "flagship", icon: openaiIcon },
+  { id: "gpt-5.4-mini", name: "GPT-5.4 Mini", provider: "OpenAI", tier: "balanced", icon: openaiIcon },
+  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", tier: "fast", icon: openaiIcon },
+  { id: "o4-mini", name: "o4-mini", provider: "OpenAI", tier: "reasoning", icon: openaiIcon },
+  { id: "claude-opus-4-7", name: "Claude Opus 4.7", provider: "Anthropic", tier: "flagship", icon: claudeIcon },
+  { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "Anthropic", tier: "balanced", icon: claudeIcon },
+  { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "Anthropic", tier: "fast", icon: claudeIcon },
+  { id: "gemini-3.1-pro-preview", name: "Gemini 3.1 Pro", provider: "Google", tier: "flagship", icon: geminiIcon },
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "Google", tier: "balanced", icon: geminiIcon },
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "Google", tier: "fast", icon: geminiIcon },
   { id: "random", name: "RANDOM", provider: "???", tier: "special", isRandom: true },
 ]
 
