@@ -8,6 +8,8 @@ import ConnectionsGame from "./components/games/ConnectionsGame"
 import NewLandingPage from "./pages/LandingPage"
 import ModelSelection from "./pages/ModelSelection"
 import VotePage from "./pages/VotePage"
+import Dashboard from "./pages/Dashboard"
+import BenchmarkExtras from "./pages/BenchmarkExtras"
 import { WordleIcon, TriviaIcon, ConnectionsIcon, BattleshipIcon } from "./components/common/PixelIcons"
 
 const GAMES = [
@@ -128,11 +130,29 @@ function MainMenu() {
             </button>
           ))}
         </div>
+
+        <div
+          className="games-footer-bar"
+          style={{ marginTop: 24, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}
+        >
+          <button type="button" className="game-card" style={{ maxWidth: 280 }} onClick={() => navigate('/dashboard')}>
+            <h3>Analytics</h3>
+            <p className="game-description">Leaderboard, runs, exports</p>
+          </button>
+          <button
+            type="button"
+            className="game-card"
+            style={{ maxWidth: 280 }}
+            onClick={() => navigate('/benchmark-extras')}
+          >
+            <h3>More benchmarks</h3>
+            <p className="game-description">PD, 20Q, code debug</p>
+          </button>
+        </div>
       </div>
     )
   }
 
-  // This should never be reached since games start immediately
   return null
 }
 
@@ -145,6 +165,8 @@ function App() {
         <Route path="/games" element={<MainMenu />} />
         <Route path="/trivia" element={<TriviaGame />} />
         <Route path="/vote" element={<VotePage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/benchmark-extras" element={<BenchmarkExtras />} />
       </Routes>
     </Router>
   )

@@ -10,9 +10,10 @@ const getInitialHost = () => {
   return hostname;
 };
 
-const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
+const QRCodeVote = ({ gameId, player1Label = 'Player 1', player2Label = 'Player 2', className = '', size = 280 }) => {
+  const voteQuery = `gameId=${encodeURIComponent(gameId)}&p1=${encodeURIComponent(player1Label)}&p2=${encodeURIComponent(player2Label)}`;
   const initialHost = getInitialHost();
-  const [displayUrl, setDisplayUrl] = useState(`http://${initialHost}:5174/vote?gameId=${gameId}`);
+  const [displayUrl, setDisplayUrl] = useState(`http://${initialHost}:5174/vote?${voteQuery}`);
   const [showIpConfig, setShowIpConfig] = useState(false);
   const [manualIP, setManualIP] = useState(localStorage.getItem('versus_network_ip') || '');
   const [detectedIP, setDetectedIP] = useState(initialHost);
@@ -48,20 +49,14 @@ const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
   };
 
   useEffect(() => {
-    if (localStorage.getItem('versus_network_ip')) return;
-    const detect = async () => {
-      const networkIP = await detectNetworkIP();
-      setDetectedIP(networkIP);
-      setDisplayUrl(`http://${networkIP}:5174/vote?gameId=${gameId}`);
-      localStorage.setItem('versus_network_ip', networkIP);
-    };
-    detect();
-  }, [gameId]);
+    const initialHost = getInitialHost();
+    setDisplayUrl(`http://${initialHost}:5174/vote?${voteQuery}`);
+  }, [gameId, player1Label, player2Label, voteQuery]);
 
   const handleIPSave = () => {
     if (manualIP) {
       localStorage.setItem('versus_network_ip', manualIP);
-      setDisplayUrl(`http://${manualIP}:5174/vote?gameId=${gameId}`);
+      setDisplayUrl(`http://${manualIP}:5174/vote?${voteQuery}`);
       setDetectedIP(manualIP);
     }
     setShowIpConfig(false);
@@ -72,7 +67,7 @@ const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
     const networkIP = await detectNetworkIP();
     setDetectedIP(networkIP);
     setManualIP(networkIP);
-    setDisplayUrl(`http://${networkIP}:5174/vote?gameId=${gameId}`);
+    setDisplayUrl(`http://${networkIP}:5174/vote?${voteQuery}`);
     localStorage.setItem('versus_network_ip', networkIP);
     setIsLoading(false);
     setShowIpConfig(false);

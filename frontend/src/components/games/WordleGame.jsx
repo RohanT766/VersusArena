@@ -7,7 +7,7 @@ import './wordle/Wordle.css';
 
 const getApiBase = () => {
   const h = window.location.hostname;
-  return (h === 'localhost' || h === '127.0.0.1') ? 'http://localhost:8000' : `http://${h}:8000`;
+  return h === 'localhost' || h === '127.0.0.1' ? 'http://localhost:8000' : `http://${h}:8000`;
 };
 
 const WORD_LIST = [
@@ -17,12 +17,14 @@ const WORD_LIST = [
   'GRAPE', 'HEART', 'IVORY', 'JOKER', 'KNIFE',
   'LEMON', 'MOUSE', 'NIGHT', 'OCEAN', 'PEACH',
   'QUEST', 'ROBIN', 'SNAKE', 'TIGER', 'ULTRA',
-  'VOICE', 'WATER', 'YOUTH', 'ZEBRA', 'TESTS'
+  'VOICE', 'WATER', 'YOUTH', 'ZEBRA', 'TESTS',
 ];
 
 const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBack }) => {
   const mountedRef = useRef(true);
   const abortRef = useRef(null);
+  const [wordLength, setWordLength] = useState(5);
+  const [hardMode, setHardMode] = useState(false);
   const [gameState, setGameState] = useState({
     player1: { guesses: [], feedback: [], reasoning: [], isThinking: false },
     player2: { guesses: [], feedback: [], reasoning: [], isThinking: false },
@@ -31,7 +33,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
     secretWord: null,
     gameStarted: false,
   });
-  
+
   const [selectedWord, setSelectedWord] = useState('');
   const [gameId, setGameId] = useState(null);
   const [showStartModal, setShowStartModal] = useState(true);
@@ -59,25 +61,36 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   const pendingGameRef = useRef(null);
 
   const startGame = async () => {
-    const word = selectedWord || WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)];
+    const word = (selectedWord || WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]).toUpperCase();
     setErrorMsg(null);
-    
+
     try {
       const response = await fetch(`${getApiBase()}/api/wordle/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret_word: word })
+        body: JSON.stringify({
+          secret_word: word.length === wordLength ? word : undefined,
+          player1_model: player1.id,
+          player2_model: player2.id,
+          word_length: wordLength,
+          hard_mode: hardMode,
+        }),
       });
-      
+
       if (!response.ok) {
-        setErrorMsg(`Backend error: ${response.status}`);
+        const errBody = await response.json().catch(() => ({}));
+        setErrorMsg(errBody.detail || `Backend error: ${response.status}`);
         return;
       }
-      
+
       const data = await response.json();
       setGameId(data.game_id);
+      const wl = data.word_length || wordLength;
+      setWordLength(wl);
       setShowStartModal(false);
-      setGameState(prev => ({ ...prev, gameStarted: true, secretWord: word }));
+      const displaySecret =
+        word.length === wl && word ? word : Array.from({ length: wl }).map(() => '?').join('');
+      setGameState((prev) => ({ ...prev, gameStarted: true, secretWord: displaySecret }));
       pendingGameRef.current = data.game_id;
       setShowVoting(true);
     } catch (error) {
@@ -97,10 +110,16 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
     runGameLoop(gid, controller.signal);
   };
 
-  // Recovery: if game started but loop died (e.g. HMR), restart it
   useEffect(() => {
-    if (gameState.gameStarted && !showVoting && !showCountdown && !showStartModal
-        && !gameState.gameOver && !gameLoopRunning.current && pendingGameRef.current) {
+    if (
+      gameState.gameStarted &&
+      !showVoting &&
+      !showCountdown &&
+      !showStartModal &&
+      !gameState.gameOver &&
+      !gameLoopRunning.current &&
+      pendingGameRef.current
+    ) {
       const controller = new AbortController();
       abortRef.current = controller;
       gameLoopRunning.current = true;
@@ -109,25 +128,28 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   }, [gameState.gameStarted, showVoting, showCountdown, showStartModal, gameState.gameOver]);
 
   const runGameLoop = async (gid, signal) => {
-    if (!gid) { gameLoopRunning.current = false; return; }
+    if (!gid) {
+      gameLoopRunning.current = false;
+      return;
+    }
 
     for (let round = 0; round < 6; round++) {
       if (signal.aborted || !mountedRef.current) break;
 
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         player1: { ...prev.player1, isThinking: true },
         player2: { ...prev.player2, isThinking: true },
       }));
 
       const [r1, r2] = await Promise.all([
-        fetchGuess(gid, 'openai', signal),
-        fetchGuess(gid, 'anthropic', signal),
+        fetchGuess(gid, 'player1', signal),
+        fetchGuess(gid, 'player2', signal),
       ]);
 
       if (signal.aborted || !mountedRef.current) break;
 
-      setGameState(prev => {
+      setGameState((prev) => {
         const next = { ...prev };
         if (r1 && !r1.error) {
           next.player1 = {
@@ -158,7 +180,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           const stateResponse = await fetch(`${getApiBase()}/api/wordle/state/${gid}`, { signal });
           if (stateResponse.ok && mountedRef.current) {
             const finalState = await stateResponse.json();
-            setGameState(prev => ({
+            setGameState((prev) => ({
               ...prev,
               gameOver: true,
               winner: finalState.winner,
@@ -171,30 +193,33 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
         break;
       }
 
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const timer = setTimeout(resolve, 1500);
-        signal.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+        signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          resolve();
+        }, { once: true });
       });
     }
 
     gameLoopRunning.current = false;
 
     if (mountedRef.current) {
-      setGameState(prev => {
-        if (!prev.gameOver && prev.player1.guesses.length >= 6) {
-          return { ...prev, gameOver: true, winner: null };
+      setGameState((prev) => {
+        if (!prev.gameOver && prev.player1.guesses.length >= 6 && prev.player2.guesses.length >= 6) {
+          return { ...prev, gameOver: true, winner: prev.winner };
         }
         return prev;
       });
     }
   };
 
-  const fetchGuess = async (gid, model, signal) => {
+  const fetchGuess = async (gid, side, signal) => {
     try {
       const response = await fetch(`${getApiBase()}/api/wordle/guess/${gid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model }),
+        body: JSON.stringify({ side }),
         signal,
       });
       if (response.ok) return await response.json();
@@ -207,23 +232,27 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
 
   const renderGrid = (playerKey) => {
     const { guesses, feedback, isThinking } = gameState[playerKey];
-    
+
     return (
       <div className="wordle-grid">
         {[...Array(6)].map((_, rowIndex) => (
           <div key={rowIndex} className="wordle-row">
-            {[...Array(5)].map((_, colIndex) => {
+            {[...Array(wordLength)].map((_, colIndex) => {
               const guess = guesses[rowIndex];
               const letter = guess ? guess[colIndex] : '';
               const fb = feedback[rowIndex]?.[colIndex] || '';
-              
+
               let cls = 'wordle-tile';
               if (fb === 'green') cls += ' correct';
               else if (fb === 'yellow') cls += ' present';
               else if (fb === 'black') cls += ' absent';
               else if (isThinking && rowIndex === guesses.length) cls += ' thinking';
-              
-              return <div key={colIndex} className={cls}>{letter}</div>;
+
+              return (
+                <div key={colIndex} className={cls}>
+                  {letter}
+                </div>
+              );
             })}
           </div>
         ))}
@@ -236,11 +265,19 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
     if (onBack) onBack();
   };
 
+  const winnerLabel = () => {
+    const w = gameState.winner;
+    if (w === 'player1') return player1.name;
+    if (w === 'player2') return player2.name;
+    if (w === 'TIE') return 'Tie';
+    return 'Nobody';
+  };
+
   const statusText = gameState.gameOver
-    ? `${gameState.winner === 'openai' ? player1.name : gameState.winner === 'anthropic' ? player2.name : 'Nobody'} Wins!  [${gameState.secretWord}]`
-    : gameState.secretWord
-    ? `SECRET WORD: ${gameState.secretWord}`
-    : null;
+    ? `${winnerLabel()} wins!  [${gameState.secretWord}]`
+    : gameState.gameStarted && gameState.secretWord && !/^\?+$/.test(gameState.secretWord)
+      ? `SECRET (${wordLength}L${hardMode ? ', hard' : ''}): ${gameState.secretWord}`
+      : `Hidden word — ${wordLength} letters${hardMode ? ' (hard mode)' : ''}`;
 
   return (
     <GameLayout
@@ -261,7 +298,12 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       {showVoting && gameId && (
         <SidebarVote
           gameId={gameId}
-          onGameStart={() => { setShowVoting(false); setShowCountdown(true); }}
+          player1Label={player1.name}
+          player2Label={player2.name}
+          onGameStart={() => {
+            setShowVoting(false);
+            setShowCountdown(true);
+          }}
           onBack={handleGoBack}
         />
       )}
@@ -271,19 +313,28 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           <div className="wordle-modal-content">
             <h2>Start Wordle Battle</h2>
             <div className="word-selection">
-              <p>Choose a word or let us pick randomly:</p>
+              <p>Word length</p>
+              <select value={wordLength} onChange={(e) => setWordLength(Number(e.target.value))} style={{ marginBottom: 8 }}>
+                {[5, 6, 7, 8].map((n) => (
+                  <option key={n} value={n}>
+                    {n} letters
+                  </option>
+                ))}
+              </select>
+              <label style={{ display: 'block', marginBottom: 12 }}>
+                <input type="checkbox" checked={hardMode} onChange={(e) => setHardMode(e.target.checked)} /> Hard mode
+              </label>
+              <p>Choose a word or leave empty for random:</p>
               <input
                 type="text"
-                placeholder="Enter 5-letter word"
+                placeholder={`${wordLength}-letter word`}
                 value={selectedWord}
-                onChange={(e) => setSelectedWord(e.target.value.toUpperCase().slice(0, 5))}
-                maxLength={5}
+                onChange={(e) => setSelectedWord(e.target.value.toUpperCase().slice(0, wordLength))}
+                maxLength={wordLength}
               />
-              <p className="word-hint">Leave empty for random word</p>
+              <p className="word-hint">Models: {player1.id} vs {player2.id}</p>
             </div>
-            {errorMsg && (
-              <p style={{ color: '#ef4444', fontSize: '18px', margin: '10px 0' }}>{errorMsg}</p>
-            )}
+            {errorMsg && <p style={{ color: '#ef4444', fontSize: '18px', margin: '10px 0' }}>{errorMsg}</p>}
             <button onClick={startGame} className="start-button">
               Start Battle
             </button>
@@ -292,16 +343,17 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       )}
 
       {gameState.gameStarted && !showVoting && !showCountdown && !showStartModal && (
-        <div className="wordle-board" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px' }}>
+        <div
+          className="wordle-board"
+          style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px' }}
+        >
           <div className="player-section">
             <div className="game-player-label" style={{ color: '#10b981' }}>
               {player1.name}
               {gameState.player1.isThinking && <span className="game-player-thinking">THINKING...</span>}
             </div>
             {renderGrid('player1')}
-            <div className="guess-count">
-              Guesses: {gameState.player1.guesses.length}/6
-            </div>
+            <div className="guess-count">Guesses: {gameState.player1.guesses.length}/6</div>
           </div>
 
           <div className="game-split-vs">VS</div>
@@ -312,9 +364,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
               {gameState.player2.isThinking && <span className="game-player-thinking">THINKING...</span>}
             </div>
             {renderGrid('player2')}
-            <div className="guess-count">
-              Guesses: {gameState.player2.guesses.length}/6
-            </div>
+            <div className="guess-count">Guesses: {gameState.player2.guesses.length}/6</div>
           </div>
         </div>
       )}
@@ -324,25 +374,31 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           <div className="game-overlay-content">
             <h2 className="game-over-title">GAME OVER</h2>
             <div className="winner-name">
-              {gameState.winner === 'openai' ? player1.name
-                : gameState.winner === 'anthropic' ? player2.name
-                : 'DRAW'}
-              {gameState.winner && ' WINS!'}
+              {winnerLabel()}
+              {gameState.winner && ' '}
+              {gameState.winner && gameState.winner !== 'TIE' && 'WINS!'}
+              {gameState.winner === 'TIE' && 'TIE'}
             </div>
             <div className="wordle-final-word">
               SECRET WORD: <strong>{gameState.secretWord}</strong>
             </div>
             <div className="conn-final-stats">
               <div className="conn-final-stat">
-                <div className="conn-final-name" style={{ color: '#10b981' }}>{player1.name}</div>
+                <div className="conn-final-name" style={{ color: '#10b981' }}>
+                  {player1.name}
+                </div>
                 <div>{gameState.player1.guesses.length} guesses</div>
               </div>
               <div className="conn-final-stat">
-                <div className="conn-final-name" style={{ color: '#a78bfa' }}>{player2.name}</div>
+                <div className="conn-final-name" style={{ color: '#a78bfa' }}>
+                  {player2.name}
+                </div>
                 <div>{gameState.player2.guesses.length} guesses</div>
               </div>
             </div>
-            <button onClick={handleGoBack} className="new-game-overlay-button">BACK</button>
+            <button onClick={handleGoBack} className="new-game-overlay-button">
+              BACK
+            </button>
           </div>
         </div>
       )}

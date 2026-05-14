@@ -241,7 +241,13 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd, onBack 
       statusText={triviaStatus}
     >
       {!votingDone && (
-        <SidebarVote gameId={gameId} onGameStart={() => { setVotingDone(true); setShowCountdown(true) }} onBack={onBack} />
+        <SidebarVote
+          gameId={gameId}
+          player1Label={player1Info.name}
+          player2Label={player2Info.name}
+          onGameStart={() => { setVotingDone(true); setShowCountdown(true) }}
+          onBack={onBack}
+        />
       )}
 
       {showCountdown && (

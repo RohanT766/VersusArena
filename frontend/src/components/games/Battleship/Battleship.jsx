@@ -6,15 +6,17 @@ import GameLayout from '../../common/GameLayout';
 import { getDisplayName } from '../../../utils/modelUtils';
 import './Battleship.css';
 
-const BOARD_SIZE = 8;
-
 const SHIP_DEFS = {
   carrier:    { name: 'Carrier',    len: 5, color: '#6a7b8a' },
   battleship: { name: 'Battleship', len: 4, color: '#5a7a6a' },
   destroyer:  { name: 'Destroyer',  len: 3, color: '#7a8a9a' },
   submarine:  { name: 'Submarine',  len: 3, color: '#4a6a5a' },
   patrol:     { name: 'Patrol',     len: 2, color: '#8a8a7a' },
+  cruiser:    { name: 'Cruiser',    len: 3, color: '#6a6a8a' },
+  scout:      { name: 'Scout',      len: 2, color: '#7a7a6a' },
 };
+
+const emptyBoard = (n) => Array(n).fill(null).map(() => Array(n).fill(null));
 
 const GAME_STATUS = {
   WAITING: 'waiting',
@@ -24,13 +26,14 @@ const GAME_STATUS = {
 };
 
 const Battleship = ({ player1Model, player2Model, onBack = () => window.history.back() }) => {
+  const [boardSize, setBoardSize] = useState(8);
   const [gameId, setGameId] = useState('');
   const [gameStatus, setGameStatus] = useState(GAME_STATUS.WAITING);
   const [currentPlayer, setCurrentPlayer] = useState(1);
-  const [player1Board, setPlayer1Board] = useState(createEmptyBoard());
-  const [player2Board, setPlayer2Board] = useState(createEmptyBoard());
-  const [player1Shots, setPlayer1Shots] = useState(createEmptyBoard());
-  const [player2Shots, setPlayer2Shots] = useState(createEmptyBoard());
+  const [player1Board, setPlayer1Board] = useState(() => emptyBoard(8));
+  const [player2Board, setPlayer2Board] = useState(() => emptyBoard(8));
+  const [player1Shots, setPlayer1Shots] = useState(() => emptyBoard(8));
+  const [player2Shots, setPlayer2Shots] = useState(() => emptyBoard(8));
   const [message, setMessage] = useState('Starting game...');
   const [winner, setWinner] = useState(null);
   const [gameStartTime, setGameStartTime] = useState(null);
@@ -48,18 +51,12 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const player1DisplayName = getDisplayName(player1Model);
   const player2DisplayName = getDisplayName(player2Model);
 
-  function createEmptyBoard() {
-    return Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-  }
-
-  const getColumnLabel = (index) => String.fromCharCode(65 + index);
-
   const getShipStatus = (board, opponentShots) => {
     const ships = {};
-    for (let r = 0; r < BOARD_SIZE; r++) {
-      for (let c = 0; c < BOARD_SIZE; c++) {
+    for (let r = 0; r < boardSize; r++) {
+      for (let c = 0; c < boardSize; c++) {
         const val = board[r][c];
-        if (val && SHIP_DEFS[val]) {
+        if (val) {
           if (!ships[val]) ships[val] = { cells: [], hits: 0 };
           const isHit = opponentShots[r][c] === 'hit';
           ships[val].cells.push({ r, c, hit: isHit });
@@ -70,29 +67,32 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     return ships;
   };
 
-  const p1Ships = useMemo(() => getShipStatus(player1Board, player2Shots), [player1Board, player2Shots]);
-  const p2Ships = useMemo(() => getShipStatus(player2Board, player1Shots), [player2Board, player1Shots]);
+  const getColumnLabel = (index) => String.fromCharCode(65 + index);
+
+  const p1Ships = useMemo(() => getShipStatus(player1Board, player2Shots), [player1Board, player2Shots, boardSize]);
+  const p2Ships = useMemo(() => getShipStatus(player2Board, player1Shots), [player2Board, player1Shots, boardSize]);
 
   const countShots = (shots) => {
     let hits = 0, misses = 0;
-    for (let r = 0; r < BOARD_SIZE; r++)
-      for (let c = 0; c < BOARD_SIZE; c++) {
+    for (let r = 0; r < boardSize; r++)
+      for (let c = 0; c < boardSize; c++) {
         if (shots[r][c] === 'hit') hits++;
         else if (shots[r][c] === 'miss') misses++;
       }
     return { hits, misses, total: hits + misses };
   };
 
-  const p1ShotStats = useMemo(() => countShots(player1Shots), [player1Shots]);
-  const p2ShotStats = useMemo(() => countShots(player2Shots), [player2Shots]);
+  const p1ShotStats = useMemo(() => countShots(player1Shots), [player1Shots, boardSize]);
+  const p2ShotStats = useMemo(() => countShots(player2Shots), [player2Shots, boardSize]);
 
   const getShipSegment = (board, row, col) => {
     const val = board[row][col];
-    if (!val || !SHIP_DEFS[val]) return null;
+    if (!val) return null;
+    if (!SHIP_DEFS[val]) return 'single';
     const left  = col > 0 && board[row][col-1] === val;
-    const right = col < BOARD_SIZE-1 && board[row][col+1] === val;
+    const right = col < boardSize-1 && board[row][col+1] === val;
     const up    = row > 0 && board[row-1][col] === val;
-    const down  = row < BOARD_SIZE-1 && board[row+1][col] === val;
+    const down  = row < boardSize-1 && board[row+1][col] === val;
     const horizontal = left || right;
     const vertical = up || down;
     if (horizontal) {
@@ -125,7 +125,13 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
         setIsConnected(true);
         setMessage('Connected! Setting up ships...');
         if (!gameStarted) {
-          ws.send(JSON.stringify({ type: 'start_game', player1Model: backendPlayer1, player2Model: backendPlayer2, autoPlaceShips: true }));
+          ws.send(JSON.stringify({
+            type: 'start_game',
+            player1Model: backendPlayer1,
+            player2Model: backendPlayer2,
+            board_size: 10,
+            llm_placement: false,
+          }));
           setGameStarted(true);
           setGameStatus(GAME_STATUS.IN_PROGRESS);
         }
@@ -138,7 +144,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   };
 
   const setupDemoGame = () => {
-    const b1 = createEmptyBoard(), b2 = createEmptyBoard();
+    const b1 = emptyBoard(8), b2 = emptyBoard(8);
     for (let i = 0; i < 5; i++) b1[0][i] = 'carrier';
     for (let i = 0; i < 4; i++) b1[2][i] = 'battleship';
     for (let i = 0; i < 3; i++) b1[4][i] = 'destroyer';
@@ -153,7 +159,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     setGameStatus(GAME_STATUS.IN_PROGRESS);
     setMessage('Demo mode - AI battle simulation');
     setTimeout(() => {
-      const s1 = createEmptyBoard(), s2 = createEmptyBoard();
+      const s1 = emptyBoard(8), s2 = emptyBoard(8);
       s1[1][1] = 'hit'; s1[3][3] = 'miss'; s1[1][2] = 'hit';
       s2[0][0] = 'hit'; s2[2][1] = 'miss'; s2[0][1] = 'hit';
       setPlayer1Shots(s1); setPlayer2Shots(s2);
@@ -166,6 +172,14 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       setPlayer1Board(data.player1Board); setPlayer2Board(data.player2Board);
       setMessage(data.message); setGameStatus(GAME_STATUS.IN_PROGRESS);
     } else if (data.type === 'game_state') {
+      if (data.board_size && Number(data.board_size) !== boardSize) {
+        const sz = Number(data.board_size);
+        setBoardSize(sz);
+        setPlayer1Board(emptyBoard(sz));
+        setPlayer2Board(emptyBoard(sz));
+        setPlayer1Shots(emptyBoard(sz));
+        setPlayer2Shots(emptyBoard(sz));
+      }
       setCurrentPlayer(data.currentPlayer);
       if (data.player1Shots) setPlayer1Shots(data.player1Shots);
       if (data.player2Shots) setPlayer2Shots(data.player2Shots);
@@ -262,8 +276,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     if (!val && isMiss) return <div className="cell-miss" />;
     if (!val) return null;
 
-    const def = SHIP_DEFS[val];
-    if (!def) return null;
+    const def = SHIP_DEFS[val] || { name: val, len: 1, color: '#888' };
     const seg = getShipSegment(board, row, col);
 
     return (
@@ -280,16 +293,16 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
         <thead>
           <tr>
             <th className="corner"></th>
-            {Array.from({ length: BOARD_SIZE }, (_, i) => (
+            {Array.from({ length: boardSize }, (_, i) => (
               <th key={i} className="col-lbl">{getColumnLabel(i)}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: BOARD_SIZE }, (_, row) => (
+          {Array.from({ length: boardSize }, (_, row) => (
             <tr key={row}>
               <td className="row-lbl">{row + 1}</td>
-              {Array.from({ length: BOARD_SIZE }, (_, col) => (
+              {Array.from({ length: boardSize }, (_, col) => (
                 <td key={`${row}-${col}`} className="bs-cell">
                   {renderShipCell(board, opponentShots, row, col)}
                 </td>
@@ -305,9 +318,10 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     <div className="fleet-panel">
       {Object.entries(SHIP_DEFS).map(([key, def]) => {
         const ship = ships[key];
-        const totalCells = ship ? ship.cells.length : def.len;
-        const hitCount = ship ? ship.hits : 0;
-        const sunk = ship && hitCount >= totalCells;
+        if (!ship) return null;
+        const totalCells = ship.cells.length;
+        const hitCount = ship.hits;
+        const sunk = hitCount >= totalCells;
         return (
           <div key={key} className={`fleet-row ${sunk ? 'sunk' : ''}`}>
             <span className="fleet-name">{def.name}</span>
@@ -349,9 +363,13 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       )}
 
       {!votingDone && (
-        <SidebarVote gameId={gameId}
+        <SidebarVote
+          gameId={gameId}
+          player1Label={player1DisplayName}
+          player2Label={player2DisplayName}
           onGameStart={() => { setVotingDone(true); setShowCountdown(true); }}
-          onBack={onBack} />
+          onBack={onBack}
+        />
       )}
 
       {winner && (

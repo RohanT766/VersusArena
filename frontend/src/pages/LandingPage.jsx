@@ -1,5 +1,5 @@
 import { Suspense, useState, useRef, useEffect, useMemo } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { EffectComposer } from "@react-three/postprocessing"
 import { wrapEffect } from "@react-three/postprocessing"
@@ -296,15 +296,9 @@ const NewLandingPage = () => {
         <a href="https://github.com/RohanT766/VersusArena" target="_blank" rel="noopener noreferrer">
           github <span className="arrow">↗</span>
         </a>
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault()
-            alert("Leaderboard coming soon!")
-          }}
-        >
+        <Link to="/dashboard">
           leaderboard <span className="arrow">↗</span>
-        </a>
+        </Link>
       </div>
     </div>
   )

@@ -4,7 +4,7 @@ import QRCodeVote from './QRCodeVote';
 import { useVoteStats } from '../hooks/useVoteStats';
 import './common/GameLayout.css';
 
-const SidebarVote = ({ gameId, onGameStart, onBack }) => {
+const SidebarVote = ({ gameId, onGameStart, onBack, player1Label = 'Player 1', player2Label = 'Player 2' }) => {
   const [votingPhase, setVotingPhase] = useState('voting');
   const [timeLeft, setTimeLeft] = useState(30);
   const onGameStartRef = React.useRef(onGameStart);
@@ -120,7 +120,7 @@ const SidebarVote = ({ gameId, onGameStart, onBack }) => {
             <div style={{ fontSize: '24px', color: '#aaa', letterSpacing: '2px' }}>
               SCAN TO VOTE
             </div>
-            <QRCodeVote gameId={gameId} size={280} />
+            <QRCodeVote gameId={gameId} player1Label={player1Label} player2Label={player2Label} size={280} />
           </div>
         )}
 
@@ -148,12 +148,12 @@ const SidebarVote = ({ gameId, onGameStart, onBack }) => {
             <div style={{ width: '100%', maxWidth: '360px' }}>
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '22px', color: '#10b981' }}>GPT-4o</span>
-                  <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.gpt_4o || 0}</span>
+                  <span style={{ fontSize: '22px', color: '#10b981' }}>{player1Label}</span>
+                  <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.player1 || 0}</span>
                 </div>
                 <div style={{ width: '100%', height: '12px', background: '#222', borderRadius: '2px' }}>
                   <div style={{
-                    width: `${voteStats.percentages?.gpt_4o || 0}%`,
+                    width: `${voteStats.percentages?.player1 || 0}%`,
                     height: '100%',
                     background: '#10b981',
                     borderRadius: '2px',
@@ -163,12 +163,12 @@ const SidebarVote = ({ gameId, onGameStart, onBack }) => {
               </div>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '22px', color: '#8b5cf6' }}>Claude</span>
-                  <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.claude || 0}</span>
+                  <span style={{ fontSize: '22px', color: '#8b5cf6' }}>{player2Label}</span>
+                  <span style={{ fontSize: '22px', color: '#ccc' }}>{voteStats.player2 || 0}</span>
                 </div>
                 <div style={{ width: '100%', height: '12px', background: '#222', borderRadius: '2px' }}>
                   <div style={{
-                    width: `${voteStats.percentages?.claude || 0}%`,
+                    width: `${voteStats.percentages?.player2 || 0}%`,
                     height: '100%',
                     background: '#8b5cf6',
                     borderRadius: '2px',
@@ -200,10 +200,10 @@ const SidebarVote = ({ gameId, onGameStart, onBack }) => {
             VOTES IN
           </div>
           <div style={{ fontSize: '28px', color: '#fff', textAlign: 'center' }}>
-            {(voteStats.gpt_4o || 0) > (voteStats.claude || 0) ? (
-              <span style={{ color: '#10b981' }}>GPT-4o WINS THE VOTE</span>
-            ) : (voteStats.claude || 0) > (voteStats.gpt_4o || 0) ? (
-              <span style={{ color: '#8b5cf6' }}>CLAUDE WINS THE VOTE</span>
+            {(voteStats.player1 || 0) > (voteStats.player2 || 0) ? (
+              <span style={{ color: '#10b981' }}>{String(player1Label).toUpperCase()} WINS THE VOTE</span>
+            ) : (voteStats.player2 || 0) > (voteStats.player1 || 0) ? (
+              <span style={{ color: '#8b5cf6' }}>{String(player2Label).toUpperCase()} WINS THE VOTE</span>
             ) : (
               <span style={{ color: '#fbbf24' }}>IT'S A TIE</span>
             )}

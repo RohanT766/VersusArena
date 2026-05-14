@@ -7,7 +7,9 @@ const VotePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const gameId = searchParams.get('gameId');
-  
+  const label1 = searchParams.get('p1') || 'Player 1';
+  const label2 = searchParams.get('p2') || 'Player 2';
+
   const [isVoting, setIsVoting] = useState(false);
   const [voteSubmitted, setVoteSubmitted] = useState(false);
   const [error, setError] = useState(null);
@@ -15,33 +17,30 @@ const VotePage = () => {
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    // Check if gameId exists
     if (!gameId) {
       setError('Invalid game ID. Please scan the QR code again.');
     }
   }, [gameId]);
 
-  // Countdown for refresh after vote
   useEffect(() => {
     if (voteSubmitted && countdown > 0) {
       const timer = setTimeout(() => {
-        setCountdown(prev => prev - 1);
+        setCountdown((prev) => prev - 1);
       }, 1000);
       return () => clearTimeout(timer);
     } else if (voteSubmitted && countdown === 0) {
-      // Refresh the page to allow voting again
       window.location.reload();
     }
   }, [voteSubmitted, countdown]);
 
-  const submitVote = async (model) => {
+  const submitVote = async (side) => {
     if (!gameId) {
       setError('Invalid game ID');
       return;
     }
 
     setIsVoting(true);
-    setSelectedModel(model);
+    setSelectedModel(side);
     setError(null);
 
     try {
@@ -52,8 +51,8 @@ const VotePage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          gameId: gameId,
-          model: model
+          gameId,
+          model: side,
         }),
       });
 
@@ -63,7 +62,6 @@ const VotePage = () => {
       }
 
       setVoteSubmitted(true);
-
     } catch (err) {
       console.error('Error submitting vote:', err);
       setError(err.message || 'Failed to submit vote. Please try again.');
@@ -106,16 +104,13 @@ const VotePage = () => {
           <p className="text-gray-300 mb-2">
             Thanks for voting for <span className="font-semibold text-blue-400">{selectedModel}</span>!
           </p>
-          <p className="text-sm text-gray-400 mb-6">
-            Your vote has been recorded. You can vote again in a moment!
-          </p>
-          
+          <p className="text-sm text-gray-400 mb-6">Your vote has been recorded. You can vote again in a moment!</p>
+
           <div className="bg-gray-800 rounded-lg p-4 mb-6">
             <p className="text-xs text-gray-400 mb-1">Game ID</p>
             <p className="font-mono text-sm text-blue-400">{gameId}</p>
           </div>
 
-          {/* Countdown and refresh */}
           <div className="bg-blue-900 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-center space-x-2 mb-2">
               <RefreshCw className="h-5 w-5 text-blue-400" />
@@ -138,23 +133,17 @@ const VotePage = () => {
   return (
     <div className="min-h-screen bg-gray-900 px-4 py-8">
       <div className="max-w-md mx-auto">
-        {/* Header */}
         <div className="text-center mb-8">
           <Vote className="mx-auto h-12 w-12 text-blue-500 mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Vote Now!</h1>
-          <p className="text-gray-300 mb-2">
-            Which AI model do you think will win this game?
-          </p>
-          <p className="text-sm text-yellow-400 mb-4">
-            You can vote multiple times!
-          </p>
+          <p className="text-gray-300 mb-2">Which side do you think will win?</p>
+          <p className="text-sm text-yellow-400 mb-4">You can vote multiple times!</p>
           <div className="bg-gray-800 rounded-lg p-3 inline-block">
             <p className="text-xs text-gray-400 mb-1">Game ID</p>
             <p className="font-mono text-sm text-blue-400">{gameId}</p>
           </div>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg">
             <div className="flex items-center">
@@ -164,10 +153,9 @@ const VotePage = () => {
           </div>
         )}
 
-        {/* Voting Buttons */}
         <div className="space-y-4">
           <button
-            onClick={() => submitVote('gpt-4o')}
+            onClick={() => submitVote('player1')}
             disabled={isVoting}
             className={`w-full p-6 rounded-xl border-2 transition-all duration-200 ${
               isVoting
@@ -177,17 +165,17 @@ const VotePage = () => {
           >
             <div className="flex items-center justify-center space-x-3">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-emerald-600 font-bold text-sm">G</span>
+                <span className="text-emerald-600 font-bold text-sm">1</span>
               </div>
               <div className="text-left">
-                <h3 className="text-xl font-bold text-white">GPT-4o</h3>
-                <p className="text-emerald-200 text-sm">OpenAI's flagship model</p>
+                <h3 className="text-xl font-bold text-white">{label1}</h3>
+                <p className="text-emerald-200 text-sm">Player 1</p>
               </div>
             </div>
           </button>
 
           <button
-            onClick={() => submitVote('claude')}
+            onClick={() => submitVote('player2')}
             disabled={isVoting}
             className={`w-full p-6 rounded-xl border-2 transition-all duration-200 ${
               isVoting
@@ -197,17 +185,16 @@ const VotePage = () => {
           >
             <div className="flex items-center justify-center space-x-3">
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span className="text-purple-600 font-bold text-sm">C</span>
+                <span className="text-purple-600 font-bold text-sm">2</span>
               </div>
               <div className="text-left">
-                <h3 className="text-xl font-bold text-white">Claude</h3>
-                <p className="text-purple-200 text-sm">Anthropic's advanced AI</p>
+                <h3 className="text-xl font-bold text-white">{label2}</h3>
+                <p className="text-purple-200 text-sm">Player 2</p>
               </div>
             </div>
           </button>
         </div>
 
-        {/* Loading State */}
         {isVoting && (
           <div className="mt-6 text-center">
             <div className="inline-flex items-center space-x-2">
@@ -217,18 +204,12 @@ const VotePage = () => {
           </div>
         )}
 
-        {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500 mb-2">
-            Powered by VERSUS • Real-time AI Battle Platform
-          </p>
-          <p className="text-xs text-gray-400">
-            Page refreshes after each vote for multiple voting
-          </p>
+          <p className="text-xs text-gray-500 mb-2">Powered by VERSUS • Real-time AI Battle Platform</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default VotePage; 
+export default VotePage;

@@ -218,7 +218,15 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       onBack={onBack}
       statusText={statusText}
     >
-      {!votingDone && <SidebarVote gameId={gameId} onGameStart={handleVotingDone} onBack={onBack} />}
+      {!votingDone && (
+        <SidebarVote
+          gameId={gameId}
+          player1Label={p1Name}
+          player2Label={p2Name}
+          onGameStart={handleVotingDone}
+          onBack={onBack}
+        />
+      )}
 
       {showCountdown && (
         <GameCountdown
