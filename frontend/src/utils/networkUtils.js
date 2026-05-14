@@ -71,7 +71,6 @@ export const getLocalIP = () => {
           const ip = ipMatch[1];
           // Skip localhost, 127.x.x.x, and 169.254.x.x (link-local)
           if (!ip.startsWith('127.') && !ip.startsWith('169.254.') && ip !== '0.0.0.0') {
-            console.log('WebRTC detected IP:', ip);
             pc.close();
             resolved = true;
             resolve(ip);
@@ -83,22 +82,16 @@ export const getLocalIP = () => {
       setTimeout(() => {
         if (!resolved) {
           pc.close();
-          console.log('WebRTC timeout, trying fallback...');
-          
-          // Method 2: Fallback - try to get from current URL if we're on network
           const hostname = window.location.hostname;
           if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-            console.log('Using current hostname as IP:', hostname);
             resolve(hostname);
           } else {
-            console.log('Could not detect network IP');
             resolve(null);
           }
         }
       }, 3000);
       
-    } catch (error) {
-      console.warn('WebRTC failed, using fallback:', error);
+    } catch (_) {
       
       // Fallback method
       const hostname = window.location.hostname;

@@ -11,7 +11,6 @@ const useVoteStats = (gameId) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch vote stats via HTTP
   const fetchVoteStats = useCallback(async () => {
     try {
       const backendUrl = getBackendUrl();
@@ -21,18 +20,15 @@ const useVoteStats = (gameId) => {
       if (!response.ok) throw new Error('Failed to fetch vote stats');
       
       const data = await response.json();
-      console.log('Vote stats updated via HTTP:', data);
       setVoteStats(data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching vote stats:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   }, [gameId]);
 
-  // WebSocket connection for real-time updates
   useEffect(() => {
     if (!gameId) return;
 
@@ -47,7 +43,6 @@ const useVoteStats = (gameId) => {
         ws = new WebSocket(`${wsUrl}/api/vote/ws/${gameId}`);
         
         ws.onopen = () => {
-          console.log(`Connected to vote WebSocket for game ${gameId}`);
           isConnected = true;
           setError(null);
           if (reconnectInterval) {
@@ -61,66 +56,44 @@ const useVoteStats = (gameId) => {
             const message = JSON.parse(event.data);
             
             if (message.type === 'vote_update' && message.data) {
-              setVoteStats(prevStats => {
-                const newStats = {
-                  gpt_4o: message.data.votes?.['gpt-4o'] || 0,
-                  claude: message.data.votes?.claude || 0,
-                  total: message.data.total || 0,
-                  percentages: message.data.percentages || { gpt_4o: 0, claude: 0 }
-                };
-                console.log('Vote stats updated via WebSocket:', newStats);
-                return newStats;
+              setVoteStats({
+                gpt_4o: message.data.votes?.['gpt-4o'] || 0,
+                claude: message.data.votes?.claude || 0,
+                total: message.data.total || 0,
+                percentages: message.data.percentages || { gpt_4o: 0, claude: 0 }
               });
               setIsLoading(false);
             }
-          } catch (err) {
-            console.error('Error parsing WebSocket message:', err);
-          }
+          } catch (_) {}
         };
 
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+        ws.onerror = () => {
           setError('WebSocket connection error');
         };
 
         ws.onclose = () => {
-          console.log('Vote WebSocket disconnected');
           isConnected = false;
-          
-          // Try to reconnect every 3 seconds
           if (!reconnectInterval) {
             reconnectInterval = setInterval(() => {
-              if (!isConnected) {
-                console.log('Attempting to reconnect vote WebSocket...');
-                connectWebSocket();
-              }
+              if (!isConnected) connectWebSocket();
             }, 3000);
           }
         };
-      } catch (err) {
-        console.error('Failed to create WebSocket connection:', err);
+      } catch (_) {
         setError('Failed to connect to real-time updates');
       }
     };
 
-    // Initial fetch and WebSocket connection
     fetchVoteStats();
     connectWebSocket();
 
-    // Fallback polling if WebSocket fails (more frequent for real-time feel)
     const pollInterval = setInterval(() => {
-      if (!isConnected) {
-        fetchVoteStats();
-      }
-    }, 2000); // Poll every 2 seconds instead of 5
+      if (!isConnected) fetchVoteStats();
+    }, 2000);
 
     return () => {
-      if (ws) {
-        ws.close();
-      }
-      if (reconnectInterval) {
-        clearInterval(reconnectInterval);
-      }
+      if (ws) ws.close();
+      if (reconnectInterval) clearInterval(reconnectInterval);
       clearInterval(pollInterval);
     };
   }, [gameId, fetchVoteStats]);
@@ -129,4 +102,4 @@ const useVoteStats = (gameId) => {
 };
 
 export { useVoteStats };
-export default useVoteStats; 
+export default useVoteStats;

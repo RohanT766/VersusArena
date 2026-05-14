@@ -22,13 +22,11 @@ const useGameWebSocket = (gameTypeOrUrl, gameId = null) => {
     }
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
       setIsConnected(true);
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('Received WebSocket message:', data);
       setLastMessage(data);
       
       // Handle different message types
@@ -40,7 +38,6 @@ const useGameWebSocket = (gameTypeOrUrl, gameId = null) => {
     };
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
       setIsConnected(false);
     };
 
