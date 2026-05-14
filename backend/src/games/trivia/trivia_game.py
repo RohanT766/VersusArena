@@ -151,38 +151,48 @@ class TriviaGame(BaseGame):
                 if question_index in self.player2_wrong_answers:
                     del self.player2_wrong_answers[question_index]
         else:
-            # Wrong answer - apply penalty
+            # Wrong answer - apply penalty: lose 1 point and move to next question
             if player == 1:
                 self.player1_responses.append(response_data)
-                # Add wrong answer to tracking
-                if question_index not in self.player1_wrong_answers:
-                    self.player1_wrong_answers[question_index] = set()
-                self.player1_wrong_answers[question_index].add(self._normalize_choice(response))
-                # Apply 1 second cooldown
+                self.player1_score = max(0, self.player1_score - 1)
+                self.player1_question_index += 1
+                if question_index in self.player1_wrong_answers:
+                    del self.player1_wrong_answers[question_index]
                 self.player1_cooldown_until = time.time() + 1.0
                 response_data["cooldown_applied"] = True
-                response_data["cooldown_until"] = self.player1_cooldown_until
+                response_data["score_penalty"] = True
             else:
                 self.player2_responses.append(response_data)
-                # Add wrong answer to tracking
-                if question_index not in self.player2_wrong_answers:
-                    self.player2_wrong_answers[question_index] = set()
-                self.player2_wrong_answers[question_index].add(self._normalize_choice(response))
-                # Apply 1 second cooldown
+                self.player2_score = max(0, self.player2_score - 1)
+                self.player2_question_index += 1
+                if question_index in self.player2_wrong_answers:
+                    del self.player2_wrong_answers[question_index]
                 self.player2_cooldown_until = time.time() + 1.0
                 response_data["cooldown_applied"] = True
-                response_data["cooldown_until"] = self.player2_cooldown_until
+                response_data["score_penalty"] = True
         
-        # Check if this player finished the race (only if they got the answer right)
+        # Check if this player reached the winning score or exhausted questions
+        target_score = 20
         if is_correct:
-            player_finished = (self.player1_question_index >= len(self.questions) if player == 1 
-                              else self.player2_question_index >= len(self.questions))
-            
-            if player_finished and not self.race_finished:
+            current_score = self.player1_score if player == 1 else self.player2_score
+            if current_score >= target_score and not self.race_finished:
                 self.race_finished = True
                 self.race_winner = player
                 self.game_over = True
                 self.winner = player
+        
+        player_exhausted = (self.player1_question_index >= len(self.questions) if player == 1
+                           else self.player2_question_index >= len(self.questions))
+        if player_exhausted and not self.race_finished:
+            other = 2 if player == 1 else 1
+            other_exhausted = (self.player1_question_index >= len(self.questions) if other == 1
+                              else self.player2_question_index >= len(self.questions))
+            if other_exhausted:
+                self.race_finished = True
+                s1, s2 = self.player1_score, self.player2_score
+                self.race_winner = 1 if s1 >= s2 else 2
+                self.game_over = True
+                self.winner = self.race_winner
         
         # Update game state
         self._update_game_state()

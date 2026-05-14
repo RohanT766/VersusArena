@@ -643,7 +643,9 @@ async def make_wordle_guess(game_id: str, request: dict):
     model_data = game.models[model]
     
     try:
-        guess, reasoning = get_llm_guess(model, model_data['guesses'], model_data['feedback'])
+        guess, reasoning = await asyncio.to_thread(
+            get_llm_guess, model, list(model_data['guesses']), list(model_data['feedback'])
+        )
     except Exception as e:
         print(f"Error getting guess from {model}: {e}")
         fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND"]
@@ -687,7 +689,9 @@ async def make_wordle_guess_no_id(request: dict):
     model_data = current_wordle_game.models[model]
     
     try:
-        guess, reasoning = get_llm_guess(model, model_data['guesses'], model_data['feedback'])
+        guess, reasoning = await asyncio.to_thread(
+            get_llm_guess, model, list(model_data['guesses']), list(model_data['feedback'])
+        )
     except Exception as e:
         print(f"Error getting guess from {model}: {e}")
         fallback_words = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND"]
@@ -804,7 +808,7 @@ async def connections_ai_turn(game_id: str, player: str, request: dict):
         return {"error": "Game is already over"}
     
     try:
-        guess = game.get_ai_guess(model_id)
+        guess = await asyncio.to_thread(game.get_ai_guess, model_id)
         
         if not guess:
             return {"error": "Failed to get AI guess"}
