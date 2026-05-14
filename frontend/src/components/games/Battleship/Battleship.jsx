@@ -2,16 +2,18 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import SidebarVote from '../../SidebarVote';
 import GameTimer from '../../common/GameTimer';
 import GameCountdown from '../../common/GameCountdown';
+import GameLayout from '../../common/GameLayout';
+import { getDisplayName } from '../../../utils/modelUtils';
 import './Battleship.css';
 
 const BOARD_SIZE = 8;
 
 const SHIP_DEFS = {
-  carrier:    { name: 'Carrier',    len: 5, color: '#FF6B6B' },
-  battleship: { name: 'Battleship', len: 4, color: '#4ECDC4' },
-  destroyer:  { name: 'Destroyer',  len: 3, color: '#45B7D1' },
-  submarine:  { name: 'Submarine',  len: 3, color: '#96CEB4' },
-  patrol:     { name: 'Patrol',     len: 2, color: '#DDA0DD' },
+  carrier:    { name: 'Carrier',    len: 5, color: '#6a7b8a' },
+  battleship: { name: 'Battleship', len: 4, color: '#5a7a6a' },
+  destroyer:  { name: 'Destroyer',  len: 3, color: '#7a8a9a' },
+  submarine:  { name: 'Submarine',  len: 3, color: '#4a6a5a' },
+  patrol:     { name: 'Patrol',     len: 2, color: '#8a8a7a' },
 };
 
 const GAME_STATUS = {
@@ -42,22 +44,6 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const backendPlayer1 = getBackendModelName(player1Model);
   const backendPlayer2 = getBackendModelName(player2Model);
 
-  const getDisplayName = (modelId) => {
-    if (!modelId) return 'Unknown';
-    const s = modelId.toString();
-    if (s.includes('gpt-5.5')) return 'GPT-5.5';
-    if (s.includes('gpt-5.4-mini')) return 'GPT-5.4 Mini';
-    if (s.includes('gpt-4o')) return 'GPT-4o';
-    if (s.includes('o4-mini')) return 'o4-mini';
-    if (s.includes('claude-opus-4-7')) return 'Claude Opus 4.7';
-    if (s.includes('claude-sonnet-4-6')) return 'Claude Sonnet 4.6';
-    if (s.includes('claude-haiku-4-5')) return 'Claude Haiku 4.5';
-    if (s.includes('claude-sonnet-4')) return 'Claude Sonnet 4';
-    if (s.includes('gemini-3.1-pro')) return 'Gemini 3.1 Pro';
-    if (s.includes('gemini-2.5-pro')) return 'Gemini 2.5 Pro';
-    if (s.includes('gemini-2.5-flash')) return 'Gemini 2.5 Flash';
-    return s.charAt(0).toUpperCase() + s.slice(1);
-  };
 
   const player1DisplayName = getDisplayName(player1Model);
   const player2DisplayName = getDisplayName(player2Model);
@@ -125,8 +111,6 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   useEffect(() => {
     const newGameId = `battleship-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     setGameId(newGameId);
-    setGameStartTime(Date.now());
-    connectWebSocket(newGameId);
     return () => {
       if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     };
@@ -197,12 +181,85 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     }
   };
 
+  const ShipSVG = ({ seg, color }) => {
+    const c = color;
+    const hi = '#9aa8b4';
+    const dk = '#2a3a4a';
+    const deck = '#3a4a5a';
+
+    if (seg === 'h-bow') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <polygon points="6,8 40,8 40,32 6,32 0,20" fill={c} />
+        <polygon points="6,8 40,8 40,16 6,16 2,12" fill={hi} opacity="0.2" />
+        <line x1="6" y1="20" x2="40" y2="20" stroke={dk} strokeWidth="1.5" />
+        <rect x="20" y="14" width="6" height="4" rx="1" fill={deck} />
+        <rect x="12" y="18" width="10" height="1" fill={dk} />
+      </svg>
+    );
+    if (seg === 'h-mid') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <rect x="0" y="8" width="40" height="24" fill={c} />
+        <rect x="0" y="8" width="40" height="8" fill={hi} opacity="0.15" />
+        <line x1="0" y1="20" x2="40" y2="20" stroke={dk} strokeWidth="1.5" />
+        <rect x="14" y="11" width="12" height="8" rx="1" fill={deck} />
+        <rect x="16" y="13" width="8" height="4" rx="1" fill={hi} opacity="0.2" />
+        <rect x="8" y="26" width="4" height="3" rx="0.5" fill={deck} />
+        <rect x="28" y="26" width="4" height="3" rx="0.5" fill={deck} />
+      </svg>
+    );
+    if (seg === 'h-stern') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <polygon points="0,8 34,8 40,14 40,26 34,32 0,32" fill={c} />
+        <polygon points="0,8 34,8 40,14 40,12 34,12 0,12" fill={hi} opacity="0.2" />
+        <line x1="0" y1="20" x2="36" y2="20" stroke={dk} strokeWidth="1.5" />
+        <rect x="6" y="14" width="6" height="4" rx="1" fill={deck} />
+      </svg>
+    );
+    if (seg === 'v-bow') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <polygon points="8,6 32,6 32,40 8,40 8,6" fill={c} />
+        <polygon points="20,0 32,6 32,40 8,40 8,6" fill={c} />
+        <polygon points="20,0 32,6 32,14 8,14 8,6" fill={hi} opacity="0.2" />
+        <line x1="20" y1="6" x2="20" y2="40" stroke={dk} strokeWidth="1.5" />
+        <rect x="14" y="20" width="4" height="6" rx="1" fill={deck} />
+        <rect x="18" y="12" width="1" height="10" fill={dk} />
+      </svg>
+    );
+    if (seg === 'v-mid') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <rect x="8" y="0" width="24" height="40" fill={c} />
+        <rect x="8" y="0" width="8" height="40" fill={hi} opacity="0.15" />
+        <line x1="20" y1="0" x2="20" y2="40" stroke={dk} strokeWidth="1.5" />
+        <rect x="11" y="14" width="8" height="12" rx="1" fill={deck} />
+        <rect x="13" y="16" width="4" height="8" rx="1" fill={hi} opacity="0.2" />
+        <rect x="26" y="8" width="3" height="4" rx="0.5" fill={deck} />
+        <rect x="26" y="28" width="3" height="4" rx="0.5" fill={deck} />
+      </svg>
+    );
+    if (seg === 'v-stern') return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <polygon points="8,0 32,0 32,34 26,40 14,40 8,34" fill={c} />
+        <polygon points="8,0 16,0 16,34 14,40 8,34" fill={hi} opacity="0.2" />
+        <line x1="20" y1="0" x2="20" y2="36" stroke={dk} strokeWidth="1.5" />
+        <rect x="14" y="6" width="4" height="6" rx="1" fill={deck} />
+      </svg>
+    );
+    return (
+      <svg viewBox="0 0 40 40" width="100%" height="100%">
+        <ellipse cx="20" cy="20" rx="14" ry="14" fill={c} />
+        <ellipse cx="20" cy="16" rx="14" ry="8" fill={hi} opacity="0.15" />
+        <rect x="14" y="14" width="12" height="8" rx="2" fill={deck} />
+        <rect x="16" y="16" width="8" height="4" rx="1" fill={hi} opacity="0.2" />
+      </svg>
+    );
+  };
+
   const renderShipCell = (board, opponentShots, row, col) => {
     const val = board[row][col];
     const isHit = opponentShots[row][col] === 'hit';
     const isMiss = opponentShots[row][col] === 'miss';
 
-    if (!val && isMiss) return <div className="cell-miss">~</div>;
+    if (!val && isMiss) return <div className="cell-miss" />;
     if (!val) return null;
 
     const def = SHIP_DEFS[val];
@@ -210,9 +267,9 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     const seg = getShipSegment(board, row, col);
 
     return (
-      <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`} style={{ '--ship-color': def.color }}>
-        <div className={`ship-seg ship-seg-${seg}`} />
-        {isHit && <div className="damage-overlay">X</div>}
+      <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`}>
+        <ShipSVG seg={seg} color={def.color} />
+        {isHit && <div className="damage-overlay" />}
       </div>
     );
   };
@@ -270,16 +327,32 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const isP1Active = currentPlayer === 1 && !winner && gameStatus === GAME_STATUS.IN_PROGRESS;
   const isP2Active = currentPlayer === 2 && !winner && gameStatus === GAME_STATUS.IN_PROGRESS;
 
+  const bsStatusText = winner
+    ? `${winner === 1 ? player1DisplayName : player2DisplayName} Wins!`
+    : message;
+
   return (
-    <div className="bs-game">
+    <GameLayout
+      gameName="Battleship"
+      player1Name={player1DisplayName}
+      player2Name={player2DisplayName}
+      onBack={onBack}
+      statusText={bsStatusText}
+    >
       {showCountdown && (
         <GameCountdown player1Name={player1DisplayName} player2Name={player2DisplayName}
-          onComplete={() => setShowCountdown(false)} />
+          onComplete={() => {
+            setShowCountdown(false);
+            setGameStartTime(Date.now());
+            connectWebSocket(gameId);
+          }} />
       )}
 
-      <SidebarVote gameId={gameId}
-        gameName={`Battleship: ${player1DisplayName} vs ${player2DisplayName}`}
-        onGameStart={() => { setVotingDone(true); setShowCountdown(true); }} />
+      {!votingDone && (
+        <SidebarVote gameId={gameId}
+          onGameStart={() => { setVotingDone(true); setShowCountdown(true); }}
+          onBack={onBack} />
+      )}
 
       {winner && (
         <div className="bs-overlay">
@@ -301,56 +374,33 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
             <button onClick={() => {
               if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
               onBack();
-            }} className="bs-back-btn">BACK TO MENU</button>
+            }} className="bs-back-btn">BACK</button>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div className="bs-header">
-        <button className="bs-menu-btn" onClick={onBack}>BACK</button>
+      {votingDone && !showCountdown && (
+        <div className="bs-main">
+          <div className={`bs-side ${isP1Active ? 'side-active' : ''}`}>
+            {isP1Active && <div className="firing-badge">FIRING</div>}
+            {renderBoard(player1Board, player2Shots)}
+            <FleetPanel ships={p1Ships} />
+          </div>
 
-        <div className={`bs-player-tag ${isP1Active ? 'tag-active' : ''}`}>
-          {isP1Active && <span className="tag-dot" />}
-          {player1DisplayName}
-          <span className="tag-shots">{p1ShotStats.hits}/{p1ShotStats.total}</span>
+          <div className="game-split-vs">VS</div>
+
+          <div className={`bs-side ${isP2Active ? 'side-active' : ''}`}>
+            {isP2Active && <div className="firing-badge">FIRING</div>}
+            {renderBoard(player2Board, player1Shots)}
+            <FleetPanel ships={p2Ships} />
+          </div>
         </div>
+      )}
 
-        <div className="bs-timer-wrap">
-          <GameTimer isActive={gameStatus === GAME_STATUS.IN_PROGRESS && !winner} />
-        </div>
-
-        <div className={`bs-player-tag ${isP2Active ? 'tag-active' : ''}`}>
-          {isP2Active && <span className="tag-dot" />}
-          {player2DisplayName}
-          <span className="tag-shots">{p2ShotStats.hits}/{p2ShotStats.total}</span>
-        </div>
-      </div>
-
-      {/* Status message */}
-      <div className="bs-status">{message}</div>
-
-      {/* Main boards */}
-      <div className="bs-main">
-        <div className={`bs-side ${isP1Active ? 'side-active' : ''}`}>
-          {isP1Active && <div className="firing-badge">FIRING</div>}
-          {renderBoard(player1Board, player2Shots)}
-          <FleetPanel ships={p1Ships} />
-        </div>
-
-        <div className="bs-vs">VS</div>
-
-        <div className={`bs-side ${isP2Active ? 'side-active' : ''}`}>
-          {isP2Active && <div className="firing-badge">FIRING</div>}
-          {renderBoard(player2Board, player1Shots)}
-          <FleetPanel ships={p2Ships} />
-        </div>
-      </div>
-
-      {!isConnected && (
+      {votingDone && !showCountdown && !isConnected && (
         <div className="bs-demo-badge">DEMO MODE</div>
       )}
-    </div>
+    </GameLayout>
   );
 };
 
