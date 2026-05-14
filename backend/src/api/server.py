@@ -41,6 +41,12 @@ from src.games.code_debug_challenge import (
     new_code_debug_session,
     run_player as code_debug_run_player,
 )
+from src.games.maze_race import (
+    start_session as maze_start_session,
+    play_step as maze_play_step,
+    session_state as maze_session_state,
+    winner_side as maze_winner_side,
+)
 
 # Default model configurations
 DEFAULT_MODELS = {
@@ -83,6 +89,7 @@ connections_games: Dict[str, Dict] = {}
 prisoners_sessions: Dict[str, Dict] = {}
 twenty_questions_sessions: Dict[str, Dict] = {}
 code_debug_sessions: Dict[str, Dict] = {}
+maze_sessions: Dict[str, Dict] = {}
 
 # Store active game runners
 game_runners: Dict[str, GameRunner] = {}
@@ -1204,6 +1211,68 @@ async def code_debug_run(session_id: str):
         rec.finish_run(br, "code_debug", w, float(s1), float(s2), {"challenge": sess.challenge.get("id")})
     entry["finished"] = True
     return {"scores": {"player1": s1, "player2": s2}, "winner_side": w, "details": outs}
+
+
+# ====================
+# MAZE RACE
+# ====================
+
+class MazeStartBody(BaseModel):
+    player1_model: str = "gpt-5.5"
+    player2_model: str = "claude-sonnet-4-6"
+    rows: int = 10
+    cols: int = 10
+
+
+@app.post("/api/maze/start")
+async def maze_start(body: MazeStartBody):
+    sess = maze_start_session(body.player1_model, body.player2_model, body.rows, body.cols)
+    rec = get_recorder()
+    rid = rec.start_run(
+        "maze_race",
+        body.player1_model,
+        body.player2_model,
+        {"rows": body.rows, "cols": body.cols},
+    )
+    sess.benchmark_run_id = rid
+    maze_sessions[sess.id] = {"session": sess, "finished": False}
+    state = maze_session_state(sess)
+    state["benchmark_run_id"] = rid
+    return state
+
+
+@app.post("/api/maze/{session_id}/step")
+async def maze_step(session_id: str):
+    entry = maze_sessions.get(session_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sess = entry["session"]
+    if sess.done:
+        return {"done": True, "winner": sess.winner, "step": sess.step_count}
+
+    result = await asyncio.to_thread(maze_play_step, sess)
+
+    if result.get("done") and not entry.get("finished"):
+        entry["finished"] = True
+        br = getattr(sess, "benchmark_run_id", None)
+        if br:
+            rec = get_recorder()
+            w = maze_winner_side(sess)
+            rec.finish_run(
+                br, "maze_race", w,
+                float(sess.step_count), float(sess.step_count),
+                {"rows": sess.rows, "cols": sess.cols, "steps": sess.step_count},
+            )
+
+    return result
+
+
+@app.get("/api/maze/{session_id}/state")
+async def maze_state(session_id: str):
+    entry = maze_sessions.get(session_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return maze_session_state(entry["session"])
 
 
 # ====================

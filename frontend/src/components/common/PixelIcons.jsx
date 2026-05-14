@@ -111,6 +111,27 @@ export const AnalyticsIcon = ({ size = 64 }) => (
   </svg>
 );
 
+export const MazeIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="4" width="56" height="56" fill="none" stroke="#334" strokeWidth="3" />
+    {/* Maze walls */}
+    <rect x="16" y="4" width="2" height="20" fill="#334" />
+    <rect x="28" y="14" width="2" height="20" fill="#334" />
+    <rect x="40" y="4" width="2" height="14" fill="#334" />
+    <rect x="52" y="20" width="2" height="24" fill="#334" />
+    <rect x="4" y="24" width="14" height="2" fill="#334" />
+    <rect x="30" y="36" width="16" height="2" fill="#334" />
+    <rect x="16" y="44" width="20" height="2" fill="#334" />
+    <rect x="40" y="46" width="2" height="14" fill="#334" />
+    {/* Player 1 - green dot */}
+    <circle cx="10" cy="12" r="4" fill="#10b981" />
+    {/* Player 2 - purple dot */}
+    <circle cx="14" cy="16" r="4" fill="#a78bfa" />
+    {/* Goal - yellow */}
+    <rect x="50" y="50" width="6" height="6" fill="#ffcc00" rx="1" />
+  </svg>
+);
+
 export const BattleshipIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
     <rect width="64" height="64" fill="#04111f" />

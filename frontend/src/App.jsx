@@ -5,13 +5,14 @@ import Battleship from "./components/games/Battleship/Battleship"
 import WordleGame from "./components/games/WordleGame"
 import ConnectionsGame from "./components/games/ConnectionsGame"
 import BenchmarkGame from "./components/games/BenchmarkGame"
+import MazeGame from "./components/games/MazeGame"
 import NewLandingPage from "./pages/LandingPage"
 import ModelSelection from "./pages/ModelSelection"
 import Dashboard from "./pages/Dashboard"
 import { MODEL_OPTIONS, getModelName } from "./config/modelCatalog"
 import {
   WordleIcon, ConnectionsIcon, BattleshipIcon,
-  PrisonersIcon, TwentyQIcon, CodeDebugIcon, AnalyticsIcon,
+  PrisonersIcon, TwentyQIcon, CodeDebugIcon, AnalyticsIcon, MazeIcon,
 } from "./components/common/PixelIcons"
 
 const GAMES = [
@@ -21,6 +22,7 @@ const GAMES = [
   { name: "Prisoners Dilemma", description: "Game Theory", Icon: PrisonersIcon, benchType: "pd" },
   { name: "20 Questions", description: "Deduction", Icon: TwentyQIcon, benchType: "tq" },
   { name: "Code Debug", description: "Bug Hunting", Icon: CodeDebugIcon, benchType: "cd" },
+  { name: "Maze Race", description: "Pathfinding", Icon: MazeIcon },
 ]
 
 function MainMenu() {
@@ -87,6 +89,9 @@ function MainMenu() {
     }
     if (selectedGame.name === "NYT Connections") {
       return <ConnectionsGame player1Model={player1Model} player2Model={player2Model} onBack={handleBackToMenu} />
+    }
+    if (selectedGame.name === "Maze Race") {
+      return <MazeGame player1Model={player1Model} player2Model={player2Model} onBack={handleBackToMenu} />
     }
     if (selectedGame.benchType) {
       return <BenchmarkGame gameType={selectedGame.benchType} player1Model={player1Model} player2Model={player2Model} onBack={handleBackToMenu} />

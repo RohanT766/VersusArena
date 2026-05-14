@@ -1,3 +1,89 @@
+/* Hero start screen */
+.bench-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  min-height: 60vh;
+  gap: 1.5rem;
+}
+
+.bench-hero-title {
+  font-family: 'VT323', monospace;
+  font-size: 3rem;
+  color: #ffcc00;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+}
+
+.bench-hero-subtitle {
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  color: #888;
+  max-width: 500px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.bench-hero-matchup {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.bench-hero-p1 {
+  font-family: 'VT323', monospace;
+  font-size: 2rem;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bench-hero-vs {
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.bench-hero-p2 {
+  font-family: 'VT323', monospace;
+  font-size: 2rem;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bench-hero-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.8rem;
+  padding: 1rem 3.5rem;
+  background: transparent;
+  color: #ffcc00;
+  border: 3px solid #ffcc00;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: all 0.25s ease;
+  margin-top: 1rem;
+}
+
+.bench-hero-btn:hover:not(:disabled) {
+  background: rgba(255, 204, 0, 0.12);
+  box-shadow: 0 0 40px rgba(255, 204, 0, 0.25), inset 0 0 20px rgba(255, 204, 0, 0.05);
+  transform: scale(1.03);
+}
+
+.bench-hero-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Running game area */
 .bench-game-container {
   display: flex;
   flex-direction: column;
@@ -21,10 +107,24 @@
   letter-spacing: 0.05em;
 }
 
+.bench-waiting-msg {
+  color: #666;
+  font-size: 1.2rem;
+  text-align: center;
+  margin: 2rem 0;
+  animation: benchPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes benchPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 .bench-game-actions {
   display: flex;
   gap: 12px;
-  margin-bottom: 2rem;
+  margin-top: 2rem;
+  justify-content: center;
 }
 
 .bench-btn {
@@ -43,17 +143,6 @@
   cursor: not-allowed;
 }
 
-.bench-btn-primary {
-  background: transparent;
-  color: #ffcc00;
-  border-color: #ffcc00;
-}
-
-.bench-btn-primary:hover:not(:disabled) {
-  background: rgba(255, 204, 0, 0.1);
-  box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
-}
-
 .bench-btn-secondary {
   background: transparent;
   color: #999;
@@ -63,6 +152,16 @@
 .bench-btn-secondary:hover:not(:disabled) {
   color: #fff;
   border-color: #fff;
+}
+
+/* Row entrance animation */
+.bench-row-enter {
+  animation: benchRowSlide 0.35s ease-out;
+}
+
+@keyframes benchRowSlide {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Prisoner's Dilemma */
