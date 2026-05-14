@@ -1,1102 +1,252 @@
 [
-  {
-    "id": 1,
-    "question": "Which scientist proposed the three laws of motion?",
-    "options": {
-      "A": "Isaac Newton",
-      "B": "Albert Einstein",
-      "C": "Galileo Galilei",
-      "D": "Niels Bohr"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 2,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 3,
-    "question": "In which city is the UN Headquarters located?",
-    "options": {
-      "A": "Geneva",
-      "B": "New York City",
-      "C": "Paris",
-      "D": "Vienna"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 4,
-    "question": "What programming language is known for its snake logo?",
-    "options": {
-      "A": "Java",
-      "B": "Python",
-      "C": "Ruby",
-      "D": "C++"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 5,
-    "question": "What novel features the character 'Big Brother'?",
-    "options": {
-      "A": "Brave New World",
-      "B": "Fahrenheit 451",
-      "C": "1984",
-      "D": "Animal Farm"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 6,
-    "question": "Who painted the ceiling of the Sistine Chapel?",
-    "options": {
-      "A": "Leonardo da Vinci",
-      "B": "Michelangelo",
-      "C": "Raphael",
-      "D": "Donatello"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 7,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 8,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 9,
-    "question": "Which metal has the highest electrical conductivity?",
-    "options": {
-      "A": "Copper",
-      "B": "Silver",
-      "C": "Gold",
-      "D": "Aluminum"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 10,
-    "question": "What is the derivative of sin(x)?",
-    "options": {
-      "A": "cos(x)",
-      "B": "-cos(x)",
-      "C": "-sin(x)",
-      "D": "tan(x)"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 11,
-    "question": "Which programming paradigm emphasizes immutability and pure functions?",
-    "options": {
-      "A": "Object-Oriented",
-      "B": "Functional",
-      "C": "Procedural",
-      "D": "Imperative"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 12,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 13,
-    "question": "Who won the Nobel Prize for inventing the World Wide Web?",
-    "options": {
-      "A": "Tim Berners-Lee",
-      "B": "Alan Turing",
-      "C": "Vint Cerf",
-      "D": "Dennis Ritchie"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 14,
-    "question": "Which element is atomic number 6?",
-    "options": {
-      "A": "Nitrogen",
-      "B": "Oxygen",
-      "C": "Carbon",
-      "D": "Helium"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 15,
-    "question": "What theorem states that a² + b² = c² in a right triangle?",
-    "options": {
-      "A": "Fundamental Theorem",
-      "B": "Pythagorean Theorem",
-      "C": "Pascal's Theorem",
-      "D": "Fermat's Theorem"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 16,
-    "question": "What is the term for a word or phrase that reads the same backward and forward?",
-    "options": {
-      "A": "Anagram",
-      "B": "Oxymoron",
-      "C": "Palindrome",
-      "D": "Alliteration"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 17,
-    "question": "Which philosopher said 'I think, therefore I am'?",
-    "options": {
-      "A": "Plato",
-      "B": "Descartes",
-      "C": "Kant",
-      "D": "Socrates"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 18,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 19,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 20,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 21,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 22,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 23,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 24,
-    "question": "Which element is atomic number 6?",
-    "options": {
-      "A": "Nitrogen",
-      "B": "Oxygen",
-      "C": "Carbon",
-      "D": "Helium"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 25,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 26,
-    "question": "What programming language is known for its snake logo?",
-    "options": {
-      "A": "Java",
-      "B": "Python",
-      "C": "Ruby",
-      "D": "C++"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 27,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 28,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 29,
-    "question": "Who painted the ceiling of the Sistine Chapel?",
-    "options": {
-      "A": "Leonardo da Vinci",
-      "B": "Michelangelo",
-      "C": "Raphael",
-      "D": "Donatello"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 30,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 31,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 32,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 33,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 34,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 35,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 36,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 37,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 38,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 39,
-    "question": "Which metal has the highest electrical conductivity?",
-    "options": {
-      "A": "Copper",
-      "B": "Silver",
-      "C": "Gold",
-      "D": "Aluminum"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 40,
-    "question": "Which scientist proposed the three laws of motion?",
-    "options": {
-      "A": "Isaac Newton",
-      "B": "Albert Einstein",
-      "C": "Galileo Galilei",
-      "D": "Niels Bohr"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 41,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 42,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 43,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 44,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 45,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 46,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 47,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 48,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 49,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 50,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 51,
-    "question": "What theorem states that a² + b² = c² in a right triangle?",
-    "options": {
-      "A": "Fundamental Theorem",
-      "B": "Pythagorean Theorem",
-      "C": "Pascal's Theorem",
-      "D": "Fermat's Theorem"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 52,
-    "question": "What is the derivative of sin(x)?",
-    "options": {
-      "A": "cos(x)",
-      "B": "-cos(x)",
-      "C": "-sin(x)",
-      "D": "tan(x)"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 53,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 54,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 55,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 56,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 57,
-    "question": "Which metal has the highest electrical conductivity?",
-    "options": {
-      "A": "Copper",
-      "B": "Silver",
-      "C": "Gold",
-      "D": "Aluminum"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 58,
-    "question": "What theorem states that a² + b² = c² in a right triangle?",
-    "options": {
-      "A": "Fundamental Theorem",
-      "B": "Pythagorean Theorem",
-      "C": "Pascal's Theorem",
-      "D": "Fermat's Theorem"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 59,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 60,
-    "question": "Which philosopher authored 'Being and Time'?",
-    "options": {
-      "A": "Sartre",
-      "B": "Nietzsche",
-      "C": "Heidegger",
-      "D": "Hume"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 61,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 62,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 63,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 64,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 65,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 66,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 67,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 68,
-    "question": "Which empire was ruled by Mansa Musa, one of the richest individuals in history?",
-    "options": {
-      "A": "Mali Empire",
-      "B": "Ottoman Empire",
-      "C": "Roman Empire",
-      "D": "Mughal Empire"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 69,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 70,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 71,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 72,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 73,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 74,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 75,
-    "question": "What programming language is known for its snake logo?",
-    "options": {
-      "A": "Java",
-      "B": "Python",
-      "C": "Ruby",
-      "D": "C++"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 76,
-    "question": "In chess, what piece can move any number of spaces diagonally?",
-    "options": {
-      "A": "Rook",
-      "B": "Bishop",
-      "C": "Queen",
-      "D": "Knight"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 77,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 78,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 79,
-    "question": "What programming language is known for its snake logo?",
-    "options": {
-      "A": "Java",
-      "B": "Python",
-      "C": "Ruby",
-      "D": "C++"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 80,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 81,
-    "question": "What is the derivative of sin(x)?",
-    "options": {
-      "A": "cos(x)",
-      "B": "-cos(x)",
-      "C": "-sin(x)",
-      "D": "tan(x)"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 82,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 83,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 84,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 85,
-    "question": "Which country has the most official languages?",
-    "options": {
-      "A": "India",
-      "B": "Switzerland",
-      "C": "South Africa",
-      "D": "Canada"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 86,
-    "question": "In which city is the UN Headquarters located?",
-    "options": {
-      "A": "Geneva",
-      "B": "New York City",
-      "C": "Paris",
-      "D": "Vienna"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 87,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 88,
-    "question": "What novel features the character 'Big Brother'?",
-    "options": {
-      "A": "Brave New World",
-      "B": "Fahrenheit 451",
-      "C": "1984",
-      "D": "Animal Farm"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 89,
-    "question": "Which element is atomic number 6?",
-    "options": {
-      "A": "Nitrogen",
-      "B": "Oxygen",
-      "C": "Carbon",
-      "D": "Helium"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 90,
-    "question": "Which metal has the highest electrical conductivity?",
-    "options": {
-      "A": "Copper",
-      "B": "Silver",
-      "C": "Gold",
-      "D": "Aluminum"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 91,
-    "question": "Which metal has the highest electrical conductivity?",
-    "options": {
-      "A": "Copper",
-      "B": "Silver",
-      "C": "Gold",
-      "D": "Aluminum"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 92,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 93,
-    "question": "What ancient civilization built Machu Picchu?",
-    "options": {
-      "A": "Aztecs",
-      "B": "Mayans",
-      "C": "Incas",
-      "D": "Olmecs"
-    },
-    "answer": "C"
-  },
-  {
-    "id": 94,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 95,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 96,
-    "question": "What is the derivative of sin(x)?",
-    "options": {
-      "A": "cos(x)",
-      "B": "-cos(x)",
-      "C": "-sin(x)",
-      "D": "tan(x)"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 97,
-    "question": "Which Greek letter is used to represent a summation?",
-    "options": {
-      "A": "Sigma",
-      "B": "Delta",
-      "C": "Omega",
-      "D": "Theta"
-    },
-    "answer": "A"
-  },
-  {
-    "id": 98,
-    "question": "What's the capital city of New Zealand?",
-    "options": {
-      "A": "Auckland",
-      "B": "Wellington",
-      "C": "Christchurch",
-      "D": "Dunedin"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 99,
-    "question": "Who painted the ceiling of the Sistine Chapel?",
-    "options": {
-      "A": "Leonardo da Vinci",
-      "B": "Michelangelo",
-      "C": "Raphael",
-      "D": "Donatello"
-    },
-    "answer": "B"
-  },
-  {
-    "id": 100,
-    "question": "Who won the Nobel Prize for inventing the World Wide Web?",
-    "options": {
-      "A": "Tim Berners-Lee",
-      "B": "Alan Turing",
-      "C": "Vint Cerf",
-      "D": "Dennis Ritchie"
-    },
-    "answer": "A"
-  }
-] 
+  {"id": 1, "question": "What is the only country in the world that has a non-rectangular flag?", "options": {"A": "Switzerland", "B": "Nepal", "C": "Bhutan", "D": "Vatican City"}, "answer": "B"},
+  {"id": 2, "question": "In what year did the Byzantine Empire officially fall?", "options": {"A": "1204", "B": "1389", "C": "1453", "D": "1492"}, "answer": "C"},
+  {"id": 3, "question": "Which element has the highest melting point of any element on the periodic table?", "options": {"A": "Tungsten", "B": "Carbon", "C": "Osmium", "D": "Rhenium"}, "answer": "B"},
+  {"id": 4, "question": "The Scoville scale measures the pungency of what?", "options": {"A": "Mustard seeds", "B": "Chili peppers", "C": "Wasabi root", "D": "Black pepper"}, "answer": "B"},
+  {"id": 5, "question": "What is the smallest bone in the human body?", "options": {"A": "Incus", "B": "Malleus", "C": "Stapes", "D": "Hyoid"}, "answer": "C"},
+  {"id": 6, "question": "Which mathematician proved that there are infinitely many prime numbers around 300 BCE?", "options": {"A": "Archimedes", "B": "Euclid", "C": "Pythagoras", "D": "Eratosthenes"}, "answer": "B"},
+  {"id": 7, "question": "What is the deepest point in the Earth's oceans?", "options": {"A": "Tonga Trench", "B": "Puerto Rico Trench", "C": "Mariana Trench", "D": "Java Trench"}, "answer": "C"},
+  {"id": 8, "question": "Which treaty ended World War I?", "options": {"A": "Treaty of Paris", "B": "Treaty of Versailles", "C": "Treaty of Ghent", "D": "Treaty of Westphalia"}, "answer": "B"},
+  {"id": 9, "question": "In computing, what does the acronym RISC stand for?", "options": {"A": "Reduced Instruction Set Computer", "B": "Rapid Integrated System Controller", "C": "Runtime Instruction Sequence Compiler", "D": "Recursive Inline Syntax Code"}, "answer": "A"},
+  {"id": 10, "question": "What was the name of the ship on which Charles Darwin made his famous voyage?", "options": {"A": "HMS Victory", "B": "HMS Beagle", "C": "HMS Endeavour", "D": "HMS Bounty"}, "answer": "B"},
+  {"id": 11, "question": "Which two elements make up the majority of the Sun's composition?", "options": {"A": "Hydrogen and Helium", "B": "Hydrogen and Oxygen", "C": "Helium and Carbon", "D": "Hydrogen and Nitrogen"}, "answer": "A"},
+  {"id": 12, "question": "What is the capital of Mongolia?", "options": {"A": "Astana", "B": "Bishkek", "C": "Ulaanbaatar", "D": "Dushanbe"}, "answer": "C"},
+  {"id": 13, "question": "In Greek mythology, who was condemned to push a boulder up a hill for eternity?", "options": {"A": "Tantalus", "B": "Prometheus", "C": "Atlas", "D": "Sisyphus"}, "answer": "D"},
+  {"id": 14, "question": "What programming paradigm treats computation as the evaluation of mathematical functions?", "options": {"A": "Object-oriented programming", "B": "Functional programming", "C": "Procedural programming", "D": "Logic programming"}, "answer": "B"},
+  {"id": 15, "question": "Which organ in the human body produces insulin?", "options": {"A": "Liver", "B": "Kidneys", "C": "Pancreas", "D": "Spleen"}, "answer": "C"},
+  {"id": 16, "question": "The Rosetta Stone was written in three scripts. Which was NOT one of them?", "options": {"A": "Sumerian cuneiform", "B": "Demotic", "C": "Ancient Greek", "D": "Hieroglyphic"}, "answer": "A"},
+  {"id": 17, "question": "What is the chemical formula for sulfuric acid?", "options": {"A": "HCl", "B": "HNO3", "C": "H2SO4", "D": "H3PO4"}, "answer": "C"},
+  {"id": 18, "question": "Which composer wrote 'The Four Seasons'?", "options": {"A": "Bach", "B": "Mozart", "C": "Vivaldi", "D": "Handel"}, "answer": "C"},
+  {"id": 19, "question": "In what decade was the transistor invented at Bell Labs?", "options": {"A": "1930s", "B": "1940s", "C": "1950s", "D": "1960s"}, "answer": "B"},
+  {"id": 20, "question": "What is the longest river in Asia?", "options": {"A": "Mekong", "B": "Yellow River", "C": "Yangtze", "D": "Ganges"}, "answer": "C"},
+  {"id": 21, "question": "Which ancient civilization built Machu Picchu?", "options": {"A": "Maya", "B": "Aztec", "C": "Inca", "D": "Olmec"}, "answer": "C"},
+  {"id": 22, "question": "What does the P in the complexity class P stand for?", "options": {"A": "Probabilistic", "B": "Polynomial", "C": "Parallel", "D": "Primitive"}, "answer": "B"},
+  {"id": 23, "question": "Which planet in our solar system has the most moons?", "options": {"A": "Jupiter", "B": "Saturn", "C": "Uranus", "D": "Neptune"}, "answer": "B"},
+  {"id": 24, "question": "The Voynich Manuscript is famous for being what?", "options": {"A": "The oldest known printed book", "B": "Written in an undeciphered script", "C": "The longest medieval poem", "D": "A forged royal decree"}, "answer": "B"},
+  {"id": 25, "question": "What is the only metal that is liquid at standard room temperature?", "options": {"A": "Gallium", "B": "Cesium", "C": "Mercury", "D": "Bromine"}, "answer": "C"},
+  {"id": 26, "question": "Who painted 'Guernica'?", "options": {"A": "Salvador Dali", "B": "Pablo Picasso", "C": "Joan Miro", "D": "Diego Rivera"}, "answer": "B"},
+  {"id": 27, "question": "In which country would you find the ancient city of Petra?", "options": {"A": "Egypt", "B": "Syria", "C": "Jordan", "D": "Iraq"}, "answer": "C"},
+  {"id": 28, "question": "What is the time complexity of binary search on a sorted array?", "options": {"A": "O(n)", "B": "O(n log n)", "C": "O(log n)", "D": "O(1)"}, "answer": "C"},
+  {"id": 29, "question": "Which gas makes up approximately 78% of Earth's atmosphere?", "options": {"A": "Oxygen", "B": "Carbon dioxide", "C": "Argon", "D": "Nitrogen"}, "answer": "D"},
+  {"id": 30, "question": "What year was the first successful human heart transplant performed?", "options": {"A": "1954", "B": "1962", "C": "1967", "D": "1973"}, "answer": "C"},
+  {"id": 31, "question": "Which physicist formulated the uncertainty principle?", "options": {"A": "Niels Bohr", "B": "Werner Heisenberg", "C": "Erwin Schrodinger", "D": "Max Planck"}, "answer": "B"},
+  {"id": 32, "question": "The Taiping Rebellion occurred in which country?", "options": {"A": "Japan", "B": "India", "C": "China", "D": "Korea"}, "answer": "C"},
+  {"id": 33, "question": "What is the hardest naturally occurring substance?", "options": {"A": "Corundum", "B": "Topaz", "C": "Diamond", "D": "Quartz"}, "answer": "C"},
+  {"id": 34, "question": "Which sorting algorithm has the best average-case time complexity?", "options": {"A": "Bubble sort", "B": "Insertion sort", "C": "Selection sort", "D": "Merge sort"}, "answer": "D"},
+  {"id": 35, "question": "Who wrote 'One Hundred Years of Solitude'?", "options": {"A": "Jorge Luis Borges", "B": "Gabriel Garcia Marquez", "C": "Isabel Allende", "D": "Mario Vargas Llosa"}, "answer": "B"},
+  {"id": 36, "question": "What is the name of the boundary around a black hole beyond which nothing can escape?", "options": {"A": "Schwarzschild radius", "B": "Event horizon", "C": "Photon sphere", "D": "Singularity"}, "answer": "B"},
+  {"id": 37, "question": "Which empire was the largest contiguous land empire in history?", "options": {"A": "Roman Empire", "B": "British Empire", "C": "Mongol Empire", "D": "Ottoman Empire"}, "answer": "C"},
+  {"id": 38, "question": "In cryptography, what does RSA stand for?", "options": {"A": "Random Secure Algorithm", "B": "Rivest-Shamir-Adleman", "C": "Rapid Sequential Authentication", "D": "Recursive Symmetric Architecture"}, "answer": "B"},
+  {"id": 39, "question": "What is the speed of light in a vacuum, approximately?", "options": {"A": "200,000 km/s", "B": "250,000 km/s", "C": "300,000 km/s", "D": "350,000 km/s"}, "answer": "C"},
+  {"id": 40, "question": "Which country has the most UNESCO World Heritage Sites?", "options": {"A": "China", "B": "Italy", "C": "Spain", "D": "France"}, "answer": "B"},
+  {"id": 41, "question": "What is the primary neurotransmitter associated with the reward system in the brain?", "options": {"A": "Serotonin", "B": "Dopamine", "C": "GABA", "D": "Acetylcholine"}, "answer": "B"},
+  {"id": 42, "question": "Who proposed the heliocentric model of the solar system before Galileo?", "options": {"A": "Tycho Brahe", "B": "Johannes Kepler", "C": "Nicolaus Copernicus", "D": "Giordano Bruno"}, "answer": "C"},
+  {"id": 43, "question": "What data structure uses LIFO (Last In, First Out) ordering?", "options": {"A": "Queue", "B": "Stack", "C": "Linked list", "D": "Hash table"}, "answer": "B"},
+  {"id": 44, "question": "Which philosopher wrote 'The Republic'?", "options": {"A": "Aristotle", "B": "Socrates", "C": "Plato", "D": "Epicurus"}, "answer": "C"},
+  {"id": 45, "question": "What is the largest organ in the human body?", "options": {"A": "Liver", "B": "Brain", "C": "Skin", "D": "Lungs"}, "answer": "C"},
+  {"id": 46, "question": "The Strait of Malacca separates which two landmasses?", "options": {"A": "Java and Sumatra", "B": "Borneo and Sulawesi", "C": "Malay Peninsula and Sumatra", "D": "Philippines and Borneo"}, "answer": "C"},
+  {"id": 47, "question": "What is the phenomenon where light bends around a massive object called?", "options": {"A": "Diffraction", "B": "Refraction", "C": "Gravitational lensing", "D": "Polarization"}, "answer": "C"},
+  {"id": 48, "question": "Which protocol operates at the transport layer of the OSI model?", "options": {"A": "HTTP", "B": "IP", "C": "TCP", "D": "Ethernet"}, "answer": "C"},
+  {"id": 49, "question": "In which year did the Berlin Wall fall?", "options": {"A": "1987", "B": "1989", "C": "1990", "D": "1991"}, "answer": "B"},
+  {"id": 50, "question": "What is the most abundant element in the Earth's crust?", "options": {"A": "Silicon", "B": "Iron", "C": "Oxygen", "D": "Aluminum"}, "answer": "C"},
+  {"id": 51, "question": "Which ancient wonder was located in Alexandria, Egypt?", "options": {"A": "Colossus of Rhodes", "B": "Hanging Gardens", "C": "Lighthouse of Alexandria", "D": "Temple of Artemis"}, "answer": "C"},
+  {"id": 52, "question": "What is a Turing machine's tape equivalent to in modern computing?", "options": {"A": "CPU cache", "B": "RAM", "C": "Unbounded memory", "D": "Hard drive"}, "answer": "C"},
+  {"id": 53, "question": "Which vitamin is synthesized by the human body when exposed to sunlight?", "options": {"A": "Vitamin A", "B": "Vitamin C", "C": "Vitamin D", "D": "Vitamin K"}, "answer": "C"},
+  {"id": 54, "question": "What is the term for a word that is spelled the same forwards and backwards?", "options": {"A": "Anagram", "B": "Palindrome", "C": "Homophone", "D": "Acronym"}, "answer": "B"},
+  {"id": 55, "question": "Which battle is considered the turning point of the American Civil War?", "options": {"A": "Battle of Antietam", "B": "Battle of Gettysburg", "C": "Battle of Bull Run", "D": "Battle of Shiloh"}, "answer": "B"},
+  {"id": 56, "question": "In graph theory, what is a graph with no cycles called?", "options": {"A": "Complete graph", "B": "Bipartite graph", "C": "Acyclic graph (tree/forest)", "D": "Planar graph"}, "answer": "C"},
+  {"id": 57, "question": "What is the rarest blood type?", "options": {"A": "O negative", "B": "B negative", "C": "AB negative", "D": "A negative"}, "answer": "C"},
+  {"id": 58, "question": "Which country was formerly known as Persia?", "options": {"A": "Iraq", "B": "Turkey", "C": "Iran", "D": "Afghanistan"}, "answer": "C"},
+  {"id": 59, "question": "What is the Chandrasekhar limit?", "options": {"A": "Maximum mass of a white dwarf star", "B": "Maximum temperature of a nebula", "C": "Maximum speed of a neutron star", "D": "Maximum age of a red giant"}, "answer": "A"},
+  {"id": 60, "question": "Who developed the first polio vaccine?", "options": {"A": "Alexander Fleming", "B": "Jonas Salk", "C": "Louis Pasteur", "D": "Edward Jenner"}, "answer": "B"},
+  {"id": 61, "question": "What is the CAP theorem about in distributed systems?", "options": {"A": "Consistency, Availability, Partition tolerance tradeoff", "B": "Caching, Authentication, Performance optimization", "C": "Concurrency, Atomicity, Persistence guarantee", "D": "Compression, Allocation, Parallelism balance"}, "answer": "A"},
+  {"id": 62, "question": "Which language family does Finnish belong to?", "options": {"A": "Indo-European", "B": "Uralic", "C": "Altaic", "D": "Sino-Tibetan"}, "answer": "B"},
+  {"id": 63, "question": "What is the second law of thermodynamics primarily about?", "options": {"A": "Conservation of energy", "B": "Entropy always increases in isolated systems", "C": "Absolute zero is unattainable", "D": "Energy equals mass times speed of light squared"}, "answer": "B"},
+  {"id": 64, "question": "Who wrote 'The Art of War'?", "options": {"A": "Confucius", "B": "Lao Tzu", "C": "Sun Tzu", "D": "Zhuge Liang"}, "answer": "C"},
+  {"id": 65, "question": "What is the half-life of Carbon-14?", "options": {"A": "1,500 years", "B": "5,730 years", "C": "12,000 years", "D": "50,000 years"}, "answer": "B"},
+  {"id": 66, "question": "In which country was the first programmable computer (Z3) built?", "options": {"A": "United States", "B": "United Kingdom", "C": "Germany", "D": "France"}, "answer": "C"},
+  {"id": 67, "question": "What is the name of the process by which plants convert CO2 and water into glucose?", "options": {"A": "Cellular respiration", "B": "Fermentation", "C": "Photosynthesis", "D": "Chemosynthesis"}, "answer": "C"},
+  {"id": 68, "question": "Which conflict is known as 'The Forgotten War'?", "options": {"A": "Vietnam War", "B": "Korean War", "C": "Gulf War", "D": "Falklands War"}, "answer": "B"},
+  {"id": 69, "question": "What is the Big-O notation for looking up an element in a hash table (average case)?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n log n)"}, "answer": "C"},
+  {"id": 70, "question": "What is the most spoken native language in the world?", "options": {"A": "English", "B": "Hindi", "C": "Spanish", "D": "Mandarin Chinese"}, "answer": "D"},
+  {"id": 71, "question": "Which gland is often called the 'master gland' of the endocrine system?", "options": {"A": "Thyroid", "B": "Adrenal", "C": "Pituitary", "D": "Hypothalamus"}, "answer": "C"},
+  {"id": 72, "question": "What is the name of the theoretical boundary of the solar system?", "options": {"A": "Kuiper Belt", "B": "Oort Cloud", "C": "Heliosphere", "D": "Asteroid Belt"}, "answer": "B"},
+  {"id": 73, "question": "Who is credited with inventing calculus independently of Newton?", "options": {"A": "Euler", "B": "Leibniz", "C": "Gauss", "D": "Fermat"}, "answer": "B"},
+  {"id": 74, "question": "What is the primary ingredient in traditional Japanese miso?", "options": {"A": "Rice", "B": "Wheat", "C": "Soybeans", "D": "Seaweed"}, "answer": "C"},
+  {"id": 75, "question": "Which algorithm is used to find the shortest path in a weighted graph?", "options": {"A": "Breadth-first search", "B": "Depth-first search", "C": "Dijkstra's algorithm", "D": "Prim's algorithm"}, "answer": "C"},
+  {"id": 76, "question": "What causes tides on Earth?", "options": {"A": "Earth's rotation only", "B": "Solar wind", "C": "Gravitational pull of the Moon and Sun", "D": "Ocean currents"}, "answer": "C"},
+  {"id": 77, "question": "In which decade was the double helix structure of DNA discovered?", "options": {"A": "1930s", "B": "1940s", "C": "1950s", "D": "1960s"}, "answer": "C"},
+  {"id": 78, "question": "What is the currency of South Korea?", "options": {"A": "Yen", "B": "Baht", "C": "Won", "D": "Rupee"}, "answer": "C"},
+  {"id": 79, "question": "Which design pattern ensures a class has only one instance?", "options": {"A": "Factory", "B": "Observer", "C": "Singleton", "D": "Strategy"}, "answer": "C"},
+  {"id": 80, "question": "What is the shortest war in recorded history?", "options": {"A": "Six-Day War", "B": "Anglo-Zanzibar War", "C": "Football War", "D": "Falklands War"}, "answer": "B"},
+  {"id": 81, "question": "What particle is responsible for carrying the electromagnetic force?", "options": {"A": "Gluon", "B": "W boson", "C": "Photon", "D": "Graviton"}, "answer": "C"},
+  {"id": 82, "question": "Which desert is the largest hot desert in the world?", "options": {"A": "Arabian", "B": "Gobi", "C": "Kalahari", "D": "Sahara"}, "answer": "D"},
+  {"id": 83, "question": "What is the difference between a compiled and an interpreted language?", "options": {"A": "Compiled runs on any OS; interpreted does not", "B": "Compiled is translated to machine code ahead of time; interpreted is executed line by line", "C": "Compiled is slower; interpreted is faster", "D": "There is no meaningful difference"}, "answer": "B"},
+  {"id": 84, "question": "Who formulated the laws of planetary motion?", "options": {"A": "Galileo Galilei", "B": "Isaac Newton", "C": "Johannes Kepler", "D": "Tycho Brahe"}, "answer": "C"},
+  {"id": 85, "question": "What is the largest freshwater lake by surface area?", "options": {"A": "Lake Victoria", "B": "Lake Superior", "C": "Lake Baikal", "D": "Caspian Sea"}, "answer": "B"},
+  {"id": 86, "question": "Which type of RNA carries amino acids to the ribosome during translation?", "options": {"A": "mRNA", "B": "rRNA", "C": "tRNA", "D": "snRNA"}, "answer": "C"},
+  {"id": 87, "question": "In economics, what does GDP stand for?", "options": {"A": "Gross Domestic Product", "B": "General Distribution of Prices", "C": "Government Debt Portfolio", "D": "Growth Development Projection"}, "answer": "A"},
+  {"id": 88, "question": "What is the process of converting a plaintext message into ciphertext called?", "options": {"A": "Hashing", "B": "Encryption", "C": "Encoding", "D": "Compression"}, "answer": "B"},
+  {"id": 89, "question": "Which country has the longest coastline in the world?", "options": {"A": "Russia", "B": "Indonesia", "C": "Canada", "D": "Australia"}, "answer": "C"},
+  {"id": 90, "question": "What is Avogadro's number approximately equal to?", "options": {"A": "6.022 x 10^23", "B": "3.14 x 10^20", "C": "1.602 x 10^19", "D": "9.81 x 10^25"}, "answer": "A"},
+  {"id": 91, "question": "Which ancient writing system is considered the oldest?", "options": {"A": "Egyptian hieroglyphs", "B": "Sumerian cuneiform", "C": "Chinese oracle bone script", "D": "Indus Valley script"}, "answer": "B"},
+  {"id": 92, "question": "What type of bond involves the sharing of electron pairs between atoms?", "options": {"A": "Ionic bond", "B": "Metallic bond", "C": "Covalent bond", "D": "Hydrogen bond"}, "answer": "C"},
+  {"id": 93, "question": "In database systems, what does ACID stand for?", "options": {"A": "Atomicity, Consistency, Isolation, Durability", "B": "Authentication, Compression, Integration, Distribution", "C": "Allocation, Caching, Indexing, Deduplication", "D": "Availability, Concurrency, Integrity, Delivery"}, "answer": "A"},
+  {"id": 94, "question": "What is the most electronegative element?", "options": {"A": "Oxygen", "B": "Chlorine", "C": "Fluorine", "D": "Nitrogen"}, "answer": "C"},
+  {"id": 95, "question": "Who painted the ceiling of the Sistine Chapel?", "options": {"A": "Leonardo da Vinci", "B": "Raphael", "C": "Michelangelo", "D": "Donatello"}, "answer": "C"},
+  {"id": 96, "question": "Which layer of the Earth's atmosphere contains the ozone layer?", "options": {"A": "Troposphere", "B": "Stratosphere", "C": "Mesosphere", "D": "Thermosphere"}, "answer": "B"},
+  {"id": 97, "question": "What is the term for a function that calls itself?", "options": {"A": "Iteration", "B": "Recursion", "C": "Polymorphism", "D": "Encapsulation"}, "answer": "B"},
+  {"id": 98, "question": "Which battle marked Napoleon's final defeat?", "options": {"A": "Battle of Leipzig", "B": "Battle of Austerlitz", "C": "Battle of Waterloo", "D": "Battle of Trafalgar"}, "answer": "C"},
+  {"id": 99, "question": "What is the approximate age of the Earth?", "options": {"A": "3.2 billion years", "B": "4.5 billion years", "C": "6.8 billion years", "D": "10 billion years"}, "answer": "B"},
+  {"id": 100, "question": "What is the name of the effect where observed particles behave differently when being measured?", "options": {"A": "Doppler effect", "B": "Observer effect", "C": "Butterfly effect", "D": "Photoelectric effect"}, "answer": "B"},
+  {"id": 101, "question": "Which country was the first to grant women the right to vote in national elections?", "options": {"A": "United States", "B": "United Kingdom", "C": "New Zealand", "D": "Finland"}, "answer": "C"},
+  {"id": 102, "question": "What is the name of the conjecture that every even integer greater than 2 can be expressed as the sum of two primes?", "options": {"A": "Riemann Hypothesis", "B": "Goldbach's Conjecture", "C": "Fermat's Last Theorem", "D": "Twin Prime Conjecture"}, "answer": "B"},
+  {"id": 103, "question": "In which organ does the Krebs cycle take place?", "options": {"A": "Lungs", "B": "Liver", "C": "Mitochondria of cells", "D": "Kidneys"}, "answer": "C"},
+  {"id": 104, "question": "Which network topology connects every node to every other node?", "options": {"A": "Star", "B": "Ring", "C": "Bus", "D": "Mesh"}, "answer": "D"},
+  {"id": 105, "question": "What phenomenon explains why a moving clock ticks slower than a stationary one?", "options": {"A": "Length contraction", "B": "Time dilation", "C": "Mass-energy equivalence", "D": "Frame dragging"}, "answer": "B"},
+  {"id": 106, "question": "Which civilization invented the concept of zero as a number?", "options": {"A": "Greek", "B": "Roman", "C": "Indian", "D": "Chinese"}, "answer": "C"},
+  {"id": 107, "question": "What is the term for the minimum energy required to start a chemical reaction?", "options": {"A": "Kinetic energy", "B": "Activation energy", "C": "Binding energy", "D": "Potential energy"}, "answer": "B"},
+  {"id": 108, "question": "Which river is the longest in Africa?", "options": {"A": "Congo", "B": "Niger", "C": "Nile", "D": "Zambezi"}, "answer": "C"},
+  {"id": 109, "question": "In logic, what is the contrapositive of 'If P then Q'?", "options": {"A": "If Q then P", "B": "If not P then not Q", "C": "If not Q then not P", "D": "If P then not Q"}, "answer": "C"},
+  {"id": 110, "question": "What was the Manhattan Project?", "options": {"A": "A plan to rebuild New York after WWII", "B": "A secret program to develop nuclear weapons", "C": "A Cold War espionage operation", "D": "A space exploration initiative"}, "answer": "B"},
+  {"id": 111, "question": "Which protein is primarily responsible for oxygen transport in blood?", "options": {"A": "Myoglobin", "B": "Hemoglobin", "C": "Albumin", "D": "Fibrinogen"}, "answer": "B"},
+  {"id": 112, "question": "What is the study of fungi called?", "options": {"A": "Bryology", "B": "Mycology", "C": "Phycology", "D": "Virology"}, "answer": "B"},
+  {"id": 113, "question": "Which consistency model guarantees that reads always return the most recent write?", "options": {"A": "Eventual consistency", "B": "Causal consistency", "C": "Strong consistency (linearizability)", "D": "Read-your-writes consistency"}, "answer": "C"},
+  {"id": 114, "question": "What is the largest known structure in the universe?", "options": {"A": "Laniakea Supercluster", "B": "Hercules-Corona Borealis Great Wall", "C": "Bootes Void", "D": "Sloan Great Wall"}, "answer": "B"},
+  {"id": 115, "question": "Which philosopher argued 'I think, therefore I am'?", "options": {"A": "John Locke", "B": "Immanuel Kant", "C": "Rene Descartes", "D": "David Hume"}, "answer": "C"},
+  {"id": 116, "question": "What is the name of the boundary between Earth's crust and mantle?", "options": {"A": "Gutenberg discontinuity", "B": "Mohorovicic discontinuity", "C": "Lehmann discontinuity", "D": "Conrad discontinuity"}, "answer": "B"},
+  {"id": 117, "question": "In which year was the World Wide Web invented by Tim Berners-Lee?", "options": {"A": "1985", "B": "1989", "C": "1993", "D": "1995"}, "answer": "B"},
+  {"id": 118, "question": "What is the primary function of mitochondria in a cell?", "options": {"A": "Protein synthesis", "B": "DNA replication", "C": "ATP (energy) production", "D": "Waste removal"}, "answer": "C"},
+  {"id": 119, "question": "Which empire controlled most of Southeast Asia's trade routes in the 7th-13th centuries?", "options": {"A": "Khmer Empire", "B": "Majapahit Empire", "C": "Srivijaya Empire", "D": "Champa Kingdom"}, "answer": "C"},
+  {"id": 120, "question": "What is the worst-case time complexity of quicksort?", "options": {"A": "O(n log n)", "B": "O(n^2)", "C": "O(n)", "D": "O(log n)"}, "answer": "B"},
+  {"id": 121, "question": "Which mineral is the primary component of glass?", "options": {"A": "Feldspar", "B": "Mica", "C": "Silica (quartz)", "D": "Calcite"}, "answer": "C"},
+  {"id": 122, "question": "Who wrote 'Crime and Punishment'?", "options": {"A": "Leo Tolstoy", "B": "Anton Chekhov", "C": "Fyodor Dostoevsky", "D": "Ivan Turgenev"}, "answer": "C"},
+  {"id": 123, "question": "What is the Doppler effect?", "options": {"A": "Light bending around gravity", "B": "Change in frequency of a wave relative to an observer moving relative to the source", "C": "Splitting of light into a spectrum", "D": "Reflection of sound waves"}, "answer": "B"},
+  {"id": 124, "question": "Which data structure would you use for implementing a priority queue efficiently?", "options": {"A": "Array", "B": "Linked list", "C": "Binary heap", "D": "Hash table"}, "answer": "C"},
+  {"id": 125, "question": "What is the term for an organism that generates its own heat internally?", "options": {"A": "Ectotherm", "B": "Endotherm", "C": "Poikilotherm", "D": "Mesotherm"}, "answer": "B"},
+  {"id": 126, "question": "Which strait connects the Mediterranean Sea to the Atlantic Ocean?", "options": {"A": "Strait of Hormuz", "B": "Strait of Gibraltar", "C": "Bosphorus Strait", "D": "Strait of Messina"}, "answer": "B"},
+  {"id": 127, "question": "What was the significance of the Magna Carta?", "options": {"A": "It established democracy in England", "B": "It limited the power of the king and established rule of law", "C": "It abolished feudalism", "D": "It declared independence from Rome"}, "answer": "B"},
+  {"id": 128, "question": "In quantum computing, what is the basic unit of quantum information?", "options": {"A": "Bit", "B": "Byte", "C": "Qubit", "D": "Qutrit"}, "answer": "C"},
+  {"id": 129, "question": "What causes the Aurora Borealis?", "options": {"A": "Reflection of sunlight off ice crystals", "B": "Charged particles from the Sun interacting with Earth's magnetic field", "C": "Volcanic gases in the atmosphere", "D": "Moonlight refraction"}, "answer": "B"},
+  {"id": 130, "question": "Which amendment to the US Constitution abolished slavery?", "options": {"A": "12th", "B": "13th", "C": "14th", "D": "15th"}, "answer": "B"},
+  {"id": 131, "question": "What is the Pauli Exclusion Principle?", "options": {"A": "Energy is conserved in all reactions", "B": "No two fermions can occupy the same quantum state simultaneously", "C": "Electrons orbit the nucleus in fixed paths", "D": "Matter and antimatter annihilate on contact"}, "answer": "B"},
+  {"id": 132, "question": "Which SQL operation combines rows from two tables based on a related column?", "options": {"A": "UNION", "B": "MERGE", "C": "JOIN", "D": "CONCAT"}, "answer": "C"},
+  {"id": 133, "question": "What is the most abundant protein in the human body?", "options": {"A": "Keratin", "B": "Actin", "C": "Collagen", "D": "Hemoglobin"}, "answer": "C"},
+  {"id": 134, "question": "Which ancient trade route connected China to the Mediterranean?", "options": {"A": "Amber Road", "B": "Silk Road", "C": "Spice Route", "D": "Incense Route"}, "answer": "B"},
+  {"id": 135, "question": "What is the Halting Problem in computer science?", "options": {"A": "Determining if a CPU will overheat", "B": "Deciding whether a given program will finish running or run forever", "C": "Finding the fastest algorithm for a problem", "D": "Detecting infinite loops at compile time"}, "answer": "B"},
+  {"id": 136, "question": "Which subatomic particle was discovered at CERN in 2012?", "options": {"A": "Graviton", "B": "Higgs boson", "C": "Top quark", "D": "Neutrino"}, "answer": "B"},
+  {"id": 137, "question": "What is the driest continent on Earth?", "options": {"A": "Africa", "B": "Australia", "C": "Antarctica", "D": "Asia"}, "answer": "C"},
+  {"id": 138, "question": "Who developed the theory of general relativity?", "options": {"A": "Max Planck", "B": "Niels Bohr", "C": "Albert Einstein", "D": "Richard Feynman"}, "answer": "C"},
+  {"id": 139, "question": "What is the mechanism by which bacteria share genetic material horizontally?", "options": {"A": "Meiosis", "B": "Conjugation", "C": "Mitosis", "D": "Binary fission"}, "answer": "B"},
+  {"id": 140, "question": "Which version control system uses a Directed Acyclic Graph (DAG) for its commit history?", "options": {"A": "SVN", "B": "Mercurial", "C": "Git", "D": "CVS"}, "answer": "C"},
+  {"id": 141, "question": "What was the primary cause of the Irish Potato Famine?", "options": {"A": "Drought", "B": "A potato blight (Phytophthora infestans)", "C": "Locust swarm", "D": "Soil exhaustion"}, "answer": "B"},
+  {"id": 142, "question": "Which mathematical constant is approximately equal to 2.71828?", "options": {"A": "Pi", "B": "Euler's number (e)", "C": "Golden ratio", "D": "Square root of 2"}, "answer": "B"},
+  {"id": 143, "question": "What is the term for the loss of species diversity in an ecosystem?", "options": {"A": "Eutrophication", "B": "Desertification", "C": "Biodiversity loss", "D": "Deforestation"}, "answer": "C"},
+  {"id": 144, "question": "Which protocol is used for secure communication over the internet?", "options": {"A": "HTTP", "B": "FTP", "C": "HTTPS/TLS", "D": "SMTP"}, "answer": "C"},
+  {"id": 145, "question": "What is the largest moon in the solar system?", "options": {"A": "Titan", "B": "Europa", "C": "Ganymede", "D": "Callisto"}, "answer": "C"},
+  {"id": 146, "question": "Who wrote 'The Wealth of Nations'?", "options": {"A": "Karl Marx", "B": "John Maynard Keynes", "C": "Adam Smith", "D": "David Ricardo"}, "answer": "C"},
+  {"id": 147, "question": "What is the function of the golgi apparatus in a cell?", "options": {"A": "Energy production", "B": "Protein modification and packaging", "C": "DNA storage", "D": "Cell division"}, "answer": "B"},
+  {"id": 148, "question": "Which war lasted from 1337 to 1453?", "options": {"A": "Wars of the Roses", "B": "Crusades", "C": "Hundred Years' War", "D": "Reconquista"}, "answer": "C"},
+  {"id": 149, "question": "What is the difference between TCP and UDP?", "options": {"A": "TCP is faster; UDP is reliable", "B": "TCP guarantees delivery and order; UDP does not", "C": "TCP is connectionless; UDP is connection-oriented", "D": "There is no difference"}, "answer": "B"},
+  {"id": 150, "question": "What is the name of the galaxy nearest to the Milky Way?", "options": {"A": "Triangulum Galaxy", "B": "Andromeda Galaxy", "C": "Canis Major Dwarf Galaxy", "D": "Large Magellanic Cloud"}, "answer": "C"},
+  {"id": 151, "question": "Which acid is found in the human stomach?", "options": {"A": "Sulfuric acid", "B": "Hydrochloric acid", "C": "Citric acid", "D": "Acetic acid"}, "answer": "B"},
+  {"id": 152, "question": "What is the term for a government ruled by a small group of powerful people?", "options": {"A": "Autocracy", "B": "Oligarchy", "C": "Theocracy", "D": "Plutocracy"}, "answer": "B"},
+  {"id": 153, "question": "In machine learning, what is overfitting?", "options": {"A": "Model performs well on training data but poorly on new data", "B": "Model is too simple to capture patterns", "C": "Model takes too long to train", "D": "Model uses too much memory"}, "answer": "A"},
+  {"id": 154, "question": "What is the speed of sound in air at sea level approximately?", "options": {"A": "170 m/s", "B": "343 m/s", "C": "500 m/s", "D": "760 m/s"}, "answer": "B"},
+  {"id": 155, "question": "Which philosopher is associated with the concept of the 'social contract'?", "options": {"A": "Friedrich Nietzsche", "B": "Jean-Jacques Rousseau", "C": "Georg Hegel", "D": "Baruch Spinoza"}, "answer": "B"},
+  {"id": 156, "question": "What is the most common isotope of hydrogen?", "options": {"A": "Deuterium", "B": "Tritium", "C": "Protium", "D": "Quadrium"}, "answer": "C"},
+  {"id": 157, "question": "Which data structure is best suited for implementing an LRU cache?", "options": {"A": "Array + binary search", "B": "Hash map + doubly linked list", "C": "Binary search tree", "D": "Stack + queue"}, "answer": "B"},
+  {"id": 158, "question": "What is the process by which rocks are broken down by weather and biological activity?", "options": {"A": "Erosion", "B": "Weathering", "C": "Sedimentation", "D": "Metamorphism"}, "answer": "B"},
+  {"id": 159, "question": "Which treaty established the European Economic Community?", "options": {"A": "Treaty of Maastricht", "B": "Treaty of Rome", "C": "Treaty of Lisbon", "D": "Treaty of Paris"}, "answer": "B"},
+  {"id": 160, "question": "What is the strongest type of intermolecular force?", "options": {"A": "London dispersion forces", "B": "Dipole-dipole interactions", "C": "Hydrogen bonding", "D": "Ion-dipole forces"}, "answer": "D"},
+  {"id": 161, "question": "Who discovered penicillin?", "options": {"A": "Louis Pasteur", "B": "Alexander Fleming", "C": "Joseph Lister", "D": "Robert Koch"}, "answer": "B"},
+  {"id": 162, "question": "What is the name of the paradox where a cat is simultaneously alive and dead?", "options": {"A": "Zeno's paradox", "B": "Fermi paradox", "C": "Schrodinger's cat", "D": "Russell's paradox"}, "answer": "C"},
+  {"id": 163, "question": "Which continent has the most countries?", "options": {"A": "Asia", "B": "Europe", "C": "Africa", "D": "South America"}, "answer": "C"},
+  {"id": 164, "question": "What is the purpose of a mutex in concurrent programming?", "options": {"A": "To speed up execution", "B": "To prevent race conditions by ensuring mutual exclusion", "C": "To allocate memory", "D": "To manage network connections"}, "answer": "B"},
+  {"id": 165, "question": "Which vitamin deficiency causes scurvy?", "options": {"A": "Vitamin A", "B": "Vitamin B12", "C": "Vitamin C", "D": "Vitamin D"}, "answer": "C"},
+  {"id": 166, "question": "What is the name of the first artificial satellite launched into orbit?", "options": {"A": "Explorer 1", "B": "Vanguard 1", "C": "Sputnik 1", "D": "Luna 1"}, "answer": "C"},
+  {"id": 167, "question": "Which logical fallacy assumes that because two events occur together, one caused the other?", "options": {"A": "Ad hominem", "B": "Straw man", "C": "Post hoc ergo propter hoc", "D": "Slippery slope"}, "answer": "C"},
+  {"id": 168, "question": "What is the term for the minimum number of nodes that must agree in a distributed system?", "options": {"A": "Quorum", "B": "Threshold", "C": "Consensus", "D": "Majority"}, "answer": "A"},
+  {"id": 169, "question": "Which organ is responsible for filtering blood and producing urine?", "options": {"A": "Liver", "B": "Spleen", "C": "Kidneys", "D": "Bladder"}, "answer": "C"},
+  {"id": 170, "question": "What is the tallest mountain in the solar system?", "options": {"A": "Mount Everest", "B": "Mauna Kea", "C": "Olympus Mons", "D": "Maxwell Montes"}, "answer": "C"},
+  {"id": 171, "question": "Who composed 'The Rite of Spring', which caused a riot at its premiere?", "options": {"A": "Claude Debussy", "B": "Igor Stravinsky", "C": "Sergei Rachmaninoff", "D": "Maurice Ravel"}, "answer": "B"},
+  {"id": 172, "question": "What is the difference between a process and a thread?", "options": {"A": "Threads share memory space; processes have separate memory", "B": "Processes share memory; threads do not", "C": "There is no difference", "D": "Threads are faster to create but cannot run in parallel"}, "answer": "A"},
+  {"id": 173, "question": "Which element is used in semiconductor manufacturing?", "options": {"A": "Copper", "B": "Silicon", "C": "Gold", "D": "Iron"}, "answer": "B"},
+  {"id": 174, "question": "What is the Coriolis effect?", "options": {"A": "Tides caused by the moon", "B": "Deflection of moving objects due to Earth's rotation", "C": "Heat rising from the equator", "D": "Magnetic field reversals"}, "answer": "B"},
+  {"id": 175, "question": "Which dynasty built the Great Wall of China in its most recognizable form?", "options": {"A": "Han Dynasty", "B": "Tang Dynasty", "C": "Ming Dynasty", "D": "Qin Dynasty"}, "answer": "C"},
+  {"id": 176, "question": "What is the pigment that gives plants their green color?", "options": {"A": "Carotene", "B": "Xanthophyll", "C": "Chlorophyll", "D": "Anthocyanin"}, "answer": "C"},
+  {"id": 177, "question": "In networking, what does DNS stand for?", "options": {"A": "Digital Network System", "B": "Domain Name System", "C": "Data Node Server", "D": "Distributed Naming Service"}, "answer": "B"},
+  {"id": 178, "question": "Which scientist proposed the theory of continental drift?", "options": {"A": "Charles Lyell", "B": "Alfred Wegener", "C": "James Hutton", "D": "Harry Hess"}, "answer": "B"},
+  {"id": 179, "question": "What is the term for a self-replicating program that spreads across networks?", "options": {"A": "Virus", "B": "Trojan", "C": "Worm", "D": "Rootkit"}, "answer": "C"},
+  {"id": 180, "question": "Which country has the most natural lakes?", "options": {"A": "United States", "B": "Russia", "C": "Canada", "D": "Finland"}, "answer": "C"},
+  {"id": 181, "question": "What is the term for the region of space where a planet's gravity dominates?", "options": {"A": "Lagrange point", "B": "Hill sphere", "C": "Roche limit", "D": "Van Allen belt"}, "answer": "B"},
+  {"id": 182, "question": "Who is considered the father of modern economics?", "options": {"A": "Adam Smith", "B": "John Maynard Keynes", "C": "Milton Friedman", "D": "Karl Marx"}, "answer": "A"},
+  {"id": 183, "question": "What is the difference between stack memory and heap memory?", "options": {"A": "Stack is for global variables; heap is for local", "B": "Stack is automatically managed (LIFO); heap is manually allocated and freed", "C": "Stack is slower but larger; heap is faster but smaller", "D": "There is no functional difference"}, "answer": "B"},
+  {"id": 184, "question": "Which disease is caused by a deficiency of vitamin D?", "options": {"A": "Beriberi", "B": "Pellagra", "C": "Rickets", "D": "Scurvy"}, "answer": "C"},
+  {"id": 185, "question": "What is the name of the theoretical limit at which a star collapses under its own gravity?", "options": {"A": "Chandrasekhar limit", "B": "Eddington limit", "C": "Tolman-Oppenheimer-Volkoff limit", "D": "Jeans mass"}, "answer": "A"},
+  {"id": 186, "question": "Which programming language was created by Guido van Rossum?", "options": {"A": "Ruby", "B": "Perl", "C": "Python", "D": "JavaScript"}, "answer": "C"},
+  {"id": 187, "question": "What is the chemical symbol for potassium?", "options": {"A": "Po", "B": "Pt", "C": "K", "D": "P"}, "answer": "C"},
+  {"id": 188, "question": "Which empire was ruled from Constantinople?", "options": {"A": "Roman Empire", "B": "Ottoman Empire", "C": "Byzantine Empire", "D": "Both B and C at different times"}, "answer": "D"},
+  {"id": 189, "question": "What is the phenomenon where entangled particles instantly affect each other regardless of distance?", "options": {"A": "Quantum tunneling", "B": "Quantum entanglement", "C": "Quantum superposition", "D": "Quantum decoherence"}, "answer": "B"},
+  {"id": 190, "question": "Which type of memory is non-volatile?", "options": {"A": "RAM", "B": "CPU registers", "C": "Cache", "D": "Flash/SSD storage"}, "answer": "D"},
+  {"id": 191, "question": "What is the name of the largest known volcano in the solar system?", "options": {"A": "Mount Etna", "B": "Olympus Mons", "C": "Mauna Loa", "D": "Tharsis Montes"}, "answer": "B"},
+  {"id": 192, "question": "Which philosopher proposed the 'categorical imperative'?", "options": {"A": "John Stuart Mill", "B": "Immanuel Kant", "C": "Jeremy Bentham", "D": "Thomas Hobbes"}, "answer": "B"},
+  {"id": 193, "question": "What is the process by which a liquid turns into a gas below its boiling point?", "options": {"A": "Condensation", "B": "Sublimation", "C": "Evaporation", "D": "Boiling"}, "answer": "C"},
+  {"id": 194, "question": "Which consensus algorithm does Bitcoin use?", "options": {"A": "Proof of Stake", "B": "Proof of Work", "C": "Delegated Proof of Stake", "D": "Proof of Authority"}, "answer": "B"},
+  {"id": 195, "question": "What is the largest cell in the human body?", "options": {"A": "Red blood cell", "B": "Neuron", "C": "Ovum (egg cell)", "D": "Muscle fiber"}, "answer": "C"},
+  {"id": 196, "question": "Which sea is the saltiest body of water in the world?", "options": {"A": "Red Sea", "B": "Dead Sea", "C": "Caspian Sea", "D": "Aral Sea"}, "answer": "B"},
+  {"id": 197, "question": "In information theory, what does entropy measure?", "options": {"A": "Data compression ratio", "B": "Network bandwidth", "C": "Uncertainty or randomness in information", "D": "Processing speed"}, "answer": "C"},
+  {"id": 198, "question": "Who first observed cells under a microscope and named them?", "options": {"A": "Anton van Leeuwenhoek", "B": "Robert Hooke", "C": "Matthias Schleiden", "D": "Rudolf Virchow"}, "answer": "B"},
+  {"id": 199, "question": "What is the escape velocity from Earth's surface?", "options": {"A": "7.9 km/s", "B": "11.2 km/s", "C": "15.4 km/s", "D": "25.0 km/s"}, "answer": "B"},
+  {"id": 200, "question": "Which war was triggered by the assassination of Archduke Franz Ferdinand?", "options": {"A": "Franco-Prussian War", "B": "World War I", "C": "World War II", "D": "Crimean War"}, "answer": "B"},
+  {"id": 201, "question": "What is the name of the problem of determining whether a Boolean formula can be satisfied?", "options": {"A": "Traveling Salesman Problem", "B": "Boolean Satisfiability Problem (SAT)", "C": "Knapsack Problem", "D": "Graph Coloring Problem"}, "answer": "B"},
+  {"id": 202, "question": "Which hormone regulates blood sugar levels by lowering glucose?", "options": {"A": "Glucagon", "B": "Cortisol", "C": "Insulin", "D": "Adrenaline"}, "answer": "C"},
+  {"id": 203, "question": "What is the term for a star that has exhausted its nuclear fuel and collapsed?", "options": {"A": "Red giant", "B": "White dwarf", "C": "Neutron star", "D": "Protostar"}, "answer": "C"},
+  {"id": 204, "question": "Which country invented gunpowder?", "options": {"A": "India", "B": "Persia", "C": "China", "D": "Greece"}, "answer": "C"},
+  {"id": 205, "question": "What is the NP-completeness of the Traveling Salesman Problem (decision version)?", "options": {"A": "P", "B": "NP-complete", "C": "NP-hard but not NP-complete", "D": "Undecidable"}, "answer": "B"},
+  {"id": 206, "question": "Which blood cells are primarily responsible for immune defense?", "options": {"A": "Red blood cells", "B": "Platelets", "C": "White blood cells", "D": "Plasma cells"}, "answer": "C"},
+  {"id": 207, "question": "What is the phenomenon where the frequency of a gene changes in a population due to random chance?", "options": {"A": "Natural selection", "B": "Genetic drift", "C": "Gene flow", "D": "Mutation"}, "answer": "B"},
+  {"id": 208, "question": "Which number system is used natively by computers?", "options": {"A": "Decimal", "B": "Octal", "C": "Binary", "D": "Hexadecimal"}, "answer": "C"},
+  {"id": 209, "question": "What is the only mammal capable of true sustained flight?", "options": {"A": "Flying squirrel", "B": "Sugar glider", "C": "Bat", "D": "Colugo"}, "answer": "C"},
+  {"id": 210, "question": "Which mathematical proof technique proves P(n) by showing P(1) and P(k) implies P(k+1)?", "options": {"A": "Proof by contradiction", "B": "Mathematical induction", "C": "Direct proof", "D": "Proof by exhaustion"}, "answer": "B"},
+  {"id": 211, "question": "What is the term for light that has all its waves oscillating in the same plane?", "options": {"A": "Coherent light", "B": "Polarized light", "C": "Monochromatic light", "D": "Diffracted light"}, "answer": "B"},
+  {"id": 212, "question": "Which civilization developed the first known system of writing?", "options": {"A": "Egyptians", "B": "Sumerians", "C": "Chinese", "D": "Indus Valley"}, "answer": "B"},
+  {"id": 213, "question": "In a B-tree, what determines the minimum and maximum number of children per node?", "options": {"A": "The height of the tree", "B": "The order (or degree) of the tree", "C": "The number of elements stored", "D": "The depth of the node"}, "answer": "B"},
+  {"id": 214, "question": "What is the name of the force that holds the nucleus of an atom together?", "options": {"A": "Electromagnetic force", "B": "Gravitational force", "C": "Strong nuclear force", "D": "Weak nuclear force"}, "answer": "C"},
+  {"id": 215, "question": "Which planet has the Great Red Spot?", "options": {"A": "Mars", "B": "Saturn", "C": "Jupiter", "D": "Neptune"}, "answer": "C"},
+  {"id": 216, "question": "What economic term describes a sustained increase in the general price level?", "options": {"A": "Deflation", "B": "Stagflation", "C": "Inflation", "D": "Recession"}, "answer": "C"},
+  {"id": 217, "question": "Which enzyme unwinds the DNA double helix during replication?", "options": {"A": "DNA polymerase", "B": "Helicase", "C": "Ligase", "D": "Topoisomerase"}, "answer": "B"},
+  {"id": 218, "question": "What is the purpose of the ARP protocol?", "options": {"A": "To resolve domain names to IP addresses", "B": "To map IP addresses to MAC addresses", "C": "To route packets between networks", "D": "To encrypt network traffic"}, "answer": "B"},
+  {"id": 219, "question": "Which ancient Greek physician is known as the 'Father of Medicine'?", "options": {"A": "Galen", "B": "Hippocrates", "C": "Aristotle", "D": "Herophilus"}, "answer": "B"},
+  {"id": 220, "question": "What is the name of the paradox where a spacecraft could theoretically reach any speed by continually accelerating?", "options": {"A": "Fermi paradox", "B": "Olbers' paradox", "C": "The twin paradox", "D": "Tsiolkovsky rocket equation (not a paradox)"}, "answer": "C"},
+  {"id": 221, "question": "What is the amortized time complexity of inserting into a dynamic array (ArrayList)?", "options": {"A": "O(1)", "B": "O(log n)", "C": "O(n)", "D": "O(n log n)"}, "answer": "A"},
+  {"id": 222, "question": "Which type of rock is formed from cooled magma or lava?", "options": {"A": "Sedimentary", "B": "Metamorphic", "C": "Igneous", "D": "Limestone"}, "answer": "C"},
+  {"id": 223, "question": "Who formulated the three laws of thermodynamics?", "options": {"A": "No single person; they were developed by multiple scientists", "B": "Isaac Newton", "C": "James Watt", "D": "Lord Kelvin alone"}, "answer": "A"},
+  {"id": 224, "question": "What is the term for a market structure with a single seller?", "options": {"A": "Oligopoly", "B": "Monopoly", "C": "Monopsony", "D": "Perfect competition"}, "answer": "B"},
+  {"id": 225, "question": "Which spacecraft was the first to land on Mars?", "options": {"A": "Viking 1", "B": "Mars Pathfinder", "C": "Spirit", "D": "Curiosity"}, "answer": "A"},
+  {"id": 226, "question": "What is the difference between symmetric and asymmetric encryption?", "options": {"A": "Symmetric is slower but more secure", "B": "Symmetric uses one key for both encryption and decryption; asymmetric uses a key pair", "C": "Asymmetric uses one key; symmetric uses multiple", "D": "There is no practical difference"}, "answer": "B"},
+  {"id": 227, "question": "Which structure in the brain is responsible for forming new memories?", "options": {"A": "Cerebellum", "B": "Hippocampus", "C": "Amygdala", "D": "Prefrontal cortex"}, "answer": "B"},
+  {"id": 228, "question": "What is the name of the geometric shape with exactly 12 faces?", "options": {"A": "Icosahedron", "B": "Dodecahedron", "C": "Octahedron", "D": "Tetrahedron"}, "answer": "B"},
+  {"id": 229, "question": "Which country colonized Brazil?", "options": {"A": "Spain", "B": "France", "C": "Portugal", "D": "Netherlands"}, "answer": "C"},
+  {"id": 230, "question": "What does the garbage collector do in managed programming languages?", "options": {"A": "Compiles code to machine language", "B": "Automatically frees memory that is no longer referenced", "C": "Optimizes CPU usage", "D": "Manages file I/O operations"}, "answer": "B"},
+  {"id": 231, "question": "What is the Planck length?", "options": {"A": "The size of an atom", "B": "The smallest meaningful length in physics (~1.6 x 10^-35 m)", "C": "The diameter of a proton", "D": "The wavelength of visible light"}, "answer": "B"},
+  {"id": 232, "question": "Which Nobel laureate discovered radioactivity?", "options": {"A": "Marie Curie", "B": "Henri Becquerel", "C": "Ernest Rutherford", "D": "Wilhelm Rontgen"}, "answer": "B"},
+  {"id": 233, "question": "What is the name for a polynomial equation of degree 3?", "options": {"A": "Quadratic", "B": "Cubic", "C": "Quartic", "D": "Quintic"}, "answer": "B"},
+  {"id": 234, "question": "Which layer of the TCP/IP model handles routing?", "options": {"A": "Application layer", "B": "Transport layer", "C": "Internet (network) layer", "D": "Link layer"}, "answer": "C"},
+  {"id": 235, "question": "What is the most common cause of extinction in recorded history?", "options": {"A": "Asteroids", "B": "Habitat destruction", "C": "Disease", "D": "Climate change"}, "answer": "B"},
+  {"id": 236, "question": "Who was the first person to circumnavigate the globe (expedition completed even though he died)?", "options": {"A": "Vasco da Gama", "B": "Christopher Columbus", "C": "Ferdinand Magellan", "D": "Francis Drake"}, "answer": "C"},
+  {"id": 237, "question": "What is the difference between a deadlock and a livelock?", "options": {"A": "Deadlock involves threads waiting forever; livelock involves threads actively changing state but making no progress", "B": "They are the same thing", "C": "Deadlock is in databases; livelock is in operating systems", "D": "Livelock always resolves itself; deadlock never does"}, "answer": "A"},
+  {"id": 238, "question": "What is the name of the outermost layer of the Sun?", "options": {"A": "Photosphere", "B": "Chromosphere", "C": "Corona", "D": "Convective zone"}, "answer": "C"},
+  {"id": 239, "question": "Which acid is found in vinegar?", "options": {"A": "Citric acid", "B": "Acetic acid", "C": "Lactic acid", "D": "Formic acid"}, "answer": "B"},
+  {"id": 240, "question": "What is the name of the CPU component that performs arithmetic operations?", "options": {"A": "Control unit", "B": "ALU (Arithmetic Logic Unit)", "C": "Register file", "D": "Bus interface"}, "answer": "B"},
+  {"id": 241, "question": "Which novel by Aldous Huxley depicts a dystopian future society?", "options": {"A": "1984", "B": "Fahrenheit 451", "C": "Brave New World", "D": "The Handmaid's Tale"}, "answer": "C"},
+  {"id": 242, "question": "What is the human body's largest artery?", "options": {"A": "Carotid artery", "B": "Aorta", "C": "Femoral artery", "D": "Pulmonary artery"}, "answer": "B"},
+  {"id": 243, "question": "Which country has the most time zones?", "options": {"A": "Russia", "B": "United States", "C": "France", "D": "China"}, "answer": "C"},
+  {"id": 244, "question": "What is the term for a complete directed graph where every pair of vertices is connected by a single edge?", "options": {"A": "Tournament", "B": "Complete graph", "C": "DAG", "D": "Bipartite graph"}, "answer": "A"},
+  {"id": 245, "question": "Which particle in an atom has no electric charge?", "options": {"A": "Proton", "B": "Electron", "C": "Neutron", "D": "Positron"}, "answer": "C"},
+  {"id": 246, "question": "What is the only country that borders both the Atlantic and Indian Oceans in Africa?", "options": {"A": "Mozambique", "B": "Tanzania", "C": "South Africa", "D": "Kenya"}, "answer": "C"},
+  {"id": 247, "question": "What is the difference between HTTP GET and POST requests?", "options": {"A": "GET sends data in the body; POST sends data in the URL", "B": "GET retrieves data; POST submits data to be processed", "C": "GET is encrypted; POST is not", "D": "There is no difference"}, "answer": "B"},
+  {"id": 248, "question": "Which theory unifies electricity, magnetism, and optics?", "options": {"A": "Quantum field theory", "B": "Maxwell's electromagnetic theory", "C": "String theory", "D": "General relativity"}, "answer": "B"},
+  {"id": 249, "question": "What is the term for the minimum spanning tree algorithm that greedily selects the smallest edge?", "options": {"A": "Dijkstra's algorithm", "B": "Prim's algorithm", "C": "Kruskal's algorithm", "D": "Bellman-Ford algorithm"}, "answer": "C"},
+  {"id": 250, "question": "Which organelle is known as the 'suicide bag' of the cell?", "options": {"A": "Peroxisome", "B": "Lysosome", "C": "Vacuole", "D": "Endoplasmic reticulum"}, "answer": "B"}
+]

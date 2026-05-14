@@ -220,7 +220,7 @@ class TriviaGame(BaseGame):
                         params = {
                             "model": model.model_name,
                             "messages": [
-                                {"role": "system", "content": "You are competing in a trivia contest. Give short, direct answers only. Do not explain your reasoning."},
+                                {"role": "system", "content": "You are competing in a speed trivia contest. Answer with ONLY the letter (A, B, C, or D). Nothing else. No explanation."},
                                 {"role": "user", "content": prompt}
                             ],
                         }
@@ -262,7 +262,7 @@ class TriviaGame(BaseGame):
                                 "model": model.model_name,
                                 "max_tokens": 50,
                                 "messages": [{"role": "user", "content": prompt}],
-                                "system": "You are competing in a trivia contest. Give short, direct answers only. Do not explain your reasoning."
+                                "system": "You are competing in a speed trivia contest. Answer with ONLY the letter (A, B, C, or D). Nothing else. No explanation."
                             }
                         )
                         result = response.json()
@@ -281,7 +281,7 @@ class TriviaGame(BaseGame):
                 def gemini_call():
                     model_instance = model.client
                     response = model_instance.generate_content(
-                        f"System: You are competing in a trivia contest. Give short, direct answers only. Do not explain your reasoning.\n\nUser: {prompt}"
+                        f"System: You are competing in a speed trivia contest. Answer with ONLY the letter (A, B, C, or D). Nothing else. No explanation.\n\nUser: {prompt}"
                     )
                     return response.text.strip()
                 
