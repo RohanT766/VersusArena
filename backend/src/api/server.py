@@ -47,6 +47,12 @@ from src.games.maze_race import (
     session_state as maze_session_state,
     winner_side as maze_winner_side,
 )
+from src.games.snake_game import (
+    start_session as snake_start_session,
+    play_step as snake_play_step,
+    session_state as snake_session_state,
+    winner_side as snake_winner_side,
+)
 
 # Default model configurations
 DEFAULT_MODELS = {
@@ -90,6 +96,7 @@ prisoners_sessions: Dict[str, Dict] = {}
 twenty_questions_sessions: Dict[str, Dict] = {}
 code_debug_sessions: Dict[str, Dict] = {}
 maze_sessions: Dict[str, Dict] = {}
+snake_sessions: Dict[str, Dict] = {}
 
 # Store active game runners
 game_runners: Dict[str, GameRunner] = {}
@@ -1273,6 +1280,68 @@ async def maze_state(session_id: str):
     if not entry:
         raise HTTPException(status_code=404, detail="Session not found")
     return maze_session_state(entry["session"])
+
+
+# ====================
+# SNAKE DUEL
+# ====================
+
+class SnakeStartBody(BaseModel):
+    player1_model: str = "gpt-5.5"
+    player2_model: str = "claude-sonnet-4-6"
+    rows: int = 15
+    cols: int = 15
+
+
+@app.post("/api/snake/start")
+async def snake_start(body: SnakeStartBody):
+    sess = snake_start_session(body.player1_model, body.player2_model, body.rows, body.cols)
+    rec = get_recorder()
+    rid = rec.start_run(
+        "snake_duel",
+        body.player1_model,
+        body.player2_model,
+        {"rows": body.rows, "cols": body.cols},
+    )
+    sess.benchmark_run_id = rid
+    snake_sessions[sess.id] = {"session": sess, "finished": False}
+    state = snake_session_state(sess)
+    state["benchmark_run_id"] = rid
+    return state
+
+
+@app.post("/api/snake/{session_id}/step")
+async def snake_step(session_id: str):
+    entry = snake_sessions.get(session_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sess = entry["session"]
+    if sess.done:
+        return snake_session_state(sess)
+
+    result = await asyncio.to_thread(snake_play_step, sess)
+
+    if result.get("done") and not entry.get("finished"):
+        entry["finished"] = True
+        br = getattr(sess, "benchmark_run_id", None)
+        if br:
+            rec = get_recorder()
+            w = snake_winner_side(sess)
+            rec.finish_run(
+                br, "snake_duel", w,
+                float(sess.score1), float(sess.score2),
+                {"rows": sess.rows, "cols": sess.cols, "steps": sess.step_count},
+            )
+
+    return result
+
+
+@app.get("/api/snake/{session_id}/state")
+async def snake_state(session_id: str):
+    entry = snake_sessions.get(session_id)
+    if not entry:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return snake_session_state(entry["session"])
 
 
 # ====================

@@ -101,6 +101,24 @@ export const CodeDebugIcon = ({ size = 64 }) => (
   </svg>
 );
 
+export const SnakeIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    {/* Snake 1 - green */}
+    <rect x="6" y="28" width="8" height="8" fill="#10b981" rx="2" />
+    <rect x="14" y="28" width="6" height="8" fill="rgba(16,185,129,0.6)" rx="1" />
+    <rect x="20" y="28" width="6" height="8" fill="rgba(16,185,129,0.6)" rx="1" />
+    <rect x="26" y="28" width="6" height="8" fill="rgba(16,185,129,0.5)" rx="1" />
+    <rect x="26" y="20" width="6" height="8" fill="rgba(16,185,129,0.4)" rx="1" />
+    {/* Snake 2 - purple */}
+    <rect x="50" y="36" width="8" height="8" fill="#a78bfa" rx="2" />
+    <rect x="44" y="36" width="6" height="8" fill="rgba(167,139,250,0.6)" rx="1" />
+    <rect x="38" y="36" width="6" height="8" fill="rgba(167,139,250,0.5)" rx="1" />
+    <rect x="38" y="44" width="6" height="8" fill="rgba(167,139,250,0.4)" rx="1" />
+    {/* Food */}
+    <circle cx="46" cy="16" r="4" fill="#ffcc00" />
+  </svg>
+);
+
 export const AnalyticsIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
     <rect x="8" y="36" width="8" height="20" fill="#538d4e" />

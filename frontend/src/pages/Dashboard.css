@@ -68,10 +68,15 @@ body.dashboard-scroll-body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 20px;
+  margin-top: 20px;
 }
 
 .dashboard-full-span {
   grid-column: 1 / -1;
+}
+
+.dashboard-card.dashboard-full-span {
+  margin-bottom: 0;
 }
 
 .dashboard-metrics-card {
