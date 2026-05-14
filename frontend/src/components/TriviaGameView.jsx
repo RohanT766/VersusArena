@@ -41,6 +41,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd, onBack 
   const [raceStarted, setRaceStarted] = useState(false)
   const [raceFinished, setRaceFinished] = useState(false)
   const [raceWinner, setRaceWinner] = useState(null)
+  const [raceModalDismissed, setRaceModalDismissed] = useState(false)
 
   const getApiBase = () => {
     const h = window.location.hostname
@@ -251,16 +252,31 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd, onBack 
         />
       )}
 
-      {raceFinished && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000, animation: 'fadeIn 0.3s ease-out',
-        }}>
-          <div style={{
-            background: '#0a0a0a', border: '2px solid #4CAF50',
-            padding: '48px 60px', textAlign: 'center',
-          }}>
+      {raceFinished && !raceModalDismissed && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, animation: 'fadeIn 0.3s ease-out',
+          }}
+          onClick={() => setRaceModalDismissed(true)}
+        >
+          <div
+            style={{
+              background: '#0a0a0a', border: '2px solid #4CAF50',
+              padding: '48px 60px', textAlign: 'center', position: 'relative',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setRaceModalDismissed(true)}
+              style={{
+                position: 'absolute', top: '12px', right: '16px',
+                background: 'none', border: 'none', color: '#666',
+                fontSize: '28px', cursor: 'pointer', fontFamily: "'VT323', monospace",
+                lineHeight: 1,
+              }}
+            >X</button>
             <h2 style={{ fontSize: '48px', fontFamily: "'VT323', monospace", color: '#4CAF50', margin: '0 0 16px', letterSpacing: '4px' }}>GAME OVER</h2>
             <div style={{ fontSize: '32px', fontFamily: "'VT323', monospace", color: '#fff', marginBottom: '32px' }}>
               {raceWinner === 1 ? player1Info.name : player2Info.name} WINS!
@@ -279,7 +295,7 @@ const TriviaGameView = ({ gameId, player1Model, player2Model, onGameEnd, onBack 
               background: '#4CAF50', color: '#000', border: 'none',
               padding: '12px 36px', fontSize: '22px', fontFamily: "'VT323', monospace",
               cursor: 'pointer', letterSpacing: '2px',
-            }}>BACK</button>
+            }}>BACK TO GAMES</button>
           </div>
         </div>
       )}

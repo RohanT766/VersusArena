@@ -1,252 +1,2752 @@
 [
-  {"id": 1, "question": "What is the only country in the world that has a non-rectangular flag?", "options": {"A": "Switzerland", "B": "Nepal", "C": "Bhutan", "D": "Vatican City"}, "answer": "B"},
-  {"id": 2, "question": "In what year did the Byzantine Empire officially fall?", "options": {"A": "1204", "B": "1389", "C": "1453", "D": "1492"}, "answer": "C"},
-  {"id": 3, "question": "Which element has the highest melting point of any element on the periodic table?", "options": {"A": "Tungsten", "B": "Carbon", "C": "Osmium", "D": "Rhenium"}, "answer": "B"},
-  {"id": 4, "question": "The Scoville scale measures the pungency of what?", "options": {"A": "Mustard seeds", "B": "Chili peppers", "C": "Wasabi root", "D": "Black pepper"}, "answer": "B"},
-  {"id": 5, "question": "What is the smallest bone in the human body?", "options": {"A": "Incus", "B": "Malleus", "C": "Stapes", "D": "Hyoid"}, "answer": "C"},
-  {"id": 6, "question": "Which mathematician proved that there are infinitely many prime numbers around 300 BCE?", "options": {"A": "Archimedes", "B": "Euclid", "C": "Pythagoras", "D": "Eratosthenes"}, "answer": "B"},
-  {"id": 7, "question": "What is the deepest point in the Earth's oceans?", "options": {"A": "Tonga Trench", "B": "Puerto Rico Trench", "C": "Mariana Trench", "D": "Java Trench"}, "answer": "C"},
-  {"id": 8, "question": "Which treaty ended World War I?", "options": {"A": "Treaty of Paris", "B": "Treaty of Versailles", "C": "Treaty of Ghent", "D": "Treaty of Westphalia"}, "answer": "B"},
-  {"id": 9, "question": "In computing, what does the acronym RISC stand for?", "options": {"A": "Reduced Instruction Set Computer", "B": "Rapid Integrated System Controller", "C": "Runtime Instruction Sequence Compiler", "D": "Recursive Inline Syntax Code"}, "answer": "A"},
-  {"id": 10, "question": "What was the name of the ship on which Charles Darwin made his famous voyage?", "options": {"A": "HMS Victory", "B": "HMS Beagle", "C": "HMS Endeavour", "D": "HMS Bounty"}, "answer": "B"},
-  {"id": 11, "question": "Which two elements make up the majority of the Sun's composition?", "options": {"A": "Hydrogen and Helium", "B": "Hydrogen and Oxygen", "C": "Helium and Carbon", "D": "Hydrogen and Nitrogen"}, "answer": "A"},
-  {"id": 12, "question": "What is the capital of Mongolia?", "options": {"A": "Astana", "B": "Bishkek", "C": "Ulaanbaatar", "D": "Dushanbe"}, "answer": "C"},
-  {"id": 13, "question": "In Greek mythology, who was condemned to push a boulder up a hill for eternity?", "options": {"A": "Tantalus", "B": "Prometheus", "C": "Atlas", "D": "Sisyphus"}, "answer": "D"},
-  {"id": 14, "question": "What programming paradigm treats computation as the evaluation of mathematical functions?", "options": {"A": "Object-oriented programming", "B": "Functional programming", "C": "Procedural programming", "D": "Logic programming"}, "answer": "B"},
-  {"id": 15, "question": "Which organ in the human body produces insulin?", "options": {"A": "Liver", "B": "Kidneys", "C": "Pancreas", "D": "Spleen"}, "answer": "C"},
-  {"id": 16, "question": "The Rosetta Stone was written in three scripts. Which was NOT one of them?", "options": {"A": "Sumerian cuneiform", "B": "Demotic", "C": "Ancient Greek", "D": "Hieroglyphic"}, "answer": "A"},
-  {"id": 17, "question": "What is the chemical formula for sulfuric acid?", "options": {"A": "HCl", "B": "HNO3", "C": "H2SO4", "D": "H3PO4"}, "answer": "C"},
-  {"id": 18, "question": "Which composer wrote 'The Four Seasons'?", "options": {"A": "Bach", "B": "Mozart", "C": "Vivaldi", "D": "Handel"}, "answer": "C"},
-  {"id": 19, "question": "In what decade was the transistor invented at Bell Labs?", "options": {"A": "1930s", "B": "1940s", "C": "1950s", "D": "1960s"}, "answer": "B"},
-  {"id": 20, "question": "What is the longest river in Asia?", "options": {"A": "Mekong", "B": "Yellow River", "C": "Yangtze", "D": "Ganges"}, "answer": "C"},
-  {"id": 21, "question": "Which ancient civilization built Machu Picchu?", "options": {"A": "Maya", "B": "Aztec", "C": "Inca", "D": "Olmec"}, "answer": "C"},
-  {"id": 22, "question": "What does the P in the complexity class P stand for?", "options": {"A": "Probabilistic", "B": "Polynomial", "C": "Parallel", "D": "Primitive"}, "answer": "B"},
-  {"id": 23, "question": "Which planet in our solar system has the most moons?", "options": {"A": "Jupiter", "B": "Saturn", "C": "Uranus", "D": "Neptune"}, "answer": "B"},
-  {"id": 24, "question": "The Voynich Manuscript is famous for being what?", "options": {"A": "The oldest known printed book", "B": "Written in an undeciphered script", "C": "The longest medieval poem", "D": "A forged royal decree"}, "answer": "B"},
-  {"id": 25, "question": "What is the only metal that is liquid at standard room temperature?", "options": {"A": "Gallium", "B": "Cesium", "C": "Mercury", "D": "Bromine"}, "answer": "C"},
-  {"id": 26, "question": "Who painted 'Guernica'?", "options": {"A": "Salvador Dali", "B": "Pablo Picasso", "C": "Joan Miro", "D": "Diego Rivera"}, "answer": "B"},
-  {"id": 27, "question": "In which country would you find the ancient city of Petra?", "options": {"A": "Egypt", "B": "Syria", "C": "Jordan", "D": "Iraq"}, "answer": "C"},
-  {"id": 28, "question": "What is the time complexity of binary search on a sorted array?", "options": {"A": "O(n)", "B": "O(n log n)", "C": "O(log n)", "D": "O(1)"}, "answer": "C"},
-  {"id": 29, "question": "Which gas makes up approximately 78% of Earth's atmosphere?", "options": {"A": "Oxygen", "B": "Carbon dioxide", "C": "Argon", "D": "Nitrogen"}, "answer": "D"},
-  {"id": 30, "question": "What year was the first successful human heart transplant performed?", "options": {"A": "1954", "B": "1962", "C": "1967", "D": "1973"}, "answer": "C"},
-  {"id": 31, "question": "Which physicist formulated the uncertainty principle?", "options": {"A": "Niels Bohr", "B": "Werner Heisenberg", "C": "Erwin Schrodinger", "D": "Max Planck"}, "answer": "B"},
-  {"id": 32, "question": "The Taiping Rebellion occurred in which country?", "options": {"A": "Japan", "B": "India", "C": "China", "D": "Korea"}, "answer": "C"},
-  {"id": 33, "question": "What is the hardest naturally occurring substance?", "options": {"A": "Corundum", "B": "Topaz", "C": "Diamond", "D": "Quartz"}, "answer": "C"},
-  {"id": 34, "question": "Which sorting algorithm has the best average-case time complexity?", "options": {"A": "Bubble sort", "B": "Insertion sort", "C": "Selection sort", "D": "Merge sort"}, "answer": "D"},
-  {"id": 35, "question": "Who wrote 'One Hundred Years of Solitude'?", "options": {"A": "Jorge Luis Borges", "B": "Gabriel Garcia Marquez", "C": "Isabel Allende", "D": "Mario Vargas Llosa"}, "answer": "B"},
-  {"id": 36, "question": "What is the name of the boundary around a black hole beyond which nothing can escape?", "options": {"A": "Schwarzschild radius", "B": "Event horizon", "C": "Photon sphere", "D": "Singularity"}, "answer": "B"},
-  {"id": 37, "question": "Which empire was the largest contiguous land empire in history?", "options": {"A": "Roman Empire", "B": "British Empire", "C": "Mongol Empire", "D": "Ottoman Empire"}, "answer": "C"},
-  {"id": 38, "question": "In cryptography, what does RSA stand for?", "options": {"A": "Random Secure Algorithm", "B": "Rivest-Shamir-Adleman", "C": "Rapid Sequential Authentication", "D": "Recursive Symmetric Architecture"}, "answer": "B"},
-  {"id": 39, "question": "What is the speed of light in a vacuum, approximately?", "options": {"A": "200,000 km/s", "B": "250,000 km/s", "C": "300,000 km/s", "D": "350,000 km/s"}, "answer": "C"},
-  {"id": 40, "question": "Which country has the most UNESCO World Heritage Sites?", "options": {"A": "China", "B": "Italy", "C": "Spain", "D": "France"}, "answer": "B"},
-  {"id": 41, "question": "What is the primary neurotransmitter associated with the reward system in the brain?", "options": {"A": "Serotonin", "B": "Dopamine", "C": "GABA", "D": "Acetylcholine"}, "answer": "B"},
-  {"id": 42, "question": "Who proposed the heliocentric model of the solar system before Galileo?", "options": {"A": "Tycho Brahe", "B": "Johannes Kepler", "C": "Nicolaus Copernicus", "D": "Giordano Bruno"}, "answer": "C"},
-  {"id": 43, "question": "What data structure uses LIFO (Last In, First Out) ordering?", "options": {"A": "Queue", "B": "Stack", "C": "Linked list", "D": "Hash table"}, "answer": "B"},
-  {"id": 44, "question": "Which philosopher wrote 'The Republic'?", "options": {"A": "Aristotle", "B": "Socrates", "C": "Plato", "D": "Epicurus"}, "answer": "C"},
-  {"id": 45, "question": "What is the largest organ in the human body?", "options": {"A": "Liver", "B": "Brain", "C": "Skin", "D": "Lungs"}, "answer": "C"},
-  {"id": 46, "question": "The Strait of Malacca separates which two landmasses?", "options": {"A": "Java and Sumatra", "B": "Borneo and Sulawesi", "C": "Malay Peninsula and Sumatra", "D": "Philippines and Borneo"}, "answer": "C"},
-  {"id": 47, "question": "What is the phenomenon where light bends around a massive object called?", "options": {"A": "Diffraction", "B": "Refraction", "C": "Gravitational lensing", "D": "Polarization"}, "answer": "C"},
-  {"id": 48, "question": "Which protocol operates at the transport layer of the OSI model?", "options": {"A": "HTTP", "B": "IP", "C": "TCP", "D": "Ethernet"}, "answer": "C"},
-  {"id": 49, "question": "In which year did the Berlin Wall fall?", "options": {"A": "1987", "B": "1989", "C": "1990", "D": "1991"}, "answer": "B"},
-  {"id": 50, "question": "What is the most abundant element in the Earth's crust?", "options": {"A": "Silicon", "B": "Iron", "C": "Oxygen", "D": "Aluminum"}, "answer": "C"},
-  {"id": 51, "question": "Which ancient wonder was located in Alexandria, Egypt?", "options": {"A": "Colossus of Rhodes", "B": "Hanging Gardens", "C": "Lighthouse of Alexandria", "D": "Temple of Artemis"}, "answer": "C"},
-  {"id": 52, "question": "What is a Turing machine's tape equivalent to in modern computing?", "options": {"A": "CPU cache", "B": "RAM", "C": "Unbounded memory", "D": "Hard drive"}, "answer": "C"},
-  {"id": 53, "question": "Which vitamin is synthesized by the human body when exposed to sunlight?", "options": {"A": "Vitamin A", "B": "Vitamin C", "C": "Vitamin D", "D": "Vitamin K"}, "answer": "C"},
-  {"id": 54, "question": "What is the term for a word that is spelled the same forwards and backwards?", "options": {"A": "Anagram", "B": "Palindrome", "C": "Homophone", "D": "Acronym"}, "answer": "B"},
-  {"id": 55, "question": "Which battle is considered the turning point of the American Civil War?", "options": {"A": "Battle of Antietam", "B": "Battle of Gettysburg", "C": "Battle of Bull Run", "D": "Battle of Shiloh"}, "answer": "B"},
-  {"id": 56, "question": "In graph theory, what is a graph with no cycles called?", "options": {"A": "Complete graph", "B": "Bipartite graph", "C": "Acyclic graph (tree/forest)", "D": "Planar graph"}, "answer": "C"},
-  {"id": 57, "question": "What is the rarest blood type?", "options": {"A": "O negative", "B": "B negative", "C": "AB negative", "D": "A negative"}, "answer": "C"},
-  {"id": 58, "question": "Which country was formerly known as Persia?", "options": {"A": "Iraq", "B": "Turkey", "C": "Iran", "D": "Afghanistan"}, "answer": "C"},
-  {"id": 59, "question": "What is the Chandrasekhar limit?", "options": {"A": "Maximum mass of a white dwarf star", "B": "Maximum temperature of a nebula", "C": "Maximum speed of a neutron star", "D": "Maximum age of a red giant"}, "answer": "A"},
-  {"id": 60, "question": "Who developed the first polio vaccine?", "options": {"A": "Alexander Fleming", "B": "Jonas Salk", "C": "Louis Pasteur", "D": "Edward Jenner"}, "answer": "B"},
-  {"id": 61, "question": "What is the CAP theorem about in distributed systems?", "options": {"A": "Consistency, Availability, Partition tolerance tradeoff", "B": "Caching, Authentication, Performance optimization", "C": "Concurrency, Atomicity, Persistence guarantee", "D": "Compression, Allocation, Parallelism balance"}, "answer": "A"},
-  {"id": 62, "question": "Which language family does Finnish belong to?", "options": {"A": "Indo-European", "B": "Uralic", "C": "Altaic", "D": "Sino-Tibetan"}, "answer": "B"},
-  {"id": 63, "question": "What is the second law of thermodynamics primarily about?", "options": {"A": "Conservation of energy", "B": "Entropy always increases in isolated systems", "C": "Absolute zero is unattainable", "D": "Energy equals mass times speed of light squared"}, "answer": "B"},
-  {"id": 64, "question": "Who wrote 'The Art of War'?", "options": {"A": "Confucius", "B": "Lao Tzu", "C": "Sun Tzu", "D": "Zhuge Liang"}, "answer": "C"},
-  {"id": 65, "question": "What is the half-life of Carbon-14?", "options": {"A": "1,500 years", "B": "5,730 years", "C": "12,000 years", "D": "50,000 years"}, "answer": "B"},
-  {"id": 66, "question": "In which country was the first programmable computer (Z3) built?", "options": {"A": "United States", "B": "United Kingdom", "C": "Germany", "D": "France"}, "answer": "C"},
-  {"id": 67, "question": "What is the name of the process by which plants convert CO2 and water into glucose?", "options": {"A": "Cellular respiration", "B": "Fermentation", "C": "Photosynthesis", "D": "Chemosynthesis"}, "answer": "C"},
-  {"id": 68, "question": "Which conflict is known as 'The Forgotten War'?", "options": {"A": "Vietnam War", "B": "Korean War", "C": "Gulf War", "D": "Falklands War"}, "answer": "B"},
-  {"id": 69, "question": "What is the Big-O notation for looking up an element in a hash table (average case)?", "options": {"A": "O(n)", "B": "O(log n)", "C": "O(1)", "D": "O(n log n)"}, "answer": "C"},
-  {"id": 70, "question": "What is the most spoken native language in the world?", "options": {"A": "English", "B": "Hindi", "C": "Spanish", "D": "Mandarin Chinese"}, "answer": "D"},
-  {"id": 71, "question": "Which gland is often called the 'master gland' of the endocrine system?", "options": {"A": "Thyroid", "B": "Adrenal", "C": "Pituitary", "D": "Hypothalamus"}, "answer": "C"},
-  {"id": 72, "question": "What is the name of the theoretical boundary of the solar system?", "options": {"A": "Kuiper Belt", "B": "Oort Cloud", "C": "Heliosphere", "D": "Asteroid Belt"}, "answer": "B"},
-  {"id": 73, "question": "Who is credited with inventing calculus independently of Newton?", "options": {"A": "Euler", "B": "Leibniz", "C": "Gauss", "D": "Fermat"}, "answer": "B"},
-  {"id": 74, "question": "What is the primary ingredient in traditional Japanese miso?", "options": {"A": "Rice", "B": "Wheat", "C": "Soybeans", "D": "Seaweed"}, "answer": "C"},
-  {"id": 75, "question": "Which algorithm is used to find the shortest path in a weighted graph?", "options": {"A": "Breadth-first search", "B": "Depth-first search", "C": "Dijkstra's algorithm", "D": "Prim's algorithm"}, "answer": "C"},
-  {"id": 76, "question": "What causes tides on Earth?", "options": {"A": "Earth's rotation only", "B": "Solar wind", "C": "Gravitational pull of the Moon and Sun", "D": "Ocean currents"}, "answer": "C"},
-  {"id": 77, "question": "In which decade was the double helix structure of DNA discovered?", "options": {"A": "1930s", "B": "1940s", "C": "1950s", "D": "1960s"}, "answer": "C"},
-  {"id": 78, "question": "What is the currency of South Korea?", "options": {"A": "Yen", "B": "Baht", "C": "Won", "D": "Rupee"}, "answer": "C"},
-  {"id": 79, "question": "Which design pattern ensures a class has only one instance?", "options": {"A": "Factory", "B": "Observer", "C": "Singleton", "D": "Strategy"}, "answer": "C"},
-  {"id": 80, "question": "What is the shortest war in recorded history?", "options": {"A": "Six-Day War", "B": "Anglo-Zanzibar War", "C": "Football War", "D": "Falklands War"}, "answer": "B"},
-  {"id": 81, "question": "What particle is responsible for carrying the electromagnetic force?", "options": {"A": "Gluon", "B": "W boson", "C": "Photon", "D": "Graviton"}, "answer": "C"},
-  {"id": 82, "question": "Which desert is the largest hot desert in the world?", "options": {"A": "Arabian", "B": "Gobi", "C": "Kalahari", "D": "Sahara"}, "answer": "D"},
-  {"id": 83, "question": "What is the difference between a compiled and an interpreted language?", "options": {"A": "Compiled runs on any OS; interpreted does not", "B": "Compiled is translated to machine code ahead of time; interpreted is executed line by line", "C": "Compiled is slower; interpreted is faster", "D": "There is no meaningful difference"}, "answer": "B"},
-  {"id": 84, "question": "Who formulated the laws of planetary motion?", "options": {"A": "Galileo Galilei", "B": "Isaac Newton", "C": "Johannes Kepler", "D": "Tycho Brahe"}, "answer": "C"},
-  {"id": 85, "question": "What is the largest freshwater lake by surface area?", "options": {"A": "Lake Victoria", "B": "Lake Superior", "C": "Lake Baikal", "D": "Caspian Sea"}, "answer": "B"},
-  {"id": 86, "question": "Which type of RNA carries amino acids to the ribosome during translation?", "options": {"A": "mRNA", "B": "rRNA", "C": "tRNA", "D": "snRNA"}, "answer": "C"},
-  {"id": 87, "question": "In economics, what does GDP stand for?", "options": {"A": "Gross Domestic Product", "B": "General Distribution of Prices", "C": "Government Debt Portfolio", "D": "Growth Development Projection"}, "answer": "A"},
-  {"id": 88, "question": "What is the process of converting a plaintext message into ciphertext called?", "options": {"A": "Hashing", "B": "Encryption", "C": "Encoding", "D": "Compression"}, "answer": "B"},
-  {"id": 89, "question": "Which country has the longest coastline in the world?", "options": {"A": "Russia", "B": "Indonesia", "C": "Canada", "D": "Australia"}, "answer": "C"},
-  {"id": 90, "question": "What is Avogadro's number approximately equal to?", "options": {"A": "6.022 x 10^23", "B": "3.14 x 10^20", "C": "1.602 x 10^19", "D": "9.81 x 10^25"}, "answer": "A"},
-  {"id": 91, "question": "Which ancient writing system is considered the oldest?", "options": {"A": "Egyptian hieroglyphs", "B": "Sumerian cuneiform", "C": "Chinese oracle bone script", "D": "Indus Valley script"}, "answer": "B"},
-  {"id": 92, "question": "What type of bond involves the sharing of electron pairs between atoms?", "options": {"A": "Ionic bond", "B": "Metallic bond", "C": "Covalent bond", "D": "Hydrogen bond"}, "answer": "C"},
-  {"id": 93, "question": "In database systems, what does ACID stand for?", "options": {"A": "Atomicity, Consistency, Isolation, Durability", "B": "Authentication, Compression, Integration, Distribution", "C": "Allocation, Caching, Indexing, Deduplication", "D": "Availability, Concurrency, Integrity, Delivery"}, "answer": "A"},
-  {"id": 94, "question": "What is the most electronegative element?", "options": {"A": "Oxygen", "B": "Chlorine", "C": "Fluorine", "D": "Nitrogen"}, "answer": "C"},
-  {"id": 95, "question": "Who painted the ceiling of the Sistine Chapel?", "options": {"A": "Leonardo da Vinci", "B": "Raphael", "C": "Michelangelo", "D": "Donatello"}, "answer": "C"},
-  {"id": 96, "question": "Which layer of the Earth's atmosphere contains the ozone layer?", "options": {"A": "Troposphere", "B": "Stratosphere", "C": "Mesosphere", "D": "Thermosphere"}, "answer": "B"},
-  {"id": 97, "question": "What is the term for a function that calls itself?", "options": {"A": "Iteration", "B": "Recursion", "C": "Polymorphism", "D": "Encapsulation"}, "answer": "B"},
-  {"id": 98, "question": "Which battle marked Napoleon's final defeat?", "options": {"A": "Battle of Leipzig", "B": "Battle of Austerlitz", "C": "Battle of Waterloo", "D": "Battle of Trafalgar"}, "answer": "C"},
-  {"id": 99, "question": "What is the approximate age of the Earth?", "options": {"A": "3.2 billion years", "B": "4.5 billion years", "C": "6.8 billion years", "D": "10 billion years"}, "answer": "B"},
-  {"id": 100, "question": "What is the name of the effect where observed particles behave differently when being measured?", "options": {"A": "Doppler effect", "B": "Observer effect", "C": "Butterfly effect", "D": "Photoelectric effect"}, "answer": "B"},
-  {"id": 101, "question": "Which country was the first to grant women the right to vote in national elections?", "options": {"A": "United States", "B": "United Kingdom", "C": "New Zealand", "D": "Finland"}, "answer": "C"},
-  {"id": 102, "question": "What is the name of the conjecture that every even integer greater than 2 can be expressed as the sum of two primes?", "options": {"A": "Riemann Hypothesis", "B": "Goldbach's Conjecture", "C": "Fermat's Last Theorem", "D": "Twin Prime Conjecture"}, "answer": "B"},
-  {"id": 103, "question": "In which organ does the Krebs cycle take place?", "options": {"A": "Lungs", "B": "Liver", "C": "Mitochondria of cells", "D": "Kidneys"}, "answer": "C"},
-  {"id": 104, "question": "Which network topology connects every node to every other node?", "options": {"A": "Star", "B": "Ring", "C": "Bus", "D": "Mesh"}, "answer": "D"},
-  {"id": 105, "question": "What phenomenon explains why a moving clock ticks slower than a stationary one?", "options": {"A": "Length contraction", "B": "Time dilation", "C": "Mass-energy equivalence", "D": "Frame dragging"}, "answer": "B"},
-  {"id": 106, "question": "Which civilization invented the concept of zero as a number?", "options": {"A": "Greek", "B": "Roman", "C": "Indian", "D": "Chinese"}, "answer": "C"},
-  {"id": 107, "question": "What is the term for the minimum energy required to start a chemical reaction?", "options": {"A": "Kinetic energy", "B": "Activation energy", "C": "Binding energy", "D": "Potential energy"}, "answer": "B"},
-  {"id": 108, "question": "Which river is the longest in Africa?", "options": {"A": "Congo", "B": "Niger", "C": "Nile", "D": "Zambezi"}, "answer": "C"},
-  {"id": 109, "question": "In logic, what is the contrapositive of 'If P then Q'?", "options": {"A": "If Q then P", "B": "If not P then not Q", "C": "If not Q then not P", "D": "If P then not Q"}, "answer": "C"},
-  {"id": 110, "question": "What was the Manhattan Project?", "options": {"A": "A plan to rebuild New York after WWII", "B": "A secret program to develop nuclear weapons", "C": "A Cold War espionage operation", "D": "A space exploration initiative"}, "answer": "B"},
-  {"id": 111, "question": "Which protein is primarily responsible for oxygen transport in blood?", "options": {"A": "Myoglobin", "B": "Hemoglobin", "C": "Albumin", "D": "Fibrinogen"}, "answer": "B"},
-  {"id": 112, "question": "What is the study of fungi called?", "options": {"A": "Bryology", "B": "Mycology", "C": "Phycology", "D": "Virology"}, "answer": "B"},
-  {"id": 113, "question": "Which consistency model guarantees that reads always return the most recent write?", "options": {"A": "Eventual consistency", "B": "Causal consistency", "C": "Strong consistency (linearizability)", "D": "Read-your-writes consistency"}, "answer": "C"},
-  {"id": 114, "question": "What is the largest known structure in the universe?", "options": {"A": "Laniakea Supercluster", "B": "Hercules-Corona Borealis Great Wall", "C": "Bootes Void", "D": "Sloan Great Wall"}, "answer": "B"},
-  {"id": 115, "question": "Which philosopher argued 'I think, therefore I am'?", "options": {"A": "John Locke", "B": "Immanuel Kant", "C": "Rene Descartes", "D": "David Hume"}, "answer": "C"},
-  {"id": 116, "question": "What is the name of the boundary between Earth's crust and mantle?", "options": {"A": "Gutenberg discontinuity", "B": "Mohorovicic discontinuity", "C": "Lehmann discontinuity", "D": "Conrad discontinuity"}, "answer": "B"},
-  {"id": 117, "question": "In which year was the World Wide Web invented by Tim Berners-Lee?", "options": {"A": "1985", "B": "1989", "C": "1993", "D": "1995"}, "answer": "B"},
-  {"id": 118, "question": "What is the primary function of mitochondria in a cell?", "options": {"A": "Protein synthesis", "B": "DNA replication", "C": "ATP (energy) production", "D": "Waste removal"}, "answer": "C"},
-  {"id": 119, "question": "Which empire controlled most of Southeast Asia's trade routes in the 7th-13th centuries?", "options": {"A": "Khmer Empire", "B": "Majapahit Empire", "C": "Srivijaya Empire", "D": "Champa Kingdom"}, "answer": "C"},
-  {"id": 120, "question": "What is the worst-case time complexity of quicksort?", "options": {"A": "O(n log n)", "B": "O(n^2)", "C": "O(n)", "D": "O(log n)"}, "answer": "B"},
-  {"id": 121, "question": "Which mineral is the primary component of glass?", "options": {"A": "Feldspar", "B": "Mica", "C": "Silica (quartz)", "D": "Calcite"}, "answer": "C"},
-  {"id": 122, "question": "Who wrote 'Crime and Punishment'?", "options": {"A": "Leo Tolstoy", "B": "Anton Chekhov", "C": "Fyodor Dostoevsky", "D": "Ivan Turgenev"}, "answer": "C"},
-  {"id": 123, "question": "What is the Doppler effect?", "options": {"A": "Light bending around gravity", "B": "Change in frequency of a wave relative to an observer moving relative to the source", "C": "Splitting of light into a spectrum", "D": "Reflection of sound waves"}, "answer": "B"},
-  {"id": 124, "question": "Which data structure would you use for implementing a priority queue efficiently?", "options": {"A": "Array", "B": "Linked list", "C": "Binary heap", "D": "Hash table"}, "answer": "C"},
-  {"id": 125, "question": "What is the term for an organism that generates its own heat internally?", "options": {"A": "Ectotherm", "B": "Endotherm", "C": "Poikilotherm", "D": "Mesotherm"}, "answer": "B"},
-  {"id": 126, "question": "Which strait connects the Mediterranean Sea to the Atlantic Ocean?", "options": {"A": "Strait of Hormuz", "B": "Strait of Gibraltar", "C": "Bosphorus Strait", "D": "Strait of Messina"}, "answer": "B"},
-  {"id": 127, "question": "What was the significance of the Magna Carta?", "options": {"A": "It established democracy in England", "B": "It limited the power of the king and established rule of law", "C": "It abolished feudalism", "D": "It declared independence from Rome"}, "answer": "B"},
-  {"id": 128, "question": "In quantum computing, what is the basic unit of quantum information?", "options": {"A": "Bit", "B": "Byte", "C": "Qubit", "D": "Qutrit"}, "answer": "C"},
-  {"id": 129, "question": "What causes the Aurora Borealis?", "options": {"A": "Reflection of sunlight off ice crystals", "B": "Charged particles from the Sun interacting with Earth's magnetic field", "C": "Volcanic gases in the atmosphere", "D": "Moonlight refraction"}, "answer": "B"},
-  {"id": 130, "question": "Which amendment to the US Constitution abolished slavery?", "options": {"A": "12th", "B": "13th", "C": "14th", "D": "15th"}, "answer": "B"},
-  {"id": 131, "question": "What is the Pauli Exclusion Principle?", "options": {"A": "Energy is conserved in all reactions", "B": "No two fermions can occupy the same quantum state simultaneously", "C": "Electrons orbit the nucleus in fixed paths", "D": "Matter and antimatter annihilate on contact"}, "answer": "B"},
-  {"id": 132, "question": "Which SQL operation combines rows from two tables based on a related column?", "options": {"A": "UNION", "B": "MERGE", "C": "JOIN", "D": "CONCAT"}, "answer": "C"},
-  {"id": 133, "question": "What is the most abundant protein in the human body?", "options": {"A": "Keratin", "B": "Actin", "C": "Collagen", "D": "Hemoglobin"}, "answer": "C"},
-  {"id": 134, "question": "Which ancient trade route connected China to the Mediterranean?", "options": {"A": "Amber Road", "B": "Silk Road", "C": "Spice Route", "D": "Incense Route"}, "answer": "B"},
-  {"id": 135, "question": "What is the Halting Problem in computer science?", "options": {"A": "Determining if a CPU will overheat", "B": "Deciding whether a given program will finish running or run forever", "C": "Finding the fastest algorithm for a problem", "D": "Detecting infinite loops at compile time"}, "answer": "B"},
-  {"id": 136, "question": "Which subatomic particle was discovered at CERN in 2012?", "options": {"A": "Graviton", "B": "Higgs boson", "C": "Top quark", "D": "Neutrino"}, "answer": "B"},
-  {"id": 137, "question": "What is the driest continent on Earth?", "options": {"A": "Africa", "B": "Australia", "C": "Antarctica", "D": "Asia"}, "answer": "C"},
-  {"id": 138, "question": "Who developed the theory of general relativity?", "options": {"A": "Max Planck", "B": "Niels Bohr", "C": "Albert Einstein", "D": "Richard Feynman"}, "answer": "C"},
-  {"id": 139, "question": "What is the mechanism by which bacteria share genetic material horizontally?", "options": {"A": "Meiosis", "B": "Conjugation", "C": "Mitosis", "D": "Binary fission"}, "answer": "B"},
-  {"id": 140, "question": "Which version control system uses a Directed Acyclic Graph (DAG) for its commit history?", "options": {"A": "SVN", "B": "Mercurial", "C": "Git", "D": "CVS"}, "answer": "C"},
-  {"id": 141, "question": "What was the primary cause of the Irish Potato Famine?", "options": {"A": "Drought", "B": "A potato blight (Phytophthora infestans)", "C": "Locust swarm", "D": "Soil exhaustion"}, "answer": "B"},
-  {"id": 142, "question": "Which mathematical constant is approximately equal to 2.71828?", "options": {"A": "Pi", "B": "Euler's number (e)", "C": "Golden ratio", "D": "Square root of 2"}, "answer": "B"},
-  {"id": 143, "question": "What is the term for the loss of species diversity in an ecosystem?", "options": {"A": "Eutrophication", "B": "Desertification", "C": "Biodiversity loss", "D": "Deforestation"}, "answer": "C"},
-  {"id": 144, "question": "Which protocol is used for secure communication over the internet?", "options": {"A": "HTTP", "B": "FTP", "C": "HTTPS/TLS", "D": "SMTP"}, "answer": "C"},
-  {"id": 145, "question": "What is the largest moon in the solar system?", "options": {"A": "Titan", "B": "Europa", "C": "Ganymede", "D": "Callisto"}, "answer": "C"},
-  {"id": 146, "question": "Who wrote 'The Wealth of Nations'?", "options": {"A": "Karl Marx", "B": "John Maynard Keynes", "C": "Adam Smith", "D": "David Ricardo"}, "answer": "C"},
-  {"id": 147, "question": "What is the function of the golgi apparatus in a cell?", "options": {"A": "Energy production", "B": "Protein modification and packaging", "C": "DNA storage", "D": "Cell division"}, "answer": "B"},
-  {"id": 148, "question": "Which war lasted from 1337 to 1453?", "options": {"A": "Wars of the Roses", "B": "Crusades", "C": "Hundred Years' War", "D": "Reconquista"}, "answer": "C"},
-  {"id": 149, "question": "What is the difference between TCP and UDP?", "options": {"A": "TCP is faster; UDP is reliable", "B": "TCP guarantees delivery and order; UDP does not", "C": "TCP is connectionless; UDP is connection-oriented", "D": "There is no difference"}, "answer": "B"},
-  {"id": 150, "question": "What is the name of the galaxy nearest to the Milky Way?", "options": {"A": "Triangulum Galaxy", "B": "Andromeda Galaxy", "C": "Canis Major Dwarf Galaxy", "D": "Large Magellanic Cloud"}, "answer": "C"},
-  {"id": 151, "question": "Which acid is found in the human stomach?", "options": {"A": "Sulfuric acid", "B": "Hydrochloric acid", "C": "Citric acid", "D": "Acetic acid"}, "answer": "B"},
-  {"id": 152, "question": "What is the term for a government ruled by a small group of powerful people?", "options": {"A": "Autocracy", "B": "Oligarchy", "C": "Theocracy", "D": "Plutocracy"}, "answer": "B"},
-  {"id": 153, "question": "In machine learning, what is overfitting?", "options": {"A": "Model performs well on training data but poorly on new data", "B": "Model is too simple to capture patterns", "C": "Model takes too long to train", "D": "Model uses too much memory"}, "answer": "A"},
-  {"id": 154, "question": "What is the speed of sound in air at sea level approximately?", "options": {"A": "170 m/s", "B": "343 m/s", "C": "500 m/s", "D": "760 m/s"}, "answer": "B"},
-  {"id": 155, "question": "Which philosopher is associated with the concept of the 'social contract'?", "options": {"A": "Friedrich Nietzsche", "B": "Jean-Jacques Rousseau", "C": "Georg Hegel", "D": "Baruch Spinoza"}, "answer": "B"},
-  {"id": 156, "question": "What is the most common isotope of hydrogen?", "options": {"A": "Deuterium", "B": "Tritium", "C": "Protium", "D": "Quadrium"}, "answer": "C"},
-  {"id": 157, "question": "Which data structure is best suited for implementing an LRU cache?", "options": {"A": "Array + binary search", "B": "Hash map + doubly linked list", "C": "Binary search tree", "D": "Stack + queue"}, "answer": "B"},
-  {"id": 158, "question": "What is the process by which rocks are broken down by weather and biological activity?", "options": {"A": "Erosion", "B": "Weathering", "C": "Sedimentation", "D": "Metamorphism"}, "answer": "B"},
-  {"id": 159, "question": "Which treaty established the European Economic Community?", "options": {"A": "Treaty of Maastricht", "B": "Treaty of Rome", "C": "Treaty of Lisbon", "D": "Treaty of Paris"}, "answer": "B"},
-  {"id": 160, "question": "What is the strongest type of intermolecular force?", "options": {"A": "London dispersion forces", "B": "Dipole-dipole interactions", "C": "Hydrogen bonding", "D": "Ion-dipole forces"}, "answer": "D"},
-  {"id": 161, "question": "Who discovered penicillin?", "options": {"A": "Louis Pasteur", "B": "Alexander Fleming", "C": "Joseph Lister", "D": "Robert Koch"}, "answer": "B"},
-  {"id": 162, "question": "What is the name of the paradox where a cat is simultaneously alive and dead?", "options": {"A": "Zeno's paradox", "B": "Fermi paradox", "C": "Schrodinger's cat", "D": "Russell's paradox"}, "answer": "C"},
-  {"id": 163, "question": "Which continent has the most countries?", "options": {"A": "Asia", "B": "Europe", "C": "Africa", "D": "South America"}, "answer": "C"},
-  {"id": 164, "question": "What is the purpose of a mutex in concurrent programming?", "options": {"A": "To speed up execution", "B": "To prevent race conditions by ensuring mutual exclusion", "C": "To allocate memory", "D": "To manage network connections"}, "answer": "B"},
-  {"id": 165, "question": "Which vitamin deficiency causes scurvy?", "options": {"A": "Vitamin A", "B": "Vitamin B12", "C": "Vitamin C", "D": "Vitamin D"}, "answer": "C"},
-  {"id": 166, "question": "What is the name of the first artificial satellite launched into orbit?", "options": {"A": "Explorer 1", "B": "Vanguard 1", "C": "Sputnik 1", "D": "Luna 1"}, "answer": "C"},
-  {"id": 167, "question": "Which logical fallacy assumes that because two events occur together, one caused the other?", "options": {"A": "Ad hominem", "B": "Straw man", "C": "Post hoc ergo propter hoc", "D": "Slippery slope"}, "answer": "C"},
-  {"id": 168, "question": "What is the term for the minimum number of nodes that must agree in a distributed system?", "options": {"A": "Quorum", "B": "Threshold", "C": "Consensus", "D": "Majority"}, "answer": "A"},
-  {"id": 169, "question": "Which organ is responsible for filtering blood and producing urine?", "options": {"A": "Liver", "B": "Spleen", "C": "Kidneys", "D": "Bladder"}, "answer": "C"},
-  {"id": 170, "question": "What is the tallest mountain in the solar system?", "options": {"A": "Mount Everest", "B": "Mauna Kea", "C": "Olympus Mons", "D": "Maxwell Montes"}, "answer": "C"},
-  {"id": 171, "question": "Who composed 'The Rite of Spring', which caused a riot at its premiere?", "options": {"A": "Claude Debussy", "B": "Igor Stravinsky", "C": "Sergei Rachmaninoff", "D": "Maurice Ravel"}, "answer": "B"},
-  {"id": 172, "question": "What is the difference between a process and a thread?", "options": {"A": "Threads share memory space; processes have separate memory", "B": "Processes share memory; threads do not", "C": "There is no difference", "D": "Threads are faster to create but cannot run in parallel"}, "answer": "A"},
-  {"id": 173, "question": "Which element is used in semiconductor manufacturing?", "options": {"A": "Copper", "B": "Silicon", "C": "Gold", "D": "Iron"}, "answer": "B"},
-  {"id": 174, "question": "What is the Coriolis effect?", "options": {"A": "Tides caused by the moon", "B": "Deflection of moving objects due to Earth's rotation", "C": "Heat rising from the equator", "D": "Magnetic field reversals"}, "answer": "B"},
-  {"id": 175, "question": "Which dynasty built the Great Wall of China in its most recognizable form?", "options": {"A": "Han Dynasty", "B": "Tang Dynasty", "C": "Ming Dynasty", "D": "Qin Dynasty"}, "answer": "C"},
-  {"id": 176, "question": "What is the pigment that gives plants their green color?", "options": {"A": "Carotene", "B": "Xanthophyll", "C": "Chlorophyll", "D": "Anthocyanin"}, "answer": "C"},
-  {"id": 177, "question": "In networking, what does DNS stand for?", "options": {"A": "Digital Network System", "B": "Domain Name System", "C": "Data Node Server", "D": "Distributed Naming Service"}, "answer": "B"},
-  {"id": 178, "question": "Which scientist proposed the theory of continental drift?", "options": {"A": "Charles Lyell", "B": "Alfred Wegener", "C": "James Hutton", "D": "Harry Hess"}, "answer": "B"},
-  {"id": 179, "question": "What is the term for a self-replicating program that spreads across networks?", "options": {"A": "Virus", "B": "Trojan", "C": "Worm", "D": "Rootkit"}, "answer": "C"},
-  {"id": 180, "question": "Which country has the most natural lakes?", "options": {"A": "United States", "B": "Russia", "C": "Canada", "D": "Finland"}, "answer": "C"},
-  {"id": 181, "question": "What is the term for the region of space where a planet's gravity dominates?", "options": {"A": "Lagrange point", "B": "Hill sphere", "C": "Roche limit", "D": "Van Allen belt"}, "answer": "B"},
-  {"id": 182, "question": "Who is considered the father of modern economics?", "options": {"A": "Adam Smith", "B": "John Maynard Keynes", "C": "Milton Friedman", "D": "Karl Marx"}, "answer": "A"},
-  {"id": 183, "question": "What is the difference between stack memory and heap memory?", "options": {"A": "Stack is for global variables; heap is for local", "B": "Stack is automatically managed (LIFO); heap is manually allocated and freed", "C": "Stack is slower but larger; heap is faster but smaller", "D": "There is no functional difference"}, "answer": "B"},
-  {"id": 184, "question": "Which disease is caused by a deficiency of vitamin D?", "options": {"A": "Beriberi", "B": "Pellagra", "C": "Rickets", "D": "Scurvy"}, "answer": "C"},
-  {"id": 185, "question": "What is the name of the theoretical limit at which a star collapses under its own gravity?", "options": {"A": "Chandrasekhar limit", "B": "Eddington limit", "C": "Tolman-Oppenheimer-Volkoff limit", "D": "Jeans mass"}, "answer": "A"},
-  {"id": 186, "question": "Which programming language was created by Guido van Rossum?", "options": {"A": "Ruby", "B": "Perl", "C": "Python", "D": "JavaScript"}, "answer": "C"},
-  {"id": 187, "question": "What is the chemical symbol for potassium?", "options": {"A": "Po", "B": "Pt", "C": "K", "D": "P"}, "answer": "C"},
-  {"id": 188, "question": "Which empire was ruled from Constantinople?", "options": {"A": "Roman Empire", "B": "Ottoman Empire", "C": "Byzantine Empire", "D": "Both B and C at different times"}, "answer": "D"},
-  {"id": 189, "question": "What is the phenomenon where entangled particles instantly affect each other regardless of distance?", "options": {"A": "Quantum tunneling", "B": "Quantum entanglement", "C": "Quantum superposition", "D": "Quantum decoherence"}, "answer": "B"},
-  {"id": 190, "question": "Which type of memory is non-volatile?", "options": {"A": "RAM", "B": "CPU registers", "C": "Cache", "D": "Flash/SSD storage"}, "answer": "D"},
-  {"id": 191, "question": "What is the name of the largest known volcano in the solar system?", "options": {"A": "Mount Etna", "B": "Olympus Mons", "C": "Mauna Loa", "D": "Tharsis Montes"}, "answer": "B"},
-  {"id": 192, "question": "Which philosopher proposed the 'categorical imperative'?", "options": {"A": "John Stuart Mill", "B": "Immanuel Kant", "C": "Jeremy Bentham", "D": "Thomas Hobbes"}, "answer": "B"},
-  {"id": 193, "question": "What is the process by which a liquid turns into a gas below its boiling point?", "options": {"A": "Condensation", "B": "Sublimation", "C": "Evaporation", "D": "Boiling"}, "answer": "C"},
-  {"id": 194, "question": "Which consensus algorithm does Bitcoin use?", "options": {"A": "Proof of Stake", "B": "Proof of Work", "C": "Delegated Proof of Stake", "D": "Proof of Authority"}, "answer": "B"},
-  {"id": 195, "question": "What is the largest cell in the human body?", "options": {"A": "Red blood cell", "B": "Neuron", "C": "Ovum (egg cell)", "D": "Muscle fiber"}, "answer": "C"},
-  {"id": 196, "question": "Which sea is the saltiest body of water in the world?", "options": {"A": "Red Sea", "B": "Dead Sea", "C": "Caspian Sea", "D": "Aral Sea"}, "answer": "B"},
-  {"id": 197, "question": "In information theory, what does entropy measure?", "options": {"A": "Data compression ratio", "B": "Network bandwidth", "C": "Uncertainty or randomness in information", "D": "Processing speed"}, "answer": "C"},
-  {"id": 198, "question": "Who first observed cells under a microscope and named them?", "options": {"A": "Anton van Leeuwenhoek", "B": "Robert Hooke", "C": "Matthias Schleiden", "D": "Rudolf Virchow"}, "answer": "B"},
-  {"id": 199, "question": "What is the escape velocity from Earth's surface?", "options": {"A": "7.9 km/s", "B": "11.2 km/s", "C": "15.4 km/s", "D": "25.0 km/s"}, "answer": "B"},
-  {"id": 200, "question": "Which war was triggered by the assassination of Archduke Franz Ferdinand?", "options": {"A": "Franco-Prussian War", "B": "World War I", "C": "World War II", "D": "Crimean War"}, "answer": "B"},
-  {"id": 201, "question": "What is the name of the problem of determining whether a Boolean formula can be satisfied?", "options": {"A": "Traveling Salesman Problem", "B": "Boolean Satisfiability Problem (SAT)", "C": "Knapsack Problem", "D": "Graph Coloring Problem"}, "answer": "B"},
-  {"id": 202, "question": "Which hormone regulates blood sugar levels by lowering glucose?", "options": {"A": "Glucagon", "B": "Cortisol", "C": "Insulin", "D": "Adrenaline"}, "answer": "C"},
-  {"id": 203, "question": "What is the term for a star that has exhausted its nuclear fuel and collapsed?", "options": {"A": "Red giant", "B": "White dwarf", "C": "Neutron star", "D": "Protostar"}, "answer": "C"},
-  {"id": 204, "question": "Which country invented gunpowder?", "options": {"A": "India", "B": "Persia", "C": "China", "D": "Greece"}, "answer": "C"},
-  {"id": 205, "question": "What is the NP-completeness of the Traveling Salesman Problem (decision version)?", "options": {"A": "P", "B": "NP-complete", "C": "NP-hard but not NP-complete", "D": "Undecidable"}, "answer": "B"},
-  {"id": 206, "question": "Which blood cells are primarily responsible for immune defense?", "options": {"A": "Red blood cells", "B": "Platelets", "C": "White blood cells", "D": "Plasma cells"}, "answer": "C"},
-  {"id": 207, "question": "What is the phenomenon where the frequency of a gene changes in a population due to random chance?", "options": {"A": "Natural selection", "B": "Genetic drift", "C": "Gene flow", "D": "Mutation"}, "answer": "B"},
-  {"id": 208, "question": "Which number system is used natively by computers?", "options": {"A": "Decimal", "B": "Octal", "C": "Binary", "D": "Hexadecimal"}, "answer": "C"},
-  {"id": 209, "question": "What is the only mammal capable of true sustained flight?", "options": {"A": "Flying squirrel", "B": "Sugar glider", "C": "Bat", "D": "Colugo"}, "answer": "C"},
-  {"id": 210, "question": "Which mathematical proof technique proves P(n) by showing P(1) and P(k) implies P(k+1)?", "options": {"A": "Proof by contradiction", "B": "Mathematical induction", "C": "Direct proof", "D": "Proof by exhaustion"}, "answer": "B"},
-  {"id": 211, "question": "What is the term for light that has all its waves oscillating in the same plane?", "options": {"A": "Coherent light", "B": "Polarized light", "C": "Monochromatic light", "D": "Diffracted light"}, "answer": "B"},
-  {"id": 212, "question": "Which civilization developed the first known system of writing?", "options": {"A": "Egyptians", "B": "Sumerians", "C": "Chinese", "D": "Indus Valley"}, "answer": "B"},
-  {"id": 213, "question": "In a B-tree, what determines the minimum and maximum number of children per node?", "options": {"A": "The height of the tree", "B": "The order (or degree) of the tree", "C": "The number of elements stored", "D": "The depth of the node"}, "answer": "B"},
-  {"id": 214, "question": "What is the name of the force that holds the nucleus of an atom together?", "options": {"A": "Electromagnetic force", "B": "Gravitational force", "C": "Strong nuclear force", "D": "Weak nuclear force"}, "answer": "C"},
-  {"id": 215, "question": "Which planet has the Great Red Spot?", "options": {"A": "Mars", "B": "Saturn", "C": "Jupiter", "D": "Neptune"}, "answer": "C"},
-  {"id": 216, "question": "What economic term describes a sustained increase in the general price level?", "options": {"A": "Deflation", "B": "Stagflation", "C": "Inflation", "D": "Recession"}, "answer": "C"},
-  {"id": 217, "question": "Which enzyme unwinds the DNA double helix during replication?", "options": {"A": "DNA polymerase", "B": "Helicase", "C": "Ligase", "D": "Topoisomerase"}, "answer": "B"},
-  {"id": 218, "question": "What is the purpose of the ARP protocol?", "options": {"A": "To resolve domain names to IP addresses", "B": "To map IP addresses to MAC addresses", "C": "To route packets between networks", "D": "To encrypt network traffic"}, "answer": "B"},
-  {"id": 219, "question": "Which ancient Greek physician is known as the 'Father of Medicine'?", "options": {"A": "Galen", "B": "Hippocrates", "C": "Aristotle", "D": "Herophilus"}, "answer": "B"},
-  {"id": 220, "question": "What is the name of the paradox where a spacecraft could theoretically reach any speed by continually accelerating?", "options": {"A": "Fermi paradox", "B": "Olbers' paradox", "C": "The twin paradox", "D": "Tsiolkovsky rocket equation (not a paradox)"}, "answer": "C"},
-  {"id": 221, "question": "What is the amortized time complexity of inserting into a dynamic array (ArrayList)?", "options": {"A": "O(1)", "B": "O(log n)", "C": "O(n)", "D": "O(n log n)"}, "answer": "A"},
-  {"id": 222, "question": "Which type of rock is formed from cooled magma or lava?", "options": {"A": "Sedimentary", "B": "Metamorphic", "C": "Igneous", "D": "Limestone"}, "answer": "C"},
-  {"id": 223, "question": "Who formulated the three laws of thermodynamics?", "options": {"A": "No single person; they were developed by multiple scientists", "B": "Isaac Newton", "C": "James Watt", "D": "Lord Kelvin alone"}, "answer": "A"},
-  {"id": 224, "question": "What is the term for a market structure with a single seller?", "options": {"A": "Oligopoly", "B": "Monopoly", "C": "Monopsony", "D": "Perfect competition"}, "answer": "B"},
-  {"id": 225, "question": "Which spacecraft was the first to land on Mars?", "options": {"A": "Viking 1", "B": "Mars Pathfinder", "C": "Spirit", "D": "Curiosity"}, "answer": "A"},
-  {"id": 226, "question": "What is the difference between symmetric and asymmetric encryption?", "options": {"A": "Symmetric is slower but more secure", "B": "Symmetric uses one key for both encryption and decryption; asymmetric uses a key pair", "C": "Asymmetric uses one key; symmetric uses multiple", "D": "There is no practical difference"}, "answer": "B"},
-  {"id": 227, "question": "Which structure in the brain is responsible for forming new memories?", "options": {"A": "Cerebellum", "B": "Hippocampus", "C": "Amygdala", "D": "Prefrontal cortex"}, "answer": "B"},
-  {"id": 228, "question": "What is the name of the geometric shape with exactly 12 faces?", "options": {"A": "Icosahedron", "B": "Dodecahedron", "C": "Octahedron", "D": "Tetrahedron"}, "answer": "B"},
-  {"id": 229, "question": "Which country colonized Brazil?", "options": {"A": "Spain", "B": "France", "C": "Portugal", "D": "Netherlands"}, "answer": "C"},
-  {"id": 230, "question": "What does the garbage collector do in managed programming languages?", "options": {"A": "Compiles code to machine language", "B": "Automatically frees memory that is no longer referenced", "C": "Optimizes CPU usage", "D": "Manages file I/O operations"}, "answer": "B"},
-  {"id": 231, "question": "What is the Planck length?", "options": {"A": "The size of an atom", "B": "The smallest meaningful length in physics (~1.6 x 10^-35 m)", "C": "The diameter of a proton", "D": "The wavelength of visible light"}, "answer": "B"},
-  {"id": 232, "question": "Which Nobel laureate discovered radioactivity?", "options": {"A": "Marie Curie", "B": "Henri Becquerel", "C": "Ernest Rutherford", "D": "Wilhelm Rontgen"}, "answer": "B"},
-  {"id": 233, "question": "What is the name for a polynomial equation of degree 3?", "options": {"A": "Quadratic", "B": "Cubic", "C": "Quartic", "D": "Quintic"}, "answer": "B"},
-  {"id": 234, "question": "Which layer of the TCP/IP model handles routing?", "options": {"A": "Application layer", "B": "Transport layer", "C": "Internet (network) layer", "D": "Link layer"}, "answer": "C"},
-  {"id": 235, "question": "What is the most common cause of extinction in recorded history?", "options": {"A": "Asteroids", "B": "Habitat destruction", "C": "Disease", "D": "Climate change"}, "answer": "B"},
-  {"id": 236, "question": "Who was the first person to circumnavigate the globe (expedition completed even though he died)?", "options": {"A": "Vasco da Gama", "B": "Christopher Columbus", "C": "Ferdinand Magellan", "D": "Francis Drake"}, "answer": "C"},
-  {"id": 237, "question": "What is the difference between a deadlock and a livelock?", "options": {"A": "Deadlock involves threads waiting forever; livelock involves threads actively changing state but making no progress", "B": "They are the same thing", "C": "Deadlock is in databases; livelock is in operating systems", "D": "Livelock always resolves itself; deadlock never does"}, "answer": "A"},
-  {"id": 238, "question": "What is the name of the outermost layer of the Sun?", "options": {"A": "Photosphere", "B": "Chromosphere", "C": "Corona", "D": "Convective zone"}, "answer": "C"},
-  {"id": 239, "question": "Which acid is found in vinegar?", "options": {"A": "Citric acid", "B": "Acetic acid", "C": "Lactic acid", "D": "Formic acid"}, "answer": "B"},
-  {"id": 240, "question": "What is the name of the CPU component that performs arithmetic operations?", "options": {"A": "Control unit", "B": "ALU (Arithmetic Logic Unit)", "C": "Register file", "D": "Bus interface"}, "answer": "B"},
-  {"id": 241, "question": "Which novel by Aldous Huxley depicts a dystopian future society?", "options": {"A": "1984", "B": "Fahrenheit 451", "C": "Brave New World", "D": "The Handmaid's Tale"}, "answer": "C"},
-  {"id": 242, "question": "What is the human body's largest artery?", "options": {"A": "Carotid artery", "B": "Aorta", "C": "Femoral artery", "D": "Pulmonary artery"}, "answer": "B"},
-  {"id": 243, "question": "Which country has the most time zones?", "options": {"A": "Russia", "B": "United States", "C": "France", "D": "China"}, "answer": "C"},
-  {"id": 244, "question": "What is the term for a complete directed graph where every pair of vertices is connected by a single edge?", "options": {"A": "Tournament", "B": "Complete graph", "C": "DAG", "D": "Bipartite graph"}, "answer": "A"},
-  {"id": 245, "question": "Which particle in an atom has no electric charge?", "options": {"A": "Proton", "B": "Electron", "C": "Neutron", "D": "Positron"}, "answer": "C"},
-  {"id": 246, "question": "What is the only country that borders both the Atlantic and Indian Oceans in Africa?", "options": {"A": "Mozambique", "B": "Tanzania", "C": "South Africa", "D": "Kenya"}, "answer": "C"},
-  {"id": 247, "question": "What is the difference between HTTP GET and POST requests?", "options": {"A": "GET sends data in the body; POST sends data in the URL", "B": "GET retrieves data; POST submits data to be processed", "C": "GET is encrypted; POST is not", "D": "There is no difference"}, "answer": "B"},
-  {"id": 248, "question": "Which theory unifies electricity, magnetism, and optics?", "options": {"A": "Quantum field theory", "B": "Maxwell's electromagnetic theory", "C": "String theory", "D": "General relativity"}, "answer": "B"},
-  {"id": 249, "question": "What is the term for the minimum spanning tree algorithm that greedily selects the smallest edge?", "options": {"A": "Dijkstra's algorithm", "B": "Prim's algorithm", "C": "Kruskal's algorithm", "D": "Bellman-Ford algorithm"}, "answer": "C"},
-  {"id": 250, "question": "Which organelle is known as the 'suicide bag' of the cell?", "options": {"A": "Peroxisome", "B": "Lysosome", "C": "Vacuole", "D": "Endoplasmic reticulum"}, "answer": "B"}
+  {
+    "id": 1,
+    "question": "Which country has the world's oldest continuously operating university?",
+    "options": {
+      "A": "England (University of Oxford, 1096)",
+      "B": "Morocco (University of al-Qarawiyyin, 859)",
+      "C": "Egypt (Al-Azhar University, 970)",
+      "D": "Italy (University of Bologna, 1088)"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 2,
+    "question": "What is the only letter that does NOT appear in any US state name?",
+    "options": {
+      "A": "B",
+      "B": "Z",
+      "C": "Q",
+      "D": "X"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 3,
+    "question": "Marie Curie's notebooks from the 1890s are still radioactive and stored in lead-lined boxes. What element primarily contaminates them?",
+    "options": {
+      "A": "Polonium-210",
+      "B": "Thorium-232",
+      "C": "Radium-226",
+      "D": "Uranium-238"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 4,
+    "question": "In computational complexity, which problem is known to be in NP but is NOT known to be either NP-complete or in P?",
+    "options": {
+      "A": "Integer factorization",
+      "B": "Traveling salesman",
+      "C": "Boolean satisfiability",
+      "D": "Graph coloring"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 5,
+    "question": "Which planet has the hottest surface temperature in our solar system?",
+    "options": {
+      "A": "Venus",
+      "B": "Jupiter's core",
+      "C": "The Sun-facing side of Mercury",
+      "D": "Mercury"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 6,
+    "question": "The Treaty of Tordesillas (1494) divided the New World between which two powers?",
+    "options": {
+      "A": "Spain and Portugal",
+      "B": "Portugal and the Papal States",
+      "C": "Spain and the Netherlands",
+      "D": "England and France"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 7,
+    "question": "In a standard relational database, what violation occurs when a non-key attribute depends on only part of a composite primary key?",
+    "options": {
+      "A": "Third normal form violation",
+      "B": "Second normal form violation",
+      "C": "First normal form violation",
+      "D": "Boyce-Codd normal form violation"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 8,
+    "question": "Honey never spoils. What property primarily prevents bacterial growth in honey?",
+    "options": {
+      "A": "Extremely low water activity",
+      "B": "All of these contribute, but low water activity is the primary factor",
+      "C": "High acidity (pH ~3.9)",
+      "D": "Natural hydrogen peroxide production"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 9,
+    "question": "Which chemical element was discovered on the Sun (via spectroscopy) before it was found on Earth?",
+    "options": {
+      "A": "Neon",
+      "B": "Helium",
+      "C": "Argon",
+      "D": "Xenon"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 10,
+    "question": "In the Byzantine Empire, what was 'Greek fire'?",
+    "options": {
+      "A": "Burning oil poured from fortifications",
+      "B": "An early form of gunpowder imported from China",
+      "C": "A flamethrower-like weapon with an unknown incendiary composition",
+      "D": "A type of volcanic bomb used in siege warfare"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 11,
+    "question": "What is the space complexity of Depth-First Search on a graph with V vertices and E edges?",
+    "options": {
+      "A": "O(E)",
+      "B": "O(V)",
+      "C": "O(V * E)",
+      "D": "O(V + E)"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 12,
+    "question": "Which animal has the largest brain-to-body ratio?",
+    "options": {
+      "A": "Tree shrews",
+      "B": "Ants",
+      "C": "Dolphins",
+      "D": "Humans"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 13,
+    "question": "The Antikythera mechanism, recovered from a shipwreck, is considered the world's first what?",
+    "options": {
+      "A": "Water clock",
+      "B": "Analog computer",
+      "C": "Compass",
+      "D": "Telescope"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 14,
+    "question": "In distributed systems, what does the 'P' in the CAP theorem guarantee?",
+    "options": {
+      "A": "Processing is parallelized",
+      "B": "Privacy of user data",
+      "C": "Data is permanently stored",
+      "D": "The system continues to operate despite network partitions"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 15,
+    "question": "Which country has the most official languages?",
+    "options": {
+      "A": "India (22)",
+      "B": "South Africa (11)",
+      "C": "Bolivia (37)",
+      "D": "Zimbabwe (16)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 16,
+    "question": "What causes the blue color of the sky?",
+    "options": {
+      "A": "Mie scattering from water droplets",
+      "B": "Reflection of ocean water",
+      "C": "Absorption of red light by ozone",
+      "D": "Rayleigh scattering of shorter wavelengths"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 17,
+    "question": "The 'Ship of Theseus' thought experiment is primarily about which philosophical concept?",
+    "options": {
+      "A": "Personal identity and persistence through change",
+      "B": "The problem of induction",
+      "C": "The nature of consciousness",
+      "D": "Free will vs. determinism"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 18,
+    "question": "In a Red-Black tree, what is the maximum ratio of the longest path to the shortest path from root to leaf?",
+    "options": {
+      "A": "2:1",
+      "B": "4:1",
+      "C": "3:1",
+      "D": "log(n):1"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 19,
+    "question": "Which gas is most responsible for the greenhouse effect on Earth?",
+    "options": {
+      "A": "Nitrous oxide",
+      "B": "Water vapor",
+      "C": "Methane",
+      "D": "Carbon dioxide"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 20,
+    "question": "The Maginot Line was a line of fortifications built by France along its border with which country?",
+    "options": {
+      "A": "Belgium",
+      "B": "Germany",
+      "C": "Italy",
+      "D": "Spain"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 21,
+    "question": "How many times does a binary search algorithm compare elements when searching through 1 million sorted items (worst case)?",
+    "options": {
+      "A": "About 10",
+      "B": "About 100",
+      "C": "About 1000",
+      "D": "About 20"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 22,
+    "question": "Which organ in the body regenerates itself most quickly if partially removed?",
+    "options": {
+      "A": "Skin",
+      "B": "Bone marrow",
+      "C": "Stomach lining",
+      "D": "Liver"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 23,
+    "question": "Lake Baikal in Russia contains approximately what percentage of the world's surface fresh water?",
+    "options": {
+      "A": "10%",
+      "B": "30%",
+      "C": "20%",
+      "D": "5%"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 24,
+    "question": "In TCP, what is the purpose of the three-way handshake?",
+    "options": {
+      "A": "To authenticate both endpoints",
+      "B": "To negotiate compression algorithms",
+      "C": "To encrypt the connection",
+      "D": "To establish a reliable connection and synchronize sequence numbers"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 25,
+    "question": "Which famous mathematician died in a duel at age 20, having written down revolutionary work in group theory the night before?",
+    "options": {
+      "A": "Srinivasa Ramanujan",
+      "B": "Niels Abel",
+      "C": "Evariste Galois",
+      "D": "Blaise Pascal"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 26,
+    "question": "What percentage of the ocean floor has been mapped in high resolution as of 2024?",
+    "options": {
+      "A": "About 25%",
+      "B": "About 75%",
+      "C": "About 5%",
+      "D": "About 50%"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 27,
+    "question": "The Dunning-Kruger effect specifically describes what cognitive bias?",
+    "options": {
+      "A": "Remembering events as more predictable than they were",
+      "B": "Preferring information that confirms existing beliefs",
+      "C": "The tendency to see patterns in random data",
+      "D": "Overconfidence in one's own abilities when incompetent, and underestimation when skilled"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 28,
+    "question": "In the context of CPU architecture, what does 'pipelining' achieve?",
+    "options": {
+      "A": "It allows multiple instructions to overlap in execution stages simultaneously",
+      "B": "It compresses data for faster transfer",
+      "C": "It connects multiple CPUs together",
+      "D": "It increases the clock speed"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 29,
+    "question": "Which element is the most abundant in the universe by mass?",
+    "options": {
+      "A": "Carbon",
+      "B": "Hydrogen",
+      "C": "Helium",
+      "D": "Oxygen"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 30,
+    "question": "The Scramble for Africa occurred primarily in which decade(s)?",
+    "options": {
+      "A": "1840s-1850s",
+      "B": "1860s-1870s",
+      "C": "1881-1914",
+      "D": "1920s-1930s"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 31,
+    "question": "What is the time complexity of building a heap from an unsorted array?",
+    "options": {
+      "A": "O(n^2)",
+      "B": "O(n log n)",
+      "C": "O(log n)",
+      "D": "O(n)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 32,
+    "question": "Which human chromosome is the smallest?",
+    "options": {
+      "A": "Chromosome 22",
+      "B": "Chromosome 19",
+      "C": "Y chromosome",
+      "D": "Chromosome 21"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 33,
+    "question": "The Zimmermann Telegram was a secret diplomatic communication proposing a military alliance between Germany and which country?",
+    "options": {
+      "A": "Japan",
+      "B": "Mexico",
+      "C": "Ottoman Empire",
+      "D": "Italy"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 34,
+    "question": "What happens when you try to insert a duplicate key into a HashMap in Java?",
+    "options": {
+      "A": "The old value is replaced and the old value is returned",
+      "B": "Both values are stored in a linked list",
+      "C": "It throws a DuplicateKeyException",
+      "D": "The insertion is silently ignored"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 35,
+    "question": "Which common household substance has a pH closest to 7 (neutral)?",
+    "options": {
+      "A": "Pure water",
+      "B": "Blood",
+      "C": "Milk",
+      "D": "Saliva"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 36,
+    "question": "In economics, what is a 'Giffen good'?",
+    "options": {
+      "A": "An inferior good whose demand increases when its price rises",
+      "B": "A good that cannot be consumed by one person without reducing availability to others",
+      "C": "A public good that is non-excludable",
+      "D": "A luxury item whose demand increases with income"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 37,
+    "question": "How many possible game states exist in a game of chess (Shannon number)?",
+    "options": {
+      "A": "About 10^80",
+      "B": "About 10^40",
+      "C": "About 10^120",
+      "D": "About 10^200"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 38,
+    "question": "Which bone do babies have that adults do NOT?",
+    "options": {
+      "A": "Coccyx plates",
+      "B": "Additional vertebrae that fuse in adulthood",
+      "C": "Kneecap (patella) -- babies' are cartilage, not bone",
+      "D": "Babies have about 270 bones that fuse to ~206 in adults"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 39,
+    "question": "The Poincare conjecture, solved by Grigori Perelman in 2003, deals with the topology of what?",
+    "options": {
+      "A": "Three-dimensional manifolds (3-spheres)",
+      "B": "Two-dimensional surfaces",
+      "C": "Infinite-dimensional Hilbert spaces",
+      "D": "Four-dimensional spacetime"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 40,
+    "question": "In git, what is a 'detached HEAD' state?",
+    "options": {
+      "A": "When a merge conflict has not been resolved",
+      "B": "When HEAD points directly to a commit instead of a branch reference",
+      "C": "When the remote branch has been deleted",
+      "D": "When the repository is corrupted"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 41,
+    "question": "Which ocean current is responsible for keeping Western Europe significantly warmer than similar latitudes in North America?",
+    "options": {
+      "A": "Norwegian Current",
+      "B": "Gulf Stream / North Atlantic Drift",
+      "C": "Canary Current",
+      "D": "Labrador Current"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 42,
+    "question": "Approximately how long does it take light from the Sun to reach Earth?",
+    "options": {
+      "A": "About 30 minutes",
+      "B": "About 8 minutes",
+      "C": "About 1 minute",
+      "D": "About 4 hours"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 43,
+    "question": "In the context of machine learning, what is the 'vanishing gradient problem'?",
+    "options": {
+      "A": "When the model's predictions converge to a single value",
+      "B": "When gradients become extremely small during backpropagation, preventing deep layers from learning",
+      "C": "When the learning rate is set too high",
+      "D": "When the model runs out of training data"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 44,
+    "question": "Which war had the highest death toll in human history?",
+    "options": {
+      "A": "Taiping Rebellion",
+      "B": "World War I",
+      "C": "Mongol conquests",
+      "D": "World War II"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 45,
+    "question": "What is the strongest known biological material?",
+    "options": {
+      "A": "Limpet teeth (goethite nanofibers)",
+      "B": "Spider silk",
+      "C": "Mantis shrimp dactyl club",
+      "D": "Nacre (mother of pearl)"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 46,
+    "question": "In quantum mechanics, what does the Heisenberg Uncertainty Principle ACTUALLY state?",
+    "options": {
+      "A": "Electrons exist in multiple places at once",
+      "B": "You cannot observe something without changing it",
+      "C": "The outcome of a measurement is always random",
+      "D": "There is a fundamental limit to the precision of complementary properties like position and momentum"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 47,
+    "question": "Which filesystem does Linux's ext4 use for file allocation?",
+    "options": {
+      "A": "Linked list allocation",
+      "B": "Extent-based allocation with a journaling system",
+      "C": "B-tree indexing",
+      "D": "File Allocation Table"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 48,
+    "question": "Greenland belongs to which country?",
+    "options": {
+      "A": "Canada",
+      "B": "Denmark",
+      "C": "Iceland",
+      "D": "Norway"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 49,
+    "question": "What is the name of the paradox where a faster algorithm for one specific problem would imply P=NP?",
+    "options": {
+      "A": "Godel's incompleteness",
+      "B": "Halting problem",
+      "C": "Cook's theorem (any NP-complete problem)",
+      "D": "Rice's theorem"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 50,
+    "question": "How many hearts does an octopus have?",
+    "options": {
+      "A": "2",
+      "B": "3",
+      "C": "5",
+      "D": "1"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 51,
+    "question": "Which dynasty was in power in China when the Great Wall was FIRST constructed?",
+    "options": {
+      "A": "Zhou Dynasty",
+      "B": "Han Dynasty",
+      "C": "Qin Dynasty",
+      "D": "Ming Dynasty"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 52,
+    "question": "In the OSI model, at which layer does TLS/SSL encryption operate?",
+    "options": {
+      "A": "Transport layer (4)",
+      "B": "Application layer (7)",
+      "C": "Session/Presentation layer (5/6)",
+      "D": "Network layer (3)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 53,
+    "question": "What percentage of the human genome codes for proteins?",
+    "options": {
+      "A": "About 1-2%",
+      "B": "About 50%",
+      "C": "About 25%",
+      "D": "About 10%"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 54,
+    "question": "The 'grandfather paradox' is a thought experiment primarily related to what?",
+    "options": {
+      "A": "Quantum superposition",
+      "B": "Genetic inheritance",
+      "C": "Simulation theory",
+      "D": "Time travel"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 55,
+    "question": "Which CPU scheduling algorithm gives the minimum average waiting time?",
+    "options": {
+      "A": "Priority Scheduling",
+      "B": "First Come First Serve",
+      "C": "Round Robin",
+      "D": "Shortest Job First (non-preemptive)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 56,
+    "question": "What is the most translated document in the world?",
+    "options": {
+      "A": "The Bible",
+      "B": "IKEA assembly instructions",
+      "C": "The Universal Declaration of Human Rights",
+      "D": "The Quran"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 57,
+    "question": "At what temperature do Celsius and Fahrenheit scales read the same value?",
+    "options": {
+      "A": "-32 degrees",
+      "B": "-40 degrees",
+      "C": "-273 degrees",
+      "D": "They never intersect"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 58,
+    "question": "What is 'rubber duck debugging'?",
+    "options": {
+      "A": "Explaining your code line by line to an inanimate object to find bugs",
+      "B": "A stress testing methodology for network resilience",
+      "C": "A type of fuzzing technique",
+      "D": "Testing software in an isolated container environment"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 59,
+    "question": "Which country was the first to reach the South Pole?",
+    "options": {
+      "A": "United States (Richard Byrd)",
+      "B": "Russia (Fabian von Bellingshausen)",
+      "C": "Norway (Roald Amundsen)",
+      "D": "United Kingdom (Robert Scott)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 60,
+    "question": "In graph theory, what is the minimum number of colors needed to color any planar graph?",
+    "options": {
+      "A": "6",
+      "B": "3",
+      "C": "5",
+      "D": "4"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 61,
+    "question": "Which vitamin is actually a hormone that the human body can synthesize?",
+    "options": {
+      "A": "Vitamin C",
+      "B": "Vitamin D",
+      "C": "Vitamin K",
+      "D": "Vitamin A"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 62,
+    "question": "The 'Streisand effect' refers to what phenomenon?",
+    "options": {
+      "A": "Public figures becoming more popular after scandals",
+      "B": "The media focusing on negative stories",
+      "C": "Celebrity endorsements boosting sales",
+      "D": "Attempting to suppress information inadvertently increases its spread"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 63,
+    "question": "What is the maximum number of nodes in a binary tree of height h?",
+    "options": {
+      "A": "2^h",
+      "B": "h^2",
+      "C": "2h",
+      "D": "2^(h+1) - 1"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 64,
+    "question": "Which metal is liquid at room temperature besides mercury?",
+    "options": {
+      "A": "Cesium (melts at 28.5C)",
+      "B": "Gallium (melts at 29.7C)",
+      "C": "Both A and B can be liquid at warm room temperatures",
+      "D": "Rubidium (melts at 39.3C)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 65,
+    "question": "What is the Fermi Paradox?",
+    "options": {
+      "A": "The observation that the universe appears fine-tuned for life",
+      "B": "The contradiction between the speed of light and relativistic time dilation",
+      "C": "The impossibility of measuring both energy and time precisely",
+      "D": "The apparent contradiction between high probability of alien civilizations and lack of contact"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 66,
+    "question": "In Python, what is the output of: bool('False')?",
+    "options": {
+      "A": "TypeError",
+      "B": "True",
+      "C": "False",
+      "D": "None"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 67,
+    "question": "Which sense does a snake primarily use to 'smell'?",
+    "options": {
+      "A": "Tongue (via Jacobson's organ)",
+      "B": "Skin receptors",
+      "C": "Nostrils",
+      "D": "Heat pits"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 68,
+    "question": "The Magna Carta was signed in which year?",
+    "options": {
+      "A": "1492",
+      "B": "1215",
+      "C": "1348",
+      "D": "1066"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 69,
+    "question": "What is the difference between a mutex and a semaphore?",
+    "options": {
+      "A": "They are functionally identical",
+      "B": "A mutex works across processes; a semaphore does not",
+      "C": "A mutex allows only one thread; a semaphore allows a configurable number",
+      "D": "A semaphore is faster"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 70,
+    "question": "What fraction of an iceberg is typically above water?",
+    "options": {
+      "A": "About 1/5",
+      "B": "About 1/3",
+      "C": "About 1/9",
+      "D": "About 1/2"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 71,
+    "question": "Which civilization first used the number zero as a placeholder in a positional numeral system?",
+    "options": {
+      "A": "Indians",
+      "B": "Maya",
+      "C": "Chinese",
+      "D": "Babylonians"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 72,
+    "question": "In JavaScript, what does '0.1 + 0.2 === 0.3' evaluate to?",
+    "options": {
+      "A": "false",
+      "B": "undefined",
+      "C": "true",
+      "D": "TypeError"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 73,
+    "question": "What is the most abundant mineral in the human body?",
+    "options": {
+      "A": "Potassium",
+      "B": "Sodium",
+      "C": "Iron",
+      "D": "Calcium"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 74,
+    "question": "Which logical gate is considered 'universal' (can create any other gate)?",
+    "options": {
+      "A": "NAND",
+      "B": "AND",
+      "C": "XOR",
+      "D": "OR"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 75,
+    "question": "What is the oldest known city that has been continuously inhabited?",
+    "options": {
+      "A": "Jericho",
+      "B": "Jerusalem",
+      "C": "Athens",
+      "D": "Damascus"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 76,
+    "question": "In relativity, as an object approaches the speed of light, what happens to its mass?",
+    "options": {
+      "A": "It stays the same",
+      "B": "It oscillates",
+      "C": "Its relativistic mass increases toward infinity",
+      "D": "It decreases"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 77,
+    "question": "What is the difference between 'concurrency' and 'parallelism'?",
+    "options": {
+      "A": "Concurrency is about dealing with multiple things at once; parallelism is about doing multiple things at once",
+      "B": "Concurrency requires multiple CPUs; parallelism does not",
+      "C": "Parallelism is a subset of concurrency",
+      "D": "They are the same thing"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 78,
+    "question": "How many possible unique shuffles of a standard 52-card deck exist?",
+    "options": {
+      "A": "About 10^50",
+      "B": "About 10^68 (52!)",
+      "C": "About 10^100",
+      "D": "About 10^20"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 79,
+    "question": "Which color of visible light has the MOST energy per photon?",
+    "options": {
+      "A": "Red",
+      "B": "Blue",
+      "C": "Green",
+      "D": "Violet"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 80,
+    "question": "The 'Tragedy of the Commons' describes what economic concept?",
+    "options": {
+      "A": "Market monopolies harming consumers",
+      "B": "Hyperinflation caused by government spending",
+      "C": "Income inequality causing social unrest",
+      "D": "Depletion of shared resources when individuals act in self-interest"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 81,
+    "question": "What is the worst-case time complexity of inserting into a balanced BST (like AVL tree)?",
+    "options": {
+      "A": "O(n)",
+      "B": "O(1)",
+      "C": "O(n log n)",
+      "D": "O(log n)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 82,
+    "question": "Which animal can survive being frozen solid and thawed?",
+    "options": {
+      "A": "Arctic fox",
+      "B": "Emperor penguin",
+      "C": "Wood frog",
+      "D": "Polar bear"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 83,
+    "question": "What was Operation Barbarossa?",
+    "options": {
+      "A": "The Allied invasion of Normandy",
+      "B": "Italy's invasion of Ethiopia",
+      "C": "Germany's invasion of the Soviet Union in 1941",
+      "D": "Japan's attack on Pearl Harbor"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 84,
+    "question": "In C/C++, what is undefined behavior?",
+    "options": {
+      "A": "Code for which the language standard imposes no requirements on behavior",
+      "B": "Code that produces incorrect output",
+      "C": "Code that throws a compilation error",
+      "D": "Code that crashes at runtime"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 85,
+    "question": "Which planet rotates on its side with an axial tilt of about 98 degrees?",
+    "options": {
+      "A": "Venus",
+      "B": "Pluto",
+      "C": "Neptune",
+      "D": "Uranus"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 86,
+    "question": "The Sapir-Whorf hypothesis proposes what relationship?",
+    "options": {
+      "A": "Language influences (or determines) thought and perception",
+      "B": "Grammar is innate and universal",
+      "C": "All languages evolved from a single proto-language",
+      "D": "Written language always precedes spoken language"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 87,
+    "question": "What is the difference between a 'soft link' and a 'hard link' in Unix?",
+    "options": {
+      "A": "A hard link points to the inode; a soft link points to the pathname",
+      "B": "Soft links are faster to create",
+      "C": "Hard links work across filesystems; soft links do not",
+      "D": "They are functionally identical"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 88,
+    "question": "Which blood type is the universal plasma donor?",
+    "options": {
+      "A": "AB positive",
+      "B": "O positive",
+      "C": "A positive",
+      "D": "O negative"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 89,
+    "question": "What is the Mpemba effect?",
+    "options": {
+      "A": "Boiling water at high altitude requires less heat",
+      "B": "Water expands when frozen",
+      "C": "Cold water evaporates faster than hot water",
+      "D": "Under certain conditions, hot water can freeze faster than cold water"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 90,
+    "question": "Which consensus algorithm does Raft aim to replace as a more understandable alternative?",
+    "options": {
+      "A": "Byzantine fault tolerance",
+      "B": "Two-phase commit",
+      "C": "Gossip protocol",
+      "D": "Paxos"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 91,
+    "question": "The Banach-Tarski paradox states that a solid ball can be decomposed and reassembled into how many copies of the original?",
+    "options": {
+      "A": "Infinitely many",
+      "B": "One (same ball)",
+      "C": "Three identical copies",
+      "D": "Two identical copies"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 92,
+    "question": "What is the fastest growing plant on Earth?",
+    "options": {
+      "A": "Duckweed",
+      "B": "Giant kelp",
+      "C": "Bamboo (up to 91cm/day)",
+      "D": "Kudzu"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 93,
+    "question": "What is the 'Byzantine Generals Problem' in distributed computing?",
+    "options": {
+      "A": "Managing database replication across regions",
+      "B": "Achieving consensus when some participants may be faulty or malicious",
+      "C": "Optimizing network latency across data centers",
+      "D": "Preventing deadlocks in concurrent processes"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 94,
+    "question": "Which country has the longest border with Russia?",
+    "options": {
+      "A": "China",
+      "B": "Mongolia",
+      "C": "Finland",
+      "D": "Kazakhstan"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 95,
+    "question": "What is the resolution of the Monty Hall problem? Should you switch doors?",
+    "options": {
+      "A": "It doesn't matter -- 50/50 either way",
+      "B": "Yes, but only if there are more than 3 doors",
+      "C": "No, staying gives you 2/3 probability",
+      "D": "Yes, switching gives you 2/3 probability of winning"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 96,
+    "question": "In physics, what is a 'quasicrystal'?",
+    "options": {
+      "A": "An amorphous solid",
+      "B": "A crystal with a repeating periodic structure",
+      "C": "An ordered structure that is NOT periodic (lacks translational symmetry)",
+      "D": "A liquid crystal used in displays"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 97,
+    "question": "What does the 'yield' keyword do in Python?",
+    "options": {
+      "A": "Pauses execution for a specified time",
+      "B": "Returns multiple values as a tuple",
+      "C": "Turns a function into a generator that produces values lazily",
+      "D": "Terminates the function"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 98,
+    "question": "Which language has the most native speakers worldwide as of 2024?",
+    "options": {
+      "A": "Mandarin Chinese",
+      "B": "Spanish",
+      "C": "Hindi",
+      "D": "English"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 99,
+    "question": "What is a prion?",
+    "options": {
+      "A": "A radioactive isotope found in nerve tissue",
+      "B": "A misfolded protein that can cause other proteins to misfold",
+      "C": "A type of virus smaller than typical viruses",
+      "D": "A single-celled organism that causes brain disease"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 100,
+    "question": "What is the 'halting problem' and who proved it undecidable?",
+    "options": {
+      "A": "Whether a database query will return results -- proved by Codd",
+      "B": "Whether a program will finish or run forever -- proved by Alan Turing",
+      "C": "Whether a network will converge -- proved by Dijkstra",
+      "D": "Whether a CPU will overheat -- proved by von Neumann"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 101,
+    "question": "What is the 'observer effect' vs the 'Heisenberg Uncertainty Principle'?",
+    "options": {
+      "A": "Observer effect is classical; HUP only applies to quantum fields",
+      "B": "Observer effect: measurement disturbs the system; HUP: fundamental limit on precision regardless of measurement",
+      "C": "They are the same thing",
+      "D": "HUP is about photons; observer effect is about electrons"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 102,
+    "question": "Which empire lasted the longest in human history?",
+    "options": {
+      "A": "Byzantine Empire",
+      "B": "Roman Empire",
+      "C": "Ottoman Empire",
+      "D": "Egyptian Empire / Pharaonic Egypt"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 103,
+    "question": "In Linux, what does the 'fork()' system call do?",
+    "options": {
+      "A": "Creates a new process by duplicating the calling process",
+      "B": "Splits a file into two parts",
+      "C": "Allocates new memory",
+      "D": "Opens a new terminal session"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 104,
+    "question": "What is the triple point of water?",
+    "options": {
+      "A": "100 degrees C at 1 atm",
+      "B": "0 degrees C at 1 atm",
+      "C": "-273.15 degrees C at 0 Pa",
+      "D": "0.01 degrees C at 611.73 Pa where ice, water, and vapor coexist"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 105,
+    "question": "What is 'survivorship bias'?",
+    "options": {
+      "A": "The tendency to overvalue recent events",
+      "B": "Favoring information from survivors of traumatic events",
+      "C": "Believing you are more likely to survive than average",
+      "D": "The tendency to focus on successes while ignoring failures that are no longer visible"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 106,
+    "question": "What data structure does a typical implementation of 'malloc' in C use to track free memory?",
+    "options": {
+      "A": "Hash table",
+      "B": "Array",
+      "C": "Free list (linked list of free blocks)",
+      "D": "Binary search tree"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 107,
+    "question": "Which country first developed and used aircraft carriers in naval warfare?",
+    "options": {
+      "A": "France",
+      "B": "United Kingdom",
+      "C": "United States",
+      "D": "Japan"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 108,
+    "question": "What is the 'coastline paradox'?",
+    "options": {
+      "A": "Sea levels appear to rise faster at coastlines",
+      "B": "Coastal cities grow faster than inland ones",
+      "C": "The measured length of a coastline increases without limit as the measurement scale decreases",
+      "D": "Coastlines erode faster when measured more frequently"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 109,
+    "question": "In a system with 64-bit addressing, what is the theoretical maximum amount of addressable memory?",
+    "options": {
+      "A": "256 PB (petabytes)",
+      "B": "16 EB (exabytes)",
+      "C": "1 TB",
+      "D": "4 GB"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 110,
+    "question": "What is 'apoptosis'?",
+    "options": {
+      "A": "Programmed cell death -- a normal biological process",
+      "B": "Cell mutation caused by radiation",
+      "C": "Uncontrolled cell division (cancer)",
+      "D": "The process of cells absorbing nutrients"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 111,
+    "question": "Which is the only mammal that can truly fly?",
+    "options": {
+      "A": "Colugo (flying lemur)",
+      "B": "Sugar glider",
+      "C": "Flying squirrel",
+      "D": "Bat"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 112,
+    "question": "What is the difference between 'encoding' and 'encryption'?",
+    "options": {
+      "A": "They are the same thing",
+      "B": "Encoding is reversible; encryption is not",
+      "C": "Encoding is for text; encryption is for binary",
+      "D": "Encoding transforms data for usability (no key needed); encryption transforms for secrecy (key required)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 113,
+    "question": "What is the Chandrasekhar limit approximately?",
+    "options": {
+      "A": "1.4 solar masses",
+      "B": "0.5 solar masses",
+      "C": "3.0 solar masses",
+      "D": "10 solar masses"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 114,
+    "question": "The Voynich Manuscript's most mysterious feature is what?",
+    "options": {
+      "A": "It is written in an unknown script/language that has never been deciphered",
+      "B": "It accurately predicts historical events",
+      "C": "It contains mathematical proofs ahead of their time",
+      "D": "Its illustrations of known extinct animals"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 115,
+    "question": "What does SOLID stand for in software engineering?",
+    "options": {
+      "A": "Secure, Organized, Layered, Isolated, Decoupled",
+      "B": "Scalable, Observable, Loosely-coupled, Idempotent, Deterministic",
+      "C": "Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion",
+      "D": "Structured, Optimized, Logical, Integrated, Documented"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 116,
+    "question": "Which ocean is the deepest on average?",
+    "options": {
+      "A": "Pacific",
+      "B": "Indian",
+      "C": "Atlantic",
+      "D": "Southern (Antarctic)"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 117,
+    "question": "What is 'spaghettification' in astrophysics?",
+    "options": {
+      "A": "The spiral pattern of galaxy arms",
+      "B": "The formation of cosmic string structures",
+      "C": "The vertical stretching and horizontal compression of objects in extreme tidal forces near a black hole",
+      "D": "The tangling of magnetic field lines in a neutron star"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 118,
+    "question": "In networking, what is a 'SYN flood' attack?",
+    "options": {
+      "A": "Exploiting TCP handshake by sending many SYN requests without completing connections, exhausting resources",
+      "B": "Overwriting routing tables with false entries",
+      "C": "Sending too many DNS queries",
+      "D": "Flooding a network with UDP packets"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 119,
+    "question": "What is the minimum number of people needed in a room for there to be a >50% probability that two share a birthday?",
+    "options": {
+      "A": "365",
+      "B": "50",
+      "C": "23",
+      "D": "183"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 120,
+    "question": "Which scientist's cat thought experiment illustrates quantum superposition?",
+    "options": {
+      "A": "Dirac",
+      "B": "Bohr",
+      "C": "Heisenberg",
+      "D": "Schrodinger"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 121,
+    "question": "In database indexing, a B+ tree differs from a B-tree in what key way?",
+    "options": {
+      "A": "B+ trees use hashing; B-trees use comparison",
+      "B": "B+ trees are always balanced; B-trees are not",
+      "C": "B+ trees can only store integers",
+      "D": "All data records are stored only in leaf nodes in a B+ tree, with leaf nodes linked for range queries"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 122,
+    "question": "What is the longest cells in the human body?",
+    "options": {
+      "A": "Red blood cells",
+      "B": "Intestinal epithelial cells",
+      "C": "Muscle fibers",
+      "D": "Motor neurons (up to ~1 meter long)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 123,
+    "question": "The Doppler effect applies to which types of waves?",
+    "options": {
+      "A": "All waves including sound, light, and water waves",
+      "B": "Only sound waves",
+      "C": "Only electromagnetic waves",
+      "D": "Only mechanical waves"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 124,
+    "question": "What is 'cache thrashing'?",
+    "options": {
+      "A": "When data is repeatedly loaded and evicted from cache, causing severe performance degradation",
+      "B": "When cached data becomes stale",
+      "C": "When the cache becomes corrupted",
+      "D": "When the cache grows too large"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 125,
+    "question": "Which country has won the most FIFA World Cups?",
+    "options": {
+      "A": "Brazil",
+      "B": "Italy",
+      "C": "Germany",
+      "D": "Argentina"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 126,
+    "question": "What is the 'Trolley Problem' a thought experiment about?",
+    "options": {
+      "A": "Game theory and Nash equilibrium",
+      "B": "The paradox of choice",
+      "C": "Transportation logistics",
+      "D": "Ethical dilemmas about sacrificing one to save many"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 127,
+    "question": "What is eventual consistency in distributed systems?",
+    "options": {
+      "A": "Only the most recent write is preserved",
+      "B": "All nodes always have the same data",
+      "C": "Given enough time without new updates, all replicas will converge to the same value",
+      "D": "Data is consistent only at specific checkpoints"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 128,
+    "question": "What is the most genetically diverse species on Earth?",
+    "options": {
+      "A": "E. coli bacteria",
+      "B": "Humans",
+      "C": "Chimpanzees",
+      "D": "Fruit flies"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 129,
+    "question": "The term 'algorithm' is derived from the name of which mathematician?",
+    "options": {
+      "A": "Euclid",
+      "B": "Archimedes",
+      "C": "Al-Khwarizmi",
+      "D": "Fibonacci"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 130,
+    "question": "What is unique about the number 1729 (Hardy-Ramanujan number)?",
+    "options": {
+      "A": "It is the first Fibonacci prime over 1000",
+      "B": "It is the only number equal to the sum of its digits cubed",
+      "C": "It is the smallest number expressible as the sum of two cubes in two different ways",
+      "D": "It is the largest known prime"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 131,
+    "question": "Which country consumes the most coffee per capita?",
+    "options": {
+      "A": "Brazil",
+      "B": "United States",
+      "C": "Finland",
+      "D": "Italy"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 132,
+    "question": "In operating systems, what is a 'context switch'?",
+    "options": {
+      "A": "Changing the programming language runtime",
+      "B": "The process of saving and restoring the state of a CPU so that multiple processes can share the CPU",
+      "C": "Switching between wired and wireless connections",
+      "D": "Switching between user accounts"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 133,
+    "question": "What was the Library of Alexandria's primary cause of destruction?",
+    "options": {
+      "A": "A single catastrophic fire",
+      "B": "Deliberate destruction by a single ruler",
+      "C": "An earthquake",
+      "D": "Gradual decline over centuries from multiple events including wars, fires, and reduced funding"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 134,
+    "question": "What is CRISPR-Cas9?",
+    "options": {
+      "A": "A chemical compound used in water purification",
+      "B": "A gene-editing tool that allows precise modification of DNA sequences",
+      "C": "A communication protocol for satellites",
+      "D": "A type of computer virus"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 135,
+    "question": "What is the 'Two Generals Problem' in computer science?",
+    "options": {
+      "A": "A load balancing algorithm",
+      "B": "The impossibility of achieving guaranteed agreement over an unreliable communication channel",
+      "C": "A game theory model for competitive markets",
+      "D": "An optimization problem for military logistics"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 136,
+    "question": "Which planet has the fastest wind speeds in our solar system?",
+    "options": {
+      "A": "Neptune",
+      "B": "Jupiter",
+      "C": "Saturn",
+      "D": "Uranus"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 137,
+    "question": "What is 'technical debt'?",
+    "options": {
+      "A": "The implied cost of future reworking caused by choosing a fast/easy solution now over a better approach",
+      "B": "The financial cost of buying development tools",
+      "C": "Unpaid developer salaries",
+      "D": "The cost of maintaining legacy hardware"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 138,
+    "question": "The Drake Equation estimates what?",
+    "options": {
+      "A": "The rate of expansion of the universe",
+      "B": "The number of active, communicative extraterrestrial civilizations in the Milky Way",
+      "C": "The age of the universe",
+      "D": "The probability of asteroid impact on Earth"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 139,
+    "question": "In JavaScript, what is the event loop?",
+    "options": {
+      "A": "The mechanism that handles async operations by checking the call stack and callback queue",
+      "B": "A recursive function for handling promises",
+      "C": "A while loop that keeps the browser running",
+      "D": "A for-each loop that processes DOM events"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 140,
+    "question": "What is the only number that is twice the sum of its digits?",
+    "options": {
+      "A": "45",
+      "B": "9",
+      "C": "18",
+      "D": "36"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 141,
+    "question": "Which ancient civilization had indoor plumbing and sewage systems around 2500 BCE?",
+    "options": {
+      "A": "Egypt",
+      "B": "Indus Valley (Mohenjo-daro)",
+      "C": "China",
+      "D": "Mesopotamia"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 142,
+    "question": "What is the 'cocktail party effect' in neuroscience?",
+    "options": {
+      "A": "Enhanced memory formation during social events",
+      "B": "The brain's ability to focus on a single conversation in a noisy environment",
+      "C": "The tendency to mimic others' behavior in groups",
+      "D": "Alcohol improves social cognition"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 143,
+    "question": "What is a 'race condition' in software?",
+    "options": {
+      "A": "When software runs too quickly for the hardware",
+      "B": "When the outcome depends on the unpredictable timing of multiple threads/processes",
+      "C": "When a program enters an infinite loop",
+      "D": "When two programs compete for network bandwidth"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 144,
+    "question": "What temperature is absolute zero?",
+    "options": {
+      "A": "-459.67 degrees Fahrenheit (-273.15 C)",
+      "B": "-100 degrees Celsius",
+      "C": "-273 degrees Fahrenheit",
+      "D": "0 degrees Celsius"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 145,
+    "question": "What makes tardigrades (water bears) remarkable?",
+    "options": {
+      "A": "They can photosynthesize like plants",
+      "B": "They have the longest lifespan of any animal",
+      "C": "They are the smallest known vertebrates",
+      "D": "They can survive extreme conditions including vacuum of space, radiation, and near absolute zero"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 146,
+    "question": "In functional programming, what is a 'monad'?",
+    "options": {
+      "A": "A design pattern that wraps values in a context and chains operations while handling side effects",
+      "B": "A single-threaded execution unit",
+      "C": "A type of recursive function",
+      "D": "A memory allocation strategy"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 147,
+    "question": "Which element has the highest density at standard conditions?",
+    "options": {
+      "A": "Platinum",
+      "B": "Lead",
+      "C": "Osmium",
+      "D": "Gold"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 148,
+    "question": "The 'Great Filter' theory proposes what?",
+    "options": {
+      "A": "An internet censorship technique",
+      "B": "A method for filtering cosmic radiation",
+      "C": "An evolutionary barrier that prevents civilizations from becoming interstellar, explaining the Fermi Paradox",
+      "D": "A geological formation that filters groundwater"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 149,
+    "question": "What is 'memoization' in computer science?",
+    "options": {
+      "A": "Writing notes about code functionality",
+      "B": "Caching the results of expensive function calls and returning cached results for repeated inputs",
+      "C": "Allocating extra memory for performance",
+      "D": "Memorizing code syntax patterns"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 150,
+    "question": "Which country has the most islands?",
+    "options": {
+      "A": "Indonesia",
+      "B": "Philippines",
+      "C": "Sweden",
+      "D": "Norway"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 151,
+    "question": "What causes the Coriolis effect?",
+    "options": {
+      "A": "The Moon's gravitational pull",
+      "B": "Solar radiation heating the equator more than the poles",
+      "C": "Differences in air pressure",
+      "D": "Earth's rotation causing apparent deflection of moving objects"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 152,
+    "question": "In networking, what is NAT (Network Address Translation)?",
+    "options": {
+      "A": "A type of firewall rule",
+      "B": "A method of encrypting network traffic",
+      "C": "A protocol for automatic IP address assignment",
+      "D": "Mapping private IP addresses to public ones, allowing multiple devices to share a single public IP"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 153,
+    "question": "What is the fastest land animal over long distances (endurance)?",
+    "options": {
+      "A": "Cheetah",
+      "B": "Pronghorn antelope",
+      "C": "Horse",
+      "D": "Human"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 154,
+    "question": "What is Godel's Incompleteness Theorem?",
+    "options": {
+      "A": "Mathematics is fundamentally contradictory",
+      "B": "Any consistent formal system capable of expressing arithmetic contains true statements that cannot be proven within the system",
+      "C": "All true statements can be proven given enough time",
+      "D": "Not all mathematical statements can be proven true"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 155,
+    "question": "Which country was never colonized by a European power?",
+    "options": {
+      "A": "Both A and B",
+      "B": "Liberia",
+      "C": "Ethiopia",
+      "D": "Thailand"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 156,
+    "question": "What is a 'memory leak'?",
+    "options": {
+      "A": "When a program allocates memory but never releases it, gradually consuming available resources",
+      "B": "When RAM physically degrades",
+      "C": "When cache memory overflows into disk",
+      "D": "When data is stolen from RAM"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 157,
+    "question": "What is the photoelectric effect, which won Einstein the Nobel Prize?",
+    "options": {
+      "A": "Light striking a material surface ejects electrons, demonstrating that light has particle-like (photon) properties",
+      "B": "E = mc^2",
+      "C": "The bending of light around massive objects",
+      "D": "The slowing of time at high speeds"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 158,
+    "question": "What is the difference between a stack overflow and a buffer overflow?",
+    "options": {
+      "A": "Stack overflow is in hardware; buffer overflow is in software",
+      "B": "They are the same thing",
+      "C": "Stack overflow: exhausting stack space (often via deep recursion); buffer overflow: writing beyond allocated memory bounds",
+      "D": "Buffer overflow is harmless; stack overflow is always critical"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 159,
+    "question": "What is the 'Goldilocks zone' in astronomy?",
+    "options": {
+      "A": "The center of a galaxy",
+      "B": "The stable region between two black holes",
+      "C": "The habitable zone around a star where liquid water could exist on a planet's surface",
+      "D": "The area of space with the lowest radiation"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 160,
+    "question": "Which mathematician created non-Euclidean geometry?",
+    "options": {
+      "A": "Newton",
+      "B": "Descartes",
+      "C": "Euclid",
+      "D": "Lobachevsky (and independently Bolyai)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 161,
+    "question": "What is the 'Peter Principle'?",
+    "options": {
+      "A": "20% of people do 80% of the work",
+      "B": "Leaders naturally emerge from any group",
+      "C": "People in a hierarchy rise to their level of incompetence",
+      "D": "The most important person in a group does the least work"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 162,
+    "question": "In Docker, what is the difference between an image and a container?",
+    "options": {
+      "A": "They are interchangeable terms",
+      "B": "An image runs on Linux; a container runs on Windows",
+      "C": "A container is stored on disk; an image is in memory",
+      "D": "An image is a read-only template; a container is a running instance of an image"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 163,
+    "question": "What is the most common element in Earth's core?",
+    "options": {
+      "A": "Iron",
+      "B": "Oxygen",
+      "C": "Nickel",
+      "D": "Silicon"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 164,
+    "question": "Which civilization invented the printing press before Gutenberg?",
+    "options": {
+      "A": "Egyptians",
+      "B": "Koreans",
+      "C": "Chinese (Bi Sheng, movable type, ~1040 CE)",
+      "D": "Romans"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 165,
+    "question": "In the theory of computation, which class of automata can recognize context-free languages?",
+    "options": {
+      "A": "Finite automata",
+      "B": "Pushdown automata",
+      "C": "Turing machines",
+      "D": "Linear bounded automata"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 166,
+    "question": "What is 'dark matter'?",
+    "options": {
+      "A": "Matter that absorbs all light",
+      "B": "Hypothetical matter that does not interact with electromagnetic radiation but exerts gravitational effects",
+      "C": "Antimatter found in deep space",
+      "D": "Condensed black hole remnants"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 167,
+    "question": "The word 'quarantine' originates from which language and what did it originally mean?",
+    "options": {
+      "A": "Greek, meaning 'isolation'",
+      "B": "Italian, meaning 'forty days' (quaranta giorni)",
+      "C": "Latin, meaning 'to clean'",
+      "D": "French, meaning 'to separate'"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 168,
+    "question": "What is referential transparency in functional programming?",
+    "options": {
+      "A": "All references point to the same memory address",
+      "B": "Variables can be seen from any scope",
+      "C": "An expression can be replaced with its value without changing program behavior",
+      "D": "Functions must return references, not values"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 169,
+    "question": "How far away is the nearest star system (Alpha Centauri) from Earth?",
+    "options": {
+      "A": "About 1 light-year",
+      "B": "About 4.37 light-years",
+      "C": "About 100 light-years",
+      "D": "About 10 light-years"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 170,
+    "question": "What is 'phantom read' in database transactions?",
+    "options": {
+      "A": "Reading data that was deleted",
+      "B": "Reading corrupted data",
+      "C": "Reading data from a backup instead of the live database",
+      "D": "A transaction re-executes a query and gets different rows because another transaction inserted/deleted rows"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 171,
+    "question": "Which chemical compound is dry ice?",
+    "options": {
+      "A": "Solid ammonia",
+      "B": "Solid carbon dioxide",
+      "C": "Frozen hydrogen peroxide",
+      "D": "Frozen nitrogen"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 172,
+    "question": "What is the 'Dunbar number'?",
+    "options": {
+      "A": "The maximum IQ score",
+      "B": "The number of genes in the human genome",
+      "C": "The average number of daily decisions a person makes",
+      "D": "The cognitive limit on the number of stable social relationships (~150)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 173,
+    "question": "What is 'duck typing' in programming?",
+    "options": {
+      "A": "If it walks like a duck and quacks like a duck -- type is determined by behavior, not declaration",
+      "B": "A type of unit test",
+      "C": "A debugging technique using rubber ducks",
+      "D": "A method of data compression"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 174,
+    "question": "What is the world's most venomous animal (by LD50)?",
+    "options": {
+      "A": "Blue-ringed octopus",
+      "B": "Box jellyfish",
+      "C": "King cobra",
+      "D": "Inland taipan snake"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 175,
+    "question": "What is the difference between latency and throughput?",
+    "options": {
+      "A": "Latency is the time for a single operation; throughput is the number of operations per unit time",
+      "B": "They are the same metric",
+      "C": "Latency is for networks; throughput is for disks",
+      "D": "Throughput causes latency"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 176,
+    "question": "The 'Wow! signal' detected in 1977 remains unexplained. What was it?",
+    "options": {
+      "A": "A burst of gamma radiation",
+      "B": "A pattern of light pulses from a nearby star",
+      "C": "A repeating radio signal from space",
+      "D": "A strong, narrowband radio signal lasting 72 seconds that matched an expected extraterrestrial signal profile"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 177,
+    "question": "In C++, what is RAII (Resource Acquisition Is Initialization)?",
+    "options": {
+      "A": "A memory leak detection tool",
+      "B": "A compile-time optimization technique",
+      "C": "Tying resource lifetime to object lifetime, ensuring cleanup via destructors",
+      "D": "A method of lazy initialization"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 178,
+    "question": "What are the only two countries whose flags are NOT rectangular?",
+    "options": {
+      "A": "Nepal and Vatican City",
+      "B": "Nepal is the only one -- Switzerland's is square, which is still technically rectangular",
+      "C": "Nepal and Switzerland",
+      "D": "Bhutan and Nepal"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 179,
+    "question": "What is 'Simpson's Paradox' in statistics?",
+    "options": {
+      "A": "Correlation always implies causation in large datasets",
+      "B": "Sample sizes always need to be large for accuracy",
+      "C": "A trend that appears in several groups reverses when the groups are combined",
+      "D": "The mean is always greater than the median in skewed distributions"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 180,
+    "question": "In Kubernetes, what is a 'pod'?",
+    "options": {
+      "A": "A cluster of physical servers",
+      "B": "A virtual machine",
+      "C": "The smallest deployable unit, consisting of one or more containers that share network and storage",
+      "D": "A type of load balancer"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 181,
+    "question": "What is the difference between endemic, epidemic, and pandemic?",
+    "options": {
+      "A": "They all mean the same thing -- a disease outbreak",
+      "B": "They differ only in severity, not geographic scope",
+      "C": "Endemic: regularly found in an area; epidemic: rapid spread in a region; pandemic: worldwide spread",
+      "D": "Endemic: animal disease; epidemic: plant disease; pandemic: human disease"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 182,
+    "question": "Which unsolved math problem offers a $1 million Clay Millennium Prize for the proof that P != NP (or P = NP)?",
+    "options": {
+      "A": "P vs NP Problem",
+      "B": "Riemann Hypothesis",
+      "C": "Navier-Stokes Existence",
+      "D": "Hodge Conjecture"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 183,
+    "question": "What is the 'uncanny valley'?",
+    "options": {
+      "A": "A phenomenon in quantum mechanics",
+      "B": "The dip in comfort/affinity as humanoid robots or CGI approach but don't quite achieve realistic human appearance",
+      "C": "A geological formation in Death Valley",
+      "D": "A gap in evolutionary records"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 184,
+    "question": "In SQL, what is the difference between WHERE and HAVING?",
+    "options": {
+      "A": "WHERE is for SELECT; HAVING is for INSERT",
+      "B": "They are identical",
+      "C": "WHERE filters rows before grouping; HAVING filters groups after aggregation",
+      "D": "HAVING is faster than WHERE"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 185,
+    "question": "What is the most abundant gas in Earth's atmosphere?",
+    "options": {
+      "A": "Oxygen",
+      "B": "Carbon dioxide",
+      "C": "Nitrogen (~78%)",
+      "D": "Argon"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 186,
+    "question": "What does 'cargo cult programming' mean?",
+    "options": {
+      "A": "Writing code during flights",
+      "B": "Shipping code without testing",
+      "C": "A project management methodology",
+      "D": "Copying code or patterns without understanding why they work, hoping for the same result"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 187,
+    "question": "What is the Roche limit in astrophysics?",
+    "options": {
+      "A": "The speed needed to escape a black hole",
+      "B": "The boundary of a solar system",
+      "C": "The minimum distance at which a celestial body can orbit without being torn apart by tidal forces",
+      "D": "The maximum size of a star"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 188,
+    "question": "Which disease killed approximately one-third of Europe's population in the 14th century?",
+    "options": {
+      "A": "Typhus",
+      "B": "Bubonic plague (Black Death)",
+      "C": "Cholera",
+      "D": "Smallpox"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 189,
+    "question": "What is 'tail call optimization' in programming?",
+    "options": {
+      "A": "Putting the most used functions at the end of the file",
+      "B": "Optimizing the end of a program's execution",
+      "C": "A garbage collection technique",
+      "D": "Reusing the current stack frame for a function's final recursive call, preventing stack overflow"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 190,
+    "question": "What is the largest known prime number category?",
+    "options": {
+      "A": "Fibonacci primes",
+      "B": "Sophie Germain primes",
+      "C": "Mersenne primes (2^p - 1)",
+      "D": "Twin primes"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 191,
+    "question": "What is 'proprioception'?",
+    "options": {
+      "A": "Enhanced hearing in certain frequencies",
+      "B": "The sense of the relative position and movement of one's own body parts",
+      "C": "The ability to see in the dark",
+      "D": "The ability to detect magnetic fields"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 192,
+    "question": "In software architecture, what is the 'strangler fig pattern'?",
+    "options": {
+      "A": "A pattern for implementing caching",
+      "B": "A method for database sharding",
+      "C": "Gradually replacing a legacy system by incrementally building new functionality alongside it",
+      "D": "A design pattern for handling exceptions"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 193,
+    "question": "What is antimatter?",
+    "options": {
+      "A": "Matter with negative mass",
+      "B": "Theoretical matter that only exists in equations",
+      "C": "Particles with the same mass but opposite charge as their matter counterparts; annihilates on contact with matter",
+      "D": "Dark matter in a different form"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 194,
+    "question": "Who proved Fermat's Last Theorem and in what year?",
+    "options": {
+      "A": "Alan Turing, 1950",
+      "B": "It remains unproven",
+      "C": "Andrew Wiles, 1995",
+      "D": "Pierre de Fermat, 1637"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 195,
+    "question": "What is the 'Actor model' in concurrent computation?",
+    "options": {
+      "A": "A testing framework using mock objects",
+      "B": "A UI design pattern",
+      "C": "A mathematical model where 'actors' are primitives that can send messages, create new actors, and determine behavior for next message",
+      "D": "A model based on Hollywood's movie production process"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 196,
+    "question": "What percentage of the Earth's water is fresh water?",
+    "options": {
+      "A": "About 10%",
+      "B": "About 50%",
+      "C": "About 25%",
+      "D": "About 3%"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 197,
+    "question": "What is 'Benford's Law'?",
+    "options": {
+      "A": "In many real-world datasets, the leading digit is '1' about 30% of the time, not 11%",
+      "B": "Data always follows a normal distribution",
+      "C": "Errors decrease as sample size increases",
+      "D": "Crime increases proportionally with population"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 198,
+    "question": "What is the 'impedance mismatch' problem in software engineering?",
+    "options": {
+      "A": "The disconnect between object-oriented programming models and relational database structures",
+      "B": "Incompatible API versions",
+      "C": "Network latency between microservices",
+      "D": "Hardware compatibility issues"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 199,
+    "question": "What is the deepest humans have ever drilled into the Earth (Kola Superdeep Borehole)?",
+    "options": {
+      "A": "About 40 km",
+      "B": "About 100 km",
+      "C": "About 1 km",
+      "D": "About 12.2 km"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 200,
+    "question": "Which logical fallacy involves attacking the person making the argument rather than the argument itself?",
+    "options": {
+      "A": "Ad hominem",
+      "B": "Appeal to authority",
+      "C": "Red herring",
+      "D": "Straw man"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 201,
+    "question": "What is 'write amplification' in SSDs?",
+    "options": {
+      "A": "Writing data louder to the drive",
+      "B": "The ratio of actual data written to flash vs data requested by the host, caused by garbage collection and wear leveling",
+      "C": "Increasing write speed by using multiple channels",
+      "D": "Duplicating data across drives for redundancy"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 202,
+    "question": "Which neurotransmitter is primarily associated with 'fight or flight' response?",
+    "options": {
+      "A": "Norepinephrine (noradrenaline)",
+      "B": "GABA",
+      "C": "Serotonin",
+      "D": "Dopamine"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 203,
+    "question": "The 'Turing test' evaluates what?",
+    "options": {
+      "A": "The correctness of an algorithm",
+      "B": "The speed of a computer",
+      "C": "Whether a program will halt",
+      "D": "Whether a machine's responses are indistinguishable from a human's"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 204,
+    "question": "What is 'blue-green deployment'?",
+    "options": {
+      "A": "Deploying to cloud and on-premise simultaneously",
+      "B": "A testing strategy using two different test suites",
+      "C": "Running two identical production environments and switching traffic between them for zero-downtime releases",
+      "D": "Color-coding production servers"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 205,
+    "question": "What is the cosmological constant problem?",
+    "options": {
+      "A": "The predicted vacuum energy density is ~120 orders of magnitude larger than observed",
+      "B": "The universe is expanding too slowly",
+      "C": "Dark matter cannot be detected",
+      "D": "The speed of light varies in different regions"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 206,
+    "question": "Which is the only planet that rotates clockwise (retrograde rotation)?",
+    "options": {
+      "A": "Venus",
+      "B": "Mercury",
+      "C": "Uranus",
+      "D": "Mars"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 207,
+    "question": "What is 'idempotency' in the context of APIs?",
+    "options": {
+      "A": "APIs that require authentication",
+      "B": "Making the same request multiple times produces the same result as making it once",
+      "C": "APIs that work independently of the server",
+      "D": "APIs that never change"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 208,
+    "question": "What is the 'overview effect' experienced by astronauts?",
+    "options": {
+      "A": "A cognitive shift in awareness when seeing Earth from space, often described as a feeling of unity",
+      "B": "Disorientation from lack of a fixed horizon",
+      "C": "Enhanced vision in the vacuum of space",
+      "D": "Motion sickness in zero gravity"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 209,
+    "question": "What is the difference between 'strong typing' and 'weak typing'?",
+    "options": {
+      "A": "Strong typing means types are declared; weak means they are not",
+      "B": "Strong typing restricts implicit type conversions; weak typing allows them freely",
+      "C": "They refer to static vs. dynamic typing",
+      "D": "Strong typing is faster; weak typing is slower"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 210,
+    "question": "What are Von Neumann bottleneck?",
+    "options": {
+      "A": "The maximum clock speed of a processor",
+      "B": "The shared bus between CPU and memory limiting throughput, as instruction and data fetches compete",
+      "C": "A limit on the number of CPUs in a system",
+      "D": "A physical limit on transistor size"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 211,
+    "question": "What is a neutron star made of?",
+    "options": {
+      "A": "Dark matter",
+      "B": "Hydrogen plasma",
+      "C": "Mostly neutrons compressed to nuclear density",
+      "D": "Pure iron"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 212,
+    "question": "The 'broken windows theory' in criminology states what?",
+    "options": {
+      "A": "Crime rates correlate with building age",
+      "B": "Windows are the most common entry point for burglars",
+      "C": "Visible signs of disorder and neglect encourage further disorder and crime",
+      "D": "Property crime is the most common form of crime"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 213,
+    "question": "What is a 'bloom filter'?",
+    "options": {
+      "A": "A space-efficient probabilistic data structure that can have false positives but never false negatives",
+      "B": "A floral pattern recognition algorithm",
+      "C": "A type of image filter",
+      "D": "A network traffic filter"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 214,
+    "question": "What is the most massive black hole ever observed (as of 2024)?",
+    "options": {
+      "A": "M87* (first photographed black hole)",
+      "B": "TON 618 (~66 billion solar masses)",
+      "C": "Sagittarius A* (Milky Way center)",
+      "D": "Phoenix A (~100 billion solar masses)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 215,
+    "question": "What is 'Conway's Law' in software engineering?",
+    "options": {
+      "A": "Software complexity always increases over time",
+      "B": "Every bug fix introduces a new bug",
+      "C": "Organizations design systems that mirror their communication structure",
+      "D": "Software projects always take twice as long as estimated"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 216,
+    "question": "What is the difference between deductive and inductive reasoning?",
+    "options": {
+      "A": "Inductive is always more reliable",
+      "B": "They are the same",
+      "C": "Deductive: general principles to specific conclusions (certain); Inductive: specific observations to general conclusions (probable)",
+      "D": "Deductive is for math; inductive is for science"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 217,
+    "question": "What is 'speculative execution' in CPUs (relevant to Spectre/Meltdown)?",
+    "options": {
+      "A": "Running multiple OS instances simultaneously",
+      "B": "Executing code from untrusted sources",
+      "C": "The CPU predicts and executes instructions before knowing if they're needed, to improve performance",
+      "D": "Running untested code in production"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 218,
+    "question": "What is the largest desert in the world?",
+    "options": {
+      "A": "Sahara",
+      "B": "Arabian Desert",
+      "C": "Gobi",
+      "D": "Antarctic Desert"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 219,
+    "question": "What is a 'zero-day vulnerability'?",
+    "options": {
+      "A": "A vulnerability with zero impact",
+      "B": "A security flaw unknown to the vendor, exploitable before any patch exists",
+      "C": "A vulnerability that was fixed in zero days",
+      "D": "A vulnerability that only exists on day one of deployment"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 220,
+    "question": "What is the Kolmogorov complexity of a string?",
+    "options": {
+      "A": "The time needed to sort it",
+      "B": "The length of the shortest program that produces the string as output",
+      "C": "Its length in bytes",
+      "D": "The number of unique characters it contains"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 221,
+    "question": "What is 'neuroplasticity'?",
+    "options": {
+      "A": "The rigidity of neural connections",
+      "B": "The elasticity of brain tissue",
+      "C": "Surgical reshaping of the brain",
+      "D": "The brain's ability to reorganize itself by forming new neural connections throughout life"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 222,
+    "question": "Which is the only US state that was once an independent republic recognized by foreign nations?",
+    "options": {
+      "A": "California",
+      "B": "Both B and C",
+      "C": "Texas",
+      "D": "Hawaii"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 223,
+    "question": "What is 'MapReduce'?",
+    "options": {
+      "A": "A programming model for processing large datasets in parallel: map transforms data, reduce aggregates results",
+      "B": "A compression algorithm",
+      "C": "A database indexing method",
+      "D": "A cartography tool"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 224,
+    "question": "What is the largest known organism on Earth by area?",
+    "options": {
+      "A": "Giant sequoia",
+      "B": "Honey mushroom (Armillaria ostoyae) in Oregon",
+      "C": "Great Barrier Reef",
+      "D": "Blue whale"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 225,
+    "question": "What is the 'Dutch disease' in economics?",
+    "options": {
+      "A": "When a resource boom causes the rest of the economy to decline due to currency appreciation",
+      "B": "A tulip market crash",
+      "C": "High inflation caused by importing goods",
+      "D": "A banking crisis specific to European countries"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 226,
+    "question": "What is 'thrashing' in operating systems?",
+    "options": {
+      "A": "Physical damage to a hard drive",
+      "B": "When excessive paging between RAM and disk causes the system to spend more time swapping than executing",
+      "C": "A CPU overheating and throttling",
+      "D": "Network packet collision"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 227,
+    "question": "What is the 'Ship of Theseus' problem's relevance to version control?",
+    "options": {
+      "A": "If every line of code has been changed, is it still the same project? Identity through continuous change.",
+      "B": "Version control prevents the Ship of Theseus problem",
+      "C": "None -- they are unrelated",
+      "D": "It describes the problem of merge conflicts"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 228,
+    "question": "What makes water unusual compared to most substances when it freezes?",
+    "options": {
+      "A": "It becomes a better conductor",
+      "B": "It expands (becomes less dense), which is why ice floats",
+      "C": "It becomes transparent",
+      "D": "It releases heat"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 229,
+    "question": "What is 'CAP theorem' sometimes also called?",
+    "options": {
+      "A": "Shannon's theorem",
+      "B": "Lamport's theorem",
+      "C": "Dijkstra's theorem",
+      "D": "Brewer's theorem"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 230,
+    "question": "What percentage of the universe is estimated to be dark energy?",
+    "options": {
+      "A": "About 25%",
+      "B": "About 68%",
+      "C": "About 5%",
+      "D": "About 95%"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 231,
+    "question": "What is 'rubber banding' in multiplayer game networking?",
+    "options": {
+      "A": "Connecting game controllers with rubber bands",
+      "B": "When a player appears to teleport back to a previous position due to network latency correction",
+      "C": "A technique for load balancing servers",
+      "D": "Elastic scaling of game instances"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 232,
+    "question": "Which country has the most active volcanoes?",
+    "options": {
+      "A": "Japan",
+      "B": "Indonesia",
+      "C": "Iceland",
+      "D": "United States"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 233,
+    "question": "What is 'Amdahl's Law'?",
+    "options": {
+      "A": "Processing speed doubles every 18 months",
+      "B": "Network bandwidth is the primary bottleneck",
+      "C": "The theoretical speedup of a program from parallelization is limited by its sequential fraction",
+      "D": "Memory usage grows logarithmically with program size"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 234,
+    "question": "What is the 'placebo effect'?",
+    "options": {
+      "A": "The effect of using expired medicine",
+      "B": "A drug that works differently than intended",
+      "C": "A fake drug having side effects",
+      "D": "A beneficial effect produced by an inert treatment, due to the patient's belief in the treatment"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 235,
+    "question": "In React, what is the purpose of the 'key' prop in lists?",
+    "options": {
+      "A": "To help React identify which items changed, were added, or removed for efficient DOM updates",
+      "B": "For accessibility screen readers",
+      "C": "For CSS styling",
+      "D": "For data encryption"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 236,
+    "question": "What is the observable universe's approximate diameter?",
+    "options": {
+      "A": "1 trillion light-years",
+      "B": "Infinite",
+      "C": "13.8 billion light-years",
+      "D": "93 billion light-years"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 237,
+    "question": "What is 'Occam's razor'?",
+    "options": {
+      "A": "A medieval weapon",
+      "B": "The principle that the simplest explanation that fits the evidence is usually correct",
+      "C": "A theorem about prime numbers",
+      "D": "A method of data encryption"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 238,
+    "question": "What is the 'hot-cold empathy gap'?",
+    "options": {
+      "A": "The difference in empathy between extroverts and introverts",
+      "B": "People underestimate how much their decisions are influenced by their current emotional/physical state",
+      "C": "Climate change affecting human behavior",
+      "D": "Temperature affecting performance"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 239,
+    "question": "What is a 'consistent hash ring' used for?",
+    "options": {
+      "A": "Encrypting passwords",
+      "B": "Cryptographic security",
+      "C": "Circular linked list implementation",
+      "D": "Distributing data across servers so that adding/removing servers minimizes data redistribution"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 240,
+    "question": "What is the oldest known living organism (non-clonal)?",
+    "options": {
+      "A": "Bristlecone pine tree (Methuselah, ~5000 years)",
+      "B": "Giant tortoise",
+      "C": "Galapagos tortoise",
+      "D": "Greenland shark"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 241,
+    "question": "What is 'Goodhart's Law'?",
+    "options": {
+      "A": "When a measure becomes a target, it ceases to be a good measure",
+      "B": "Quality decreases as quantity increases",
+      "C": "Good metrics lead to good outcomes",
+      "D": "The best heart surgeon has the most patients"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 242,
+    "question": "What is 'CORS' in web development?",
+    "options": {
+      "A": "Cross-Origin Resource Sharing: a mechanism allowing restricted resources to be requested from another domain",
+      "B": "A programming language",
+      "C": "A database connection protocol",
+      "D": "A CSS framework"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 243,
+    "question": "How many dimensions does string theory predict?",
+    "options": {
+      "A": "10 or 11 (depending on the version)",
+      "B": "26",
+      "C": "4",
+      "D": "Infinite"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 244,
+    "question": "What is 'imposter syndrome'?",
+    "options": {
+      "A": "A personality disorder",
+      "B": "Acting like someone you're not in social situations",
+      "C": "The persistent belief that one's success is undeserved despite evidence of competence",
+      "D": "A type of identity theft"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 245,
+    "question": "What is the difference between 'fail-fast' and 'fail-safe' iterators in Java?",
+    "options": {
+      "A": "Fail-safe crashes immediately; fail-fast handles errors gracefully",
+      "B": "Fail-fast is slower; fail-safe is faster",
+      "C": "Fail-fast throws ConcurrentModificationException on structural changes; fail-safe works on a copy",
+      "D": "They are the same"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 246,
+    "question": "What is Earth's Schwarzschild radius (if compressed into a black hole)?",
+    "options": {
+      "A": "About 1 kilometer",
+      "B": "About 1 meter",
+      "C": "About 1cm",
+      "D": "About 9mm"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 247,
+    "question": "What is 'anchoring bias'?",
+    "options": {
+      "A": "The tendency to stay in one place",
+      "B": "Relying too heavily on the first piece of information encountered when making decisions",
+      "C": "Always choosing the middle option",
+      "D": "Preferring stable investments"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 248,
+    "question": "What is 'eventually consistent' vs 'strongly consistent' in databases?",
+    "options": {
+      "A": "Strongly consistent: reads always return latest write; eventually consistent: reads may return stale data temporarily",
+      "B": "Eventually consistent is more secure",
+      "C": "Just speed differences",
+      "D": "Strongly consistent only works with SQL"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 249,
+    "question": "What is the difference between precision and recall in machine learning?",
+    "options": {
+      "A": "Precision is for classification; recall is for regression",
+      "B": "Recall is always higher than precision",
+      "C": "They measure the same thing",
+      "D": "Precision: fraction of positive predictions that are correct; Recall: fraction of actual positives that are correctly identified"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 250,
+    "question": "Which paradox states that a person cannot step into the same river twice?",
+    "options": {
+      "A": "Heraclitus's river paradox",
+      "B": "Achilles and the Tortoise",
+      "C": "Theseus's paradox",
+      "D": "Zeno's paradox"
+    },
+    "answer": "A"
+  }
 ]
