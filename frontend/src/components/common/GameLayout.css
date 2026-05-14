@@ -1,0 +1,169 @@
+.game-layout {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'VT323', monospace;
+  color: #fff;
+}
+
+/* === Header bar === */
+.game-layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+  height: 52px;
+  background: rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.game-layout-back {
+  position: absolute;
+  left: 16px;
+  background: none;
+  border: 1px solid #333;
+  color: #888;
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 4px 14px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.game-layout-back:hover {
+  border-color: #aaa;
+  color: #fff;
+}
+
+.game-layout-players {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.game-layout-p1 {
+  color: #10b981;
+}
+
+.game-layout-p2 {
+  color: #a78bfa;
+}
+
+.game-layout-vs {
+  color: #444;
+  font-size: 18px;
+}
+
+.game-layout-title {
+  position: absolute;
+  right: 20px;
+  font-size: 16px;
+  color: #444;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* === Status bar === */
+.game-layout-status {
+  text-align: center;
+  font-size: 18px;
+  color: #4CAF50;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 0;
+  flex-shrink: 0;
+  border-bottom: 1px solid #1a1a1a;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* === Content area === */
+.game-layout-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* === Shared split view === */
+.game-split {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 12px 20px;
+  min-height: 0;
+}
+
+.game-split-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+  max-width: 500px;
+  overflow-y: auto;
+}
+
+.game-split-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #333;
+  flex-shrink: 0;
+  padding: 0 16px;
+  align-self: center;
+}
+
+/* === Shared player label (above each board) === */
+.game-player-label {
+  text-align: center;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-player-thinking {
+  display: block;
+  font-size: 1rem;
+  color: #f9df6d;
+  animation: game-pulse 1.5s infinite;
+  margin-top: 4px;
+}
+
+@keyframes game-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .game-layout-title {
+    display: none;
+  }
+  .game-layout-players {
+    font-size: 18px;
+    gap: 8px;
+  }
+  .game-split {
+    padding: 8px 10px;
+  }
+}
