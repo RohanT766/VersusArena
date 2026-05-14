@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import SidebarVote from '../../SidebarVote';
-import GameTimer from '../../common/GameTimer';
 import GameCountdown from '../../common/GameCountdown';
 import GameLayout from '../../common/GameLayout';
 import { getDisplayName } from '../../../utils/modelUtils';
+import useGameFlow from '../../../hooks/useGameFlow';
 import './Battleship.css';
 
 const SHIP_DEFS = {
@@ -37,11 +36,9 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const [player2Shots, setPlayer2Shots] = useState(() => emptyBoard(BOARD_SIZE));
   const [message, setMessage] = useState('Starting game...');
   const [winner, setWinner] = useState(null);
-  const [gameStartTime, setGameStartTime] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [votingDone, setVotingDone] = useState(false);
+  const { isCountdown, isRunning, startCountdown, startRunning } = useGameFlow();
   const wsRef = useRef(null);
   const handlerRef = useRef(null);
 
@@ -113,10 +110,11 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   useEffect(() => {
     const newGameId = `battleship-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     setGameId(newGameId);
+    startCountdown();
     return () => {
       if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     };
-  }, []);
+  }, [startCountdown]);
 
   const connectWebSocket = (gid) => {
     try {
@@ -352,23 +350,13 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       onBack={onBack}
       statusText={bsStatusText}
     >
-      {showCountdown && (
+      {isCountdown && (
         <GameCountdown player1Name={player1DisplayName} player2Name={player2DisplayName}
           onComplete={() => {
-            setShowCountdown(false);
-            setGameStartTime(Date.now());
+            if (!gameId) return;
+            startRunning();
             connectWebSocket(gameId);
           }} />
-      )}
-
-      {!votingDone && (
-        <SidebarVote
-          gameId={gameId}
-          player1Label={player1DisplayName}
-          player2Label={player2DisplayName}
-          onGameStart={() => { setVotingDone(true); setShowCountdown(true); }}
-          onBack={onBack}
-        />
       )}
 
       {winner && (
@@ -391,12 +379,12 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
             <button onClick={() => {
               if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
               onBack();
-            }} className="bs-back-btn">BACK</button>
+            }} className="bs-back-btn">Back to Arena</button>
           </div>
         </div>
       )}
 
-      {votingDone && !showCountdown && (
+      {isRunning && !isCountdown && (
         <div className="bs-main">
           <div className={`bs-side ${isP1Active ? 'side-active' : ''}`}>
             {isP1Active && <div className="firing-badge">FIRING</div>}
@@ -414,7 +402,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
         </div>
       )}
 
-      {votingDone && !showCountdown && !isConnected && (
+      {isRunning && !isCountdown && !isConnected && (
         <div className="bs-demo-badge">DEMO MODE</div>
       )}
     </GameLayout>

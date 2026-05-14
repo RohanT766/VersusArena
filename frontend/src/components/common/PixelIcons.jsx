@@ -58,80 +58,68 @@ export const ConnectionsIcon = ({ size = 64 }) => (
 
 export const PrisonersIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="4" width="26" height="26" fill="#538d4e" rx="2" />
-    <rect x="34" y="4" width="26" height="26" fill="#b59f3b" rx="2" />
-    <rect x="4" y="34" width="26" height="26" fill="#b59f3b" rx="2" />
-    <rect x="34" y="34" width="26" height="26" fill="#8b3a3a" rx="2" />
-    <text x="17" y="21" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">3,3</text>
-    <text x="47" y="21" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">0,5</text>
-    <text x="17" y="51" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">5,0</text>
-    <text x="47" y="51" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">1,1</text>
+    <rect x="8" y="8" width="20" height="20" fill="#538d4e" />
+    <rect x="36" y="8" width="20" height="20" fill="#b59f3b" />
+    <rect x="8" y="36" width="20" height="20" fill="#b59f3b" />
+    <rect x="36" y="36" width="20" height="20" fill="#8b3a3a" />
+    <rect x="17" y="17" width="2" height="2" fill="#fff" />
+    <rect x="45" y="17" width="2" height="2" fill="#fff" />
+    <rect x="17" y="45" width="2" height="2" fill="#fff" />
+    <rect x="45" y="45" width="2" height="2" fill="#fff" />
+    <rect x="30" y="8" width="4" height="48" fill="#111" />
+    <rect x="8" y="30" width="48" height="4" fill="#111" />
   </svg>
 );
 
 export const TwentyQIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <rect x="6" y="6" width="52" height="36" rx="6" fill="none" stroke="#6366f1" strokeWidth="2.5" />
-    <polygon points="22,42 32,42 26,54" fill="#6366f1" />
-    <text x="32" y="30" fill="#fff" fontSize="18" textAnchor="middle" fontFamily="monospace" fontWeight="bold">20?</text>
+    <rect x="8" y="10" width="48" height="30" fill="none" stroke="#6366f1" strokeWidth="3" />
+    <rect x="18" y="40" width="14" height="6" fill="#6366f1" />
+    <rect x="24" y="46" width="4" height="6" fill="#6366f1" />
+    <rect x="28" y="18" width="8" height="4" fill="#fff" />
+    <rect x="36" y="22" width="4" height="8" fill="#fff" />
+    <rect x="32" y="30" width="4" height="4" fill="#fff" />
+    <rect x="32" y="36" width="4" height="4" fill="#fff" />
   </svg>
 );
 
 export const CodeDebugIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <text x="6" y="42" fill="#555" fontSize="36" fontFamily="monospace">{'{'}</text>
-    <text x="40" y="42" fill="#555" fontSize="36" fontFamily="monospace">{'}'}</text>
-    <circle cx="32" cy="28" r="10" fill="none" stroke="#ef4444" strokeWidth="2" />
-    <rect x="30" y="20" width="4" height="10" rx="1" fill="#ef4444" />
-    <circle cx="32" cy="34" r="2" fill="#ef4444" />
+    <rect x="10" y="16" width="6" height="4" fill="#666" />
+    <rect x="10" y="20" width="4" height="20" fill="#666" />
+    <rect x="10" y="40" width="6" height="4" fill="#666" />
+    <rect x="48" y="16" width="6" height="4" fill="#666" />
+    <rect x="50" y="20" width="4" height="20" fill="#666" />
+    <rect x="48" y="40" width="6" height="4" fill="#666" />
+    <rect x="28" y="20" width="8" height="4" fill="#ef4444" />
+    <rect x="24" y="24" width="16" height="10" fill="#ef4444" />
+    <rect x="22" y="30" width="20" height="6" fill="#ef4444" />
+    <rect x="26" y="36" width="3" height="6" fill="#ef4444" />
+    <rect x="35" y="36" width="3" height="6" fill="#ef4444" />
+    <rect x="28" y="26" width="2" height="2" fill="#111" />
+    <rect x="34" y="26" width="2" height="2" fill="#111" />
   </svg>
 );
 
 export const AnalyticsIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="36" width="10" height="20" fill="#538d4e" rx="1" />
-    <rect x="22" y="24" width="10" height="32" fill="#b59f3b" rx="1" />
-    <rect x="36" y="14" width="10" height="42" fill="#6366f1" rx="1" />
-    <rect x="50" y="28" width="10" height="28" fill="#a78bfa" rx="1" />
-    <line x1="4" y1="58" x2="62" y2="58" stroke="#444" strokeWidth="1.5" />
+    <rect x="8" y="36" width="8" height="20" fill="#538d4e" />
+    <rect x="20" y="26" width="8" height="30" fill="#b59f3b" />
+    <rect x="32" y="16" width="8" height="40" fill="#6366f1" />
+    <rect x="44" y="30" width="8" height="26" fill="#a78bfa" />
+    <rect x="6" y="56" width="50" height="2" fill="#444" />
   </svg>
 );
 
 export const BattleshipIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
     <rect width="64" height="64" fill="#04111f" />
-    <line x1="0" y1="8" x2="64" y2="8" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="16" x2="64" y2="16" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="24" x2="64" y2="24" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="32" x2="64" y2="32" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="40" x2="64" y2="40" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="48" x2="64" y2="48" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="0" y1="56" x2="64" y2="56" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="8" y1="0" x2="8" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="16" y1="0" x2="16" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="24" y1="0" x2="24" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="32" y1="0" x2="32" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="40" y1="0" x2="40" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="48" y1="0" x2="48" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    <line x1="56" y1="0" x2="56" y2="64" stroke="#0a2440" strokeWidth="0.5" />
-    {/* Top-down ship (vertical, 4 cells) */}
-    <polygon points="29,6 35,6 35,38 32,42 29,38" fill="#5a6a7a" />
-    <rect x="30" y="8" width="4" height="4" rx="0.5" fill="#3a4a5a" />
-    <rect x="29" y="16" width="6" height="8" rx="1" fill="#6a7a8a" />
-    <rect x="30.5" y="18" width="3" height="4" rx="0.5" fill="#8a9aaa" opacity="0.4" />
-    <rect x="30" y="28" width="4" height="4" rx="0.5" fill="#3a4a5a" />
-    <rect x="31" y="24" width="2" height="4" fill="#8a8a8a" opacity="0.6" />
-    {/* Hit on ship */}
-    <circle cx="32" cy="10" r="2.5" fill="#FF4444" opacity="0.8" />
-    {/* Top-down patrol (horizontal, 2 cells) */}
-    <rect x="42" y="46" width="16" height="6" rx="2" fill="#8a8a7a" />
-    <rect x="44" y="47" width="4" height="4" rx="0.5" fill="#3a4a5a" />
-    <rect x="52" y="47" width="4" height="4" rx="0.5" fill="#3a4a5a" />
-    {/* Miss splash */}
-    <circle cx="12" cy="52" r="3" fill="none" stroke="#3a6a8a" strokeWidth="1" />
-    <circle cx="12" cy="52" r="1" fill="rgba(80,160,220,0.5)" />
-    {/* Miss splash 2 */}
-    <circle cx="50" cy="12" r="2.5" fill="none" stroke="#3a6a8a" strokeWidth="0.8" />
-    <circle cx="50" cy="12" r="0.8" fill="rgba(80,160,220,0.5)" />
+    <rect x="8" y="8" width="48" height="48" fill="none" stroke="#244b73" strokeWidth="1" />
+    <rect x="20" y="18" width="6" height="24" fill="#7a8a9a" />
+    <rect x="34" y="34" width="18" height="6" fill="#8a8a7a" />
+    <rect x="22" y="20" width="2" height="2" fill="#3a4a5a" />
+    <rect x="36" y="36" width="2" height="2" fill="#3a4a5a" />
+    <rect x="18" y="44" width="4" height="4" fill="#4ea8de" />
+    <rect x="42" y="14" width="4" height="4" fill="#ef4444" />
   </svg>
 );

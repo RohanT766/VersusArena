@@ -6,16 +6,16 @@ import threading
 from pathlib import Path
 
 _backend_root = Path(__file__).resolve().parents[2]
-_DEFAULT_DB_PATH = os.environ.get(
-    "BENCHMARK_DB_PATH",
-    str(_backend_root / "data" / "benchmark.sqlite"),
-)
 
 _lock = threading.Lock()
 
 
 def db_path() -> str:
-    p = Path(_DEFAULT_DB_PATH)
+    path = os.environ.get(
+        "BENCHMARK_DB_PATH",
+        str(_backend_root / "data" / "benchmark.sqlite"),
+    )
+    p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     return str(p)
 

@@ -373,6 +373,7 @@
   gap: 30px;
   padding: 0 20px;
   border-top: 2px solid #222;
+  position: relative;
 }
 
 .smash-action-button {
@@ -419,6 +420,19 @@
   color: #555;
   border-color: #111;
   cursor: not-allowed;
+}
+
+.selection-error {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff5f5f;
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Responsive adjustments */

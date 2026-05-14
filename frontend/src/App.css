@@ -16,8 +16,7 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 .app {
@@ -94,12 +93,84 @@ body {
   height: 90px; /* Fixed height for consistent spacing */
 }
 
-.models-header .model-name {
+.model-picker-wrap {
+  position: relative;
+}
+
+.model-headline-btn {
+  min-width: 250px;
+  background: transparent;
+  border: none;
+  padding: 0.15rem 0.2rem;
   color: #ffcc00;
-  font-weight: 400;
-  text-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+  font-family: 'VT323', monospace;
+  font-size: 2.2rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 16px rgba(255, 204, 0, 0.25);
+}
+
+.model-headline-name {
+  line-height: 1;
+}
+
+.model-headline-hint {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  color: #666;
+  letter-spacing: 0.12em;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.model-headline-btn:hover .model-headline-hint,
+.model-headline-btn.open .model-headline-hint {
+  opacity: 1;
+}
+
+.model-options-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: #070707;
+  border: 2px solid #333;
+  z-index: 180;
+  max-height: 310px;
+  overflow-y: auto;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+}
+
+.model-option {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1a1a1a;
+  color: #d0d0d0;
+  text-align: left;
+  font-family: 'VT323', monospace;
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.model-option:hover {
+  background: rgba(255, 204, 0, 0.08);
+  color: #fff;
+}
+
+.model-option.selected {
+  color: #ffcc00;
+  background: rgba(255, 204, 0, 0.1);
 }
 
 .models-header .vs-text {
@@ -108,21 +179,22 @@ body {
 }
 
 .header-analytics-link {
-  position: absolute;
-  right: 2rem;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #666;
+  color: #999;
   text-decoration: none;
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  border: 2px solid #333;
+  padding: 0.25rem 0.7rem;
 }
 
 .header-analytics-link:hover {
   color: #ffcc00;
+  border-color: #ffcc00;
 }
 
 .header-analytics-link svg {
@@ -134,6 +206,14 @@ body {
   opacity: 1;
 }
 
+.header-actions {
+  position: absolute;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Game grid */
 .games-grid {
   display: grid;
@@ -142,7 +222,8 @@ body {
   max-width: 1000px;
   width: 100%;
   animation: fadeIn 1s ease-out 0.4s both;
-  place-items: center;
+  align-items: stretch;
+  justify-items: center;
 }
 
 /* Remove the complex centering for last row - it's causing overlap */
@@ -159,6 +240,12 @@ body {
   overflow: hidden;
   width: 100%;
   max-width: 280px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
 }
 
 .game-card::before {
@@ -184,10 +271,16 @@ body {
 }
 
 .game-icon-svg {
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
   transition: all 0.3s ease;
   opacity: 0.7;
   filter: brightness(0.8);
+  width: 78px;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 78px;
 }
 
 .game-card:hover .game-icon-svg {
@@ -198,11 +291,16 @@ body {
 
 .game-card h3 {
   font-size: 1.6rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.1rem;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 400;
+  line-height: 1.05;
+  min-height: 3.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .game-description {
@@ -210,10 +308,25 @@ body {
   font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  min-height: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .game-card:hover .game-description {
   color: #999;
+}
+
+.same-model-warning {
+  margin-top: 1rem;
+  color: #ff5f5f;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 2px solid #5a2020;
+  padding: 0.5rem 0.9rem;
+  background: rgba(120, 20, 20, 0.2);
 }
 
 /* Back button */
@@ -409,8 +522,22 @@ body {
     font-size: 1.4rem;
   }
 
-  .header-analytics-link {
-    display: none;
+  .model-headline-btn {
+    min-width: 150px;
+    font-size: 1.2rem;
+    letter-spacing: 0.04em;
+  }
+
+  .model-headline-hint {
+    font-size: 0.6rem;
+  }
+
+  .model-options-panel {
+    width: 220px;
+  }
+
+  .model-option {
+    font-size: 1rem;
   }
   
   .game-card {

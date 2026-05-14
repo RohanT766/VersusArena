@@ -8,6 +8,10 @@
   margin: 0 auto;
 }
 
+.bench-game-body {
+  width: 100%;
+}
+
 .bench-game-desc {
   color: #888;
   font-size: 1.1rem;
@@ -64,7 +68,7 @@
 /* Prisoner's Dilemma */
 .bench-rounds-table {
   width: 100%;
-  border: 1px solid #222;
+  border: 2px solid #222;
   font-size: 1rem;
 }
 
@@ -121,7 +125,7 @@
   justify-content: center;
   margin-top: 1.5rem;
   padding: 1rem 2rem;
-  border: 1px solid #222;
+  border: 2px solid #222;
   background: #0a0a0a;
 }
 
@@ -195,12 +199,12 @@
 
 .bench-code {
   background: #0a0a14;
-  border: 1px solid #1e293b;
+  border: 2px solid #1e293b;
   padding: 1rem;
-  font-size: 0.9rem;
+  font-size: 1rem;
   overflow-x: auto;
   color: #e2e8f0;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: 'VT323', monospace;
   white-space: pre-wrap;
 }
 
@@ -219,7 +223,7 @@
 }
 
 .bench-submission-card {
-  border: 1px solid #222;
+  border: 2px solid #222;
   background: #0a0a0a;
 }
 

@@ -3,30 +3,44 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 
 const COLORS = ['#ffcc00', '#538d4e', '#b59f3b', '#6366f1', '#a78bfa', '#888'];
 
-const ModelComparison = ({ aggregates }) => {
-  const chartData = useMemo(() => {
-    const byModel = {};
-    (aggregates || []).forEach((row) => {
-      const m = row.model;
-      if (!byModel[m]) byModel[m] = { model: m, games: 0, wins: 0 };
-      byModel[m].games += row.games || 0;
-      byModel[m].wins += row.wins || 0;
-    });
-    return Object.values(byModel)
-      .map((x) => ({
-        model: x.model.length > 18 ? `${x.model.slice(0, 16)}…` : x.model,
-        fullModel: x.model,
-        winrate: x.games ? Math.round((100 * x.wins) / x.games) : 0,
-        games: x.games,
+const ModelComparison = ({ models, loading, error }) => {
+  const chartData = useMemo(() => (
+    (models || [])
+      .map((m) => ({
+        model: (m.display_name || m.model_id || 'Unknown').length > 16
+          ? `${(m.display_name || m.model_id).slice(0, 14)}…`
+          : (m.display_name || m.model_id),
+        fullModel: m.display_name || m.model_id,
+        winrate: m.win_pct ?? 0,
+        rating: m.rating ?? 0,
+        games: m.games_played ?? 0,
       }))
-      .sort((a, b) => b.winrate - a.winrate)
-      .slice(0, 10);
-  }, [aggregates]);
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 12)
+  ), [models]);
+
+  if (error) {
+    return (
+      <div className="dashboard-card">
+        <h2>Model performance</h2>
+        <p className="dashboard-error">{error}</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="dashboard-card">
+        <h2>Model performance</h2>
+        <p className="dashboard-muted">Loading…</p>
+      </div>
+    );
+  }
 
   if (!chartData.length) {
     return (
       <div className="dashboard-card">
-        <h2>Win rate by model</h2>
+        <h2>Model performance</h2>
         <p className="dashboard-muted">Play finished games to populate data.</p>
       </div>
     );
@@ -34,9 +48,33 @@ const ModelComparison = ({ aggregates }) => {
 
   return (
     <div className="dashboard-card">
-      <h2>Win rate by model</h2>
-      <p className="dashboard-muted small">Across all finished runs (combined P1/P2).</p>
-      <div style={{ width: '100%', height: 320, marginTop: 12 }}>
+      <h2>Model performance</h2>
+      <p className="dashboard-muted small">Win rate by Elo scope (finished runs only).</p>
+      <div className="dashboard-table-wrap dashboard-mb">
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Elo</th>
+              <th>Games</th>
+              <th>Win %</th>
+              <th>Avg dur (s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(models || []).map((m) => (
+              <tr key={m.model_id}>
+                <td>{m.display_name || m.model_id}</td>
+                <td>{Number(m.rating).toFixed(0)}</td>
+                <td>{m.games_played}</td>
+                <td>{m.win_pct}%</td>
+                <td>{m.avg_duration_sec ?? '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="dashboard-chart-wrap">
         <ResponsiveContainer>
           <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
@@ -44,7 +82,7 @@ const ModelComparison = ({ aggregates }) => {
             <YAxis type="category" dataKey="model" width={120} stroke="#444" tick={{ fill: '#999', fontFamily: "'VT323', monospace", fontSize: 14 }} />
             <Tooltip
               formatter={(v) => [`${v}%`, 'Win rate']}
-              labelFormatter={(_, p) => p?.[0]?.payload?.fullModel}
+              labelFormatter={(_, payload) => payload?.[0]?.payload?.fullModel || ''}
               contentStyle={{ background: '#000', border: '2px solid #333', fontFamily: "'VT323', monospace", color: '#fff' }}
               labelStyle={{ color: '#ffcc00' }}
             />

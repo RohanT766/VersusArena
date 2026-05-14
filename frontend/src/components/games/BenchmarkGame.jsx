@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GameLayout from '../common/GameLayout';
+import GameCountdown from '../common/GameCountdown';
 import { getDisplayName } from '../../utils/modelUtils';
 import { getBackendUrl } from '../../utils/networkUtils';
+import useGameFlow, { GAME_FLOW_PHASES } from '../../hooks/useGameFlow';
 import './BenchmarkGame.css';
 
 const GAME_CONFIG = {
   pd: {
     title: "Prisoner's Dilemma",
     description: 'Each round, both models choose to COOPERATE or DEFECT.',
-    startLabel: 'Start Session',
+    startLabel: 'Start Match',
     stepLabel: 'Play Round',
   },
   tq: {
@@ -20,8 +22,8 @@ const GAME_CONFIG = {
   cd: {
     title: 'Code Debug',
     description: 'Both models try to fix the same buggy function. Scored against the correct solution.',
-    startLabel: 'Start Challenge',
-    stepLabel: 'Run Both Models',
+    startLabel: 'Start Match',
+    stepLabel: 'Run Match',
   },
 };
 
@@ -44,6 +46,11 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
   const [transcript, setTranscript] = useState([]);
   const [submissions, setSubmissions] = useState(null);
   const [challenge, setChallenge] = useState(null);
+  const [autoRunning, setAutoRunning] = useState(false);
+  const [startingSession, setStartingSession] = useState(false);
+  const [pendingStartAfterCountdown, setPendingStartAfterCountdown] = useState(false);
+  const initialPhase = gameType === "tq" ? GAME_FLOW_PHASES.COUNTDOWN : GAME_FLOW_PHASES.SETUP;
+  const { isSetup, isCountdown, isRunning, startRunning, startCountdown, goToSetup } = useGameFlow(initialPhase);
 
   const api = async (path, body) => {
     const opts = body
@@ -53,7 +60,9 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
     return r.json();
   };
 
-  const startSession = async () => {
+  const performSessionStart = async () => {
+    if (startingSession) return;
+    setStartingSession(true);
     setBusy(true);
     setRounds([]);
     setTranscript([]);
@@ -66,22 +75,29 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
       if (gameType === 'pd') {
         data = await api('/api/prisoners/start', { player1_model: p1, player2_model: p2, rounds: 8 });
         setSessionId(data.session_id);
-        setStatus(`Session started — ${data.rounds_total} rounds`);
+        setStatus(`Match started - ${data.rounds_total} rounds`);
       } else if (gameType === 'tq') {
         data = await api('/api/twenty-questions/start', { answerer_model: p1, questioner_model: p2, max_questions: 20 });
         setSessionId(data.session_id);
-        setStatus('Session started — ask up to 20 questions');
+        setStatus('Match started - running up to 20 questions');
       } else {
         data = await api('/api/code-debug/start', { player1_model: p1, player2_model: p2, challenge_index: 0 });
         setSessionId(data.session_id);
         setChallenge(data.challenge || null);
-        setStatus(`Challenge: ${data.challenge?.title || 'loaded'}`);
+        setStatus(`Challenge loaded: ${data.challenge?.title || 'Code Debug'}`);
       }
     } catch (e) {
       setStatus(`Error: ${e.message}`);
     } finally {
       setBusy(false);
+      setStartingSession(false);
     }
+  };
+
+  const handleStart = async () => {
+    if (gameType === "tq") return;
+    setPendingStartAfterCountdown(true);
+    startCountdown();
   };
 
   const step = async () => {
@@ -93,18 +109,32 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
         data = await api(`/api/prisoners/${sessionId}/step`);
         if (data.round) setRounds((prev) => [...prev, data.round]);
         if (data.scores) setScores(data.scores);
-        if (data.done) { setDone(true); setStatus('Game over!'); }
+        if (data.done) { setDone(true); setStatus('Match complete.'); }
         else setStatus(`Round ${data.round_index || rounds.length + 1} complete`);
       } else if (gameType === 'tq') {
         data = await api(`/api/twenty-questions/${sessionId}/step`);
-        if (data.exchange) setTranscript((prev) => [...prev, data.exchange]);
-        if (data.done || data.guessed) { setDone(true); setStatus(data.guessed ? 'Correct guess!' : 'Out of questions!'); }
-        else setStatus(`Question ${data.question_number || transcript.length + 1}`);
+        if (data.exchange) {
+          const exchange = {
+            question: data.exchange.question || data.exchange.q || '',
+            answer: data.exchange.answer || data.exchange.a || '',
+            guess: data.exchange.guess || data.guess || '',
+          };
+          setTranscript((prev) => [...prev, exchange]);
+        }
+        if (data.done || data.guessed) {
+          setDone(true);
+          setAutoRunning(false);
+          if (data.outcome === 'win' || data.guessed) setStatus(`Correct guess! Secret: ${data.secret || 'hidden'}`);
+          else if (data.outcome === 'loss') setStatus(`Wrong final guess. Secret: ${data.secret || 'hidden'}`);
+          else setStatus(`Out of questions. Secret: ${data.secret || 'hidden'}`);
+        } else {
+          setStatus(`Question ${data.count || transcript.length + 1} / 20`);
+        }
       } else {
         data = await api(`/api/code-debug/${sessionId}/run`);
         setSubmissions(data.submissions || data);
         setDone(true);
-        setStatus('Both models submitted');
+        setStatus('Match complete.');
       }
     } catch (e) {
       setStatus(`Error: ${e.message}`);
@@ -112,6 +142,21 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (gameType !== 'tq' || isCountdown || sessionId || busy || done || startingSession) return;
+    performSessionStart();
+  }, [gameType, isCountdown, sessionId, busy, done, startingSession]);
+
+  useEffect(() => {
+    if (gameType !== 'tq' || !sessionId || done || busy || autoRunning) return;
+    setAutoRunning(true);
+    const timer = setTimeout(async () => {
+      await step();
+      setAutoRunning(false);
+    }, 650);
+    return () => clearTimeout(timer);
+  }, [gameType, sessionId, done, busy, autoRunning, transcript.length]);
 
   const renderPD = () => (
     <div className="bench-game-body">
@@ -152,6 +197,9 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
 
   const renderTQ = () => (
     <div className="bench-game-body">
+      <div className="bench-game-desc">
+        Questions used: {transcript.length} / 20
+      </div>
       {transcript.length > 0 && (
         <div className="bench-transcript">
           {transcript.map((ex, i) => (
@@ -162,6 +210,9 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
             </div>
           ))}
         </div>
+      )}
+      {transcript.length === 0 && (
+        <p className="bench-game-desc">Generating first question...</p>
       )}
     </div>
   );
@@ -199,23 +250,36 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
       onBack={onBack}
       statusText={status}
     >
+      {isCountdown && (
+        <GameCountdown
+          player1Name={p1Name}
+          player2Name={p2Name}
+          onComplete={async () => {
+            startRunning();
+            if (pendingStartAfterCountdown) {
+              setPendingStartAfterCountdown(false);
+              await performSessionStart();
+            }
+          }}
+        />
+      )}
       <div className="bench-game-container">
         <p className="bench-game-desc">{config.description}</p>
 
         <div className="bench-game-actions">
-          {!sessionId && (
-            <button className="bench-btn bench-btn-primary" disabled={busy} onClick={startSession}>
-              {busy ? 'Loading...' : config.startLabel}
+          {isSetup && !sessionId && gameType !== 'tq' && (
+            <button className="bench-btn bench-btn-primary" disabled={busy} onClick={handleStart}>
+              {busy ? 'Starting...' : config.startLabel}
             </button>
           )}
-          {sessionId && !done && (
+          {isRunning && sessionId && !done && gameType !== 'tq' && (
             <button className="bench-btn bench-btn-primary" disabled={busy} onClick={step}>
-              {busy ? 'Thinking...' : config.stepLabel}
+              {busy ? 'Running...' : config.stepLabel}
             </button>
           )}
           {done && (
-            <button className="bench-btn bench-btn-secondary" onClick={() => { setSessionId(null); setDone(false); setStatus(''); setRounds([]); setTranscript([]); setSubmissions(null); }}>
-              Play Again
+            <button className="bench-btn bench-btn-secondary" onClick={() => { setSessionId(null); setDone(false); setStatus(''); setRounds([]); setTranscript([]); setSubmissions(null); setPendingStartAfterCountdown(false); if (gameType === 'tq') startCountdown(); else goToSetup(); }}>
+              Play again
             </button>
           )}
         </div>

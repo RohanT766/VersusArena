@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom"
 import "./App.css"
 import Battleship from "./components/games/Battleship/Battleship"
@@ -7,8 +7,8 @@ import ConnectionsGame from "./components/games/ConnectionsGame"
 import BenchmarkGame from "./components/games/BenchmarkGame"
 import NewLandingPage from "./pages/LandingPage"
 import ModelSelection from "./pages/ModelSelection"
-import VotePage from "./pages/VotePage"
 import Dashboard from "./pages/Dashboard"
+import { MODEL_OPTIONS, getModelName } from "./config/modelCatalog"
 import {
   WordleIcon, ConnectionsIcon, BattleshipIcon,
   PrisonersIcon, TwentyQIcon, CodeDebugIcon, AnalyticsIcon,
@@ -18,7 +18,7 @@ const GAMES = [
   { name: "Wordle", description: "Speed & Strategy", Icon: WordleIcon },
   { name: "NYT Connections", description: "Pattern Recognition", Icon: ConnectionsIcon },
   { name: "Battleship", description: "Strategic Warfare", Icon: BattleshipIcon },
-  { name: "Prisoner's Dilemma", description: "Game Theory", Icon: PrisonersIcon, benchType: "pd" },
+  { name: "Prisoners Dilemma", description: "Game Theory", Icon: PrisonersIcon, benchType: "pd" },
   { name: "20 Questions", description: "Deduction", Icon: TwentyQIcon, benchType: "tq" },
   { name: "Code Debug", description: "Bug Hunting", Icon: CodeDebugIcon, benchType: "cd" },
 ]
@@ -26,16 +26,49 @@ const GAMES = [
 function MainMenu() {
   const navigate = useNavigate()
   const [selectedGame, setSelectedGame] = useState(null)
-  
-  // Get pre-selected models from sessionStorage (from model selection page)
-  const storedPlayer1 = JSON.parse(sessionStorage.getItem('player1Model') || '{}')
-  const storedPlayer2 = JSON.parse(sessionStorage.getItem('player2Model') || '{}')
-  
-  const [player1Model, setPlayer1Model] = useState(storedPlayer1.id || "gpt-5.5")
-  const [player2Model, setPlayer2Model] = useState(storedPlayer2.id || "claude-sonnet-4-6")
+  const initialP1 = JSON.parse(sessionStorage.getItem('player1Model') || '{}')
+  const initialP2 = JSON.parse(sessionStorage.getItem('player2Model') || '{}')
+  const [player1Model, setPlayer1Model] = useState(initialP1.id || "gpt-5.5")
+  const [player2Model, setPlayer2Model] = useState(initialP2.id || "claude-sonnet-4-6")
+  const sameModelSelected = player1Model === player2Model
   const [gameStarted, setGameStarted] = useState(false)
+  const [openPicker, setOpenPicker] = useState(null)
+  const pickerWrapRef = useRef(null)
+
+  useEffect(() => {
+    const onPointerDown = (event) => {
+      if (!pickerWrapRef.current?.contains(event.target)) {
+        setOpenPicker(null)
+      }
+    }
+    const onEscape = (event) => {
+      if (event.key === "Escape") setOpenPicker(null)
+    }
+    document.addEventListener("mousedown", onPointerDown)
+    document.addEventListener("keydown", onEscape)
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown)
+      document.removeEventListener("keydown", onEscape)
+    }
+  }, [])
+
+  const updateModel = (slot, id) => {
+    const payload = { id, name: getModelName(id) }
+    if (slot === 'p1') {
+      setPlayer1Model(id)
+      sessionStorage.setItem('player1Model', JSON.stringify(payload))
+    } else {
+      setPlayer2Model(id)
+      sessionStorage.setItem('player2Model', JSON.stringify(payload))
+    }
+    setOpenPicker(null)
+  }
 
   const handleGameSelect = (game) => {
+    if (sameModelSelected) {
+      navigate("/model-selection")
+      return
+    }
     setSelectedGame(game)
     setGameStarted(true)
   }
@@ -70,14 +103,62 @@ function MainMenu() {
           ← Back
         </button>
         
-        <div className="models-header">
-          <span className="model-name">{storedPlayer1.name || player1Model}</span> 
+        <div className="models-header" ref={pickerWrapRef}>
+          <div className="model-picker-wrap">
+            <button
+              type="button"
+              className={`model-headline-btn ${openPicker === 'p1' ? 'open' : ''}`}
+              onClick={() => setOpenPicker((p) => (p === 'p1' ? null : 'p1'))}
+            >
+              <span className="model-headline-name">{getModelName(player1Model)}</span>
+              <span className="model-headline-hint">Click to change</span>
+            </button>
+            {openPicker === 'p1' && (
+              <div className="model-options-panel">
+                {MODEL_OPTIONS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`model-option ${player1Model === m.id ? 'selected' : ''}`}
+                    onClick={() => updateModel('p1', m.id)}
+                  >
+                    {m.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <span className="vs-text">VS</span> 
-          <span className="model-name">{storedPlayer2.name || player2Model}</span>
-          <Link to="/dashboard" className="header-analytics-link">
-            <AnalyticsIcon size={28} />
-            <span>Analytics</span>
-          </Link>
+          <div className="model-picker-wrap">
+            <button
+              type="button"
+              className={`model-headline-btn ${openPicker === 'p2' ? 'open' : ''}`}
+              onClick={() => setOpenPicker((p) => (p === 'p2' ? null : 'p2'))}
+            >
+              <span className="model-headline-name">{getModelName(player2Model)}</span>
+              <span className="model-headline-hint">Click to change</span>
+            </button>
+            {openPicker === 'p2' && (
+              <div className="model-options-panel">
+                {MODEL_OPTIONS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`model-option ${player2Model === m.id ? 'selected' : ''}`}
+                    onClick={() => updateModel('p2', m.id)}
+                  >
+                    {m.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="header-actions">
+            <Link to="/dashboard" className="header-analytics-link">
+              <AnalyticsIcon size={28} />
+              <span>Analytics</span>
+            </Link>
+          </div>
         </div>
 
         <div className="games-grid">
@@ -91,6 +172,11 @@ function MainMenu() {
             </button>
           ))}
         </div>
+        {sameModelSelected && (
+          <div className="same-model-warning">
+            Same model selected for both sides. Pick two different models.
+          </div>
+        )}
       </div>
     )
   }
@@ -105,7 +191,6 @@ function App() {
         <Route path="/" element={<NewLandingPage />} />
         <Route path="/model-selection" element={<ModelSelection />} />
         <Route path="/games" element={<MainMenu />} />
-        <Route path="/vote" element={<VotePage />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>

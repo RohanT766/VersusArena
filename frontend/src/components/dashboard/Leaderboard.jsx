@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Leaderboard = ({ scope, rows, onScopeChange }) => (
+const Leaderboard = ({ scope, rows, onScopeChange, loading, error }) => (
   <div className="dashboard-card">
     <div className="dashboard-card-header">
       <h2>Elo leaderboard</h2>
@@ -14,6 +14,8 @@ const Leaderboard = ({ scope, rows, onScopeChange }) => (
         <option value="code_debug">Code debug</option>
       </select>
     </div>
+    {error && <p className="dashboard-error">{error}</p>}
+    {loading && <p className="dashboard-muted">Loading leaderboard…</p>}
     <div className="dashboard-table-wrap">
       <table className="dashboard-table">
         <thead>
@@ -30,7 +32,7 @@ const Leaderboard = ({ scope, rows, onScopeChange }) => (
           {(rows || []).map((r, i) => (
             <tr key={`${r.model_id}-${i}`}>
               <td>{i + 1}</td>
-              <td className="mono">{r.model_id}</td>
+              <td title={r.model_id}>{r.display_name || r.model_id}</td>
               <td>{Number(r.rating).toFixed(0)}</td>
               <td>{r.games_played}</td>
               <td>{r.wins}</td>
@@ -39,7 +41,7 @@ const Leaderboard = ({ scope, rows, onScopeChange }) => (
           ))}
         </tbody>
       </table>
-      {!rows?.length && <p className="dashboard-muted">No Elo rows yet — play some games.</p>}
+      {!loading && !rows?.length && <p className="dashboard-muted">No Elo rows yet — play some games.</p>}
     </div>
   </div>
 );

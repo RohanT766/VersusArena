@@ -7,19 +7,17 @@ import "./ModelSelection.css"
 import openaiIcon from "../assets/openai.png"
 import claudeIcon from "../assets/claude.png"
 import geminiIcon from "../assets/gemini.png"
+import { CORE_MODELS, RANDOM_MODEL } from "../config/modelCatalog"
+
+const providerIconMap = {
+  OpenAI: openaiIcon,
+  Anthropic: claudeIcon,
+  Google: geminiIcon,
+}
 
 const AI_MODELS_DATA = [
-  { id: "gpt-5.5", name: "GPT-5.5", provider: "OpenAI", tier: "flagship", icon: openaiIcon },
-  { id: "gpt-5.4-mini", name: "GPT-5.4 Mini", provider: "OpenAI", tier: "balanced", icon: openaiIcon },
-  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", tier: "fast", icon: openaiIcon },
-  { id: "o4-mini", name: "o4-mini", provider: "OpenAI", tier: "reasoning", icon: openaiIcon },
-  { id: "claude-opus-4-7", name: "Claude Opus 4.7", provider: "Anthropic", tier: "flagship", icon: claudeIcon },
-  { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "Anthropic", tier: "balanced", icon: claudeIcon },
-  { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "Anthropic", tier: "fast", icon: claudeIcon },
-  { id: "gemini-3.1-pro-preview", name: "Gemini 3.1 Pro", provider: "Google", tier: "flagship", icon: geminiIcon },
-  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "Google", tier: "balanced", icon: geminiIcon },
-  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "Google", tier: "fast", icon: geminiIcon },
-  { id: "random", name: "RANDOM", provider: "???", tier: "special", isRandom: true },
+  ...CORE_MODELS.map((m) => ({ ...m, icon: providerIconMap[m.provider] })),
+  RANDOM_MODEL,
 ]
 
 const ModelCard = ({ model, onSelect, isSelectedP1, isSelectedP2, isHovered, onMouseEnter, onMouseLeave }) => {
@@ -77,26 +75,25 @@ const ModelSelection = () => {
   const [player1Model, setPlayer1Model] = useState(null)
   const [player2Model, setPlayer2Model] = useState(null)
   const [hoveredModelId, setHoveredModelId] = useState(null)
+  const [selectionError, setSelectionError] = useState("")
+
+  const availableModels = AI_MODELS_DATA.filter(m => !m.isRandom && !m.locked)
 
   const handleModelSelect = (model) => {
+    setSelectionError("")
     if (!player1Model) {
       setPlayer1Model(model)
     } else if (player1Model && !player2Model) {
-      if (model.id === player1Model.id) {
-        setPlayer2Model(model)
-      } else {
-        setPlayer2Model(model)
+      if (!model.isRandom && !player1Model.isRandom && model.id === player1Model.id) {
+        setSelectionError("Choose two different models.")
+        return
       }
+      setPlayer2Model(model)
     } else if (player1Model && player2Model) {
-      // If P1 is re-selected, it changes P1's choice.
-      // If P2 is re-selected, it changes P2's choice.
-      // For simplicity, let's assume clicking again changes P1 if P2 is set, or P2 if P1 is set and P2 is not.
-      // This logic can be refined based on exact Smash Bros. behavior (e.g., which player token is active)
-      // For now, let's make it so that if both are selected, clicking changes P1.
       setPlayer1Model(model)
-      // If the new P1 is the same as P2, clear P2 to avoid confusion or allow P2 to re-pick.
-      if (player2Model && model.id === player2Model.id) {
+      if (!model.isRandom && !player2Model.isRandom && player2Model && model.id === player2Model.id) {
         setPlayer2Model(null)
+        setSelectionError("Choose two different models.")
       }
     }
   }
@@ -104,30 +101,43 @@ const ModelSelection = () => {
   const handleReset = () => {
     setPlayer1Model(null)
     setPlayer2Model(null)
+    setSelectionError("")
   }
 
   const handleProceed = () => {
     if (player1Model && player2Model) {
-      // Handle random model selection
       let finalPlayer1 = player1Model;
       let finalPlayer2 = player2Model;
-      
-      // Get list of non-random models
-      const availableModels = AI_MODELS_DATA.filter(m => !m.isRandom && !m.locked);
-      
-      if (player1Model.isRandom) {
-        finalPlayer1 = availableModels[Math.floor(Math.random() * availableModels.length)];
-      }
-      
-      if (player2Model.isRandom) {
-        // Make sure we don't pick the same model if player1 was also random
-        let remainingModels = availableModels;
-        if (player1Model.isRandom && finalPlayer1) {
-          remainingModels = availableModels.filter(m => m.id !== finalPlayer1.id);
+
+      if (player1Model.isRandom && player2Model.isRandom) {
+        if (availableModels.length < 2) {
+          setSelectionError("Not enough unique models available.")
+          return
         }
-        finalPlayer2 = remainingModels[Math.floor(Math.random() * remainingModels.length)];
+        finalPlayer1 = availableModels[Math.floor(Math.random() * availableModels.length)];
+        const remaining = availableModels.filter(m => m.id !== finalPlayer1.id)
+        finalPlayer2 = remaining[Math.floor(Math.random() * remaining.length)]
+      } else if (player1Model.isRandom) {
+        const pool = availableModels.filter(m => m.id !== player2Model.id)
+        if (!pool.length) {
+          setSelectionError("Not enough unique models available.")
+          return
+        }
+        finalPlayer1 = pool[Math.floor(Math.random() * pool.length)];
+      } else if (player2Model.isRandom) {
+        const pool = availableModels.filter(m => m.id !== player1Model.id)
+        if (!pool.length) {
+          setSelectionError("Not enough unique models available.")
+          return
+        }
+        finalPlayer2 = pool[Math.floor(Math.random() * pool.length)];
       }
-      
+
+      if (finalPlayer1.id === finalPlayer2.id) {
+        setSelectionError("Choose two different models.")
+        return
+      }
+
       sessionStorage.setItem("player1Model", JSON.stringify(finalPlayer1))
       sessionStorage.setItem("player2Model", JSON.stringify(finalPlayer2))
       navigate("/games") // Navigate to your game selection or actual game page
@@ -217,6 +227,7 @@ const ModelSelection = () => {
         >
           START BATTLE
         </button>
+        {selectionError && <div className="selection-error">{selectionError}</div>}
       </div>
     </div>
   )

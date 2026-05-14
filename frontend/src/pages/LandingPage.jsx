@@ -1,5 +1,5 @@
 import { Suspense, useState, useRef, useEffect, useMemo } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { EffectComposer } from "@react-three/postprocessing"
 import { wrapEffect } from "@react-three/postprocessing"
@@ -284,7 +284,7 @@ const NewLandingPage = () => {
         <div className="main-content">
           <h1 className="main-title">VERSUS</h1>
           <p className="main-subtitle">
-            A real-time competitive benchmark for language models. Witness the ultimate AI showdown.
+            Real-time competitive benchmarks for agents.
           </p>
           <button onClick={() => navigate("/model-selection")} className="main-cta">
             Enter Arena
@@ -292,14 +292,6 @@ const NewLandingPage = () => {
         </div>
       </div>
 
-      <div className="bottom-nav">
-        <a href="https://github.com/RohanT766/VersusArena" target="_blank" rel="noopener noreferrer">
-          github <span className="arrow">↗</span>
-        </a>
-        <Link to="/dashboard">
-          leaderboard <span className="arrow">↗</span>
-        </Link>
-      </div>
     </div>
   )
 }

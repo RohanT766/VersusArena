@@ -4,6 +4,12 @@
   color: #fff;
   font-family: 'VT323', monospace;
   padding: 24px 32px;
+  padding-bottom: 48px;
+}
+
+body.dashboard-scroll-body {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .dashboard-top {
@@ -51,10 +57,35 @@
   box-shadow: 0 0 12px rgba(255, 204, 0, 0.15);
 }
 
+.dashboard-error {
+  color: #ff4444;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 20px;
+}
+
+.dashboard-full-span {
+  grid-column: 1 / -1;
+}
+
+.dashboard-metrics-card {
+  margin-bottom: 20px;
+}
+
+.dashboard-metrics-row {
+  margin-top: 12px;
+}
+
+.dashboard-chart-wrap {
+  width: 100%;
+  height: 320px;
+  margin-top: 12px;
 }
 
 .dashboard-card {
@@ -174,7 +205,7 @@
 
 .metrics-pill {
   background: #000;
-  border: 1px solid #333;
+  border: 2px solid #222;
   padding: 12px 16px;
   min-width: 100px;
 }
@@ -231,6 +262,92 @@
 .recharts-text {
   font-family: 'VT323', monospace !important;
   fill: #666 !important;
+}
+
+.dashboard-subhead {
+  font-size: 1.1rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 12px;
+}
+
+.dashboard-vs {
+  color: #666;
+  margin: 0 4px;
+}
+
+.dashboard-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.dashboard-trends-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.dashboard-chart-sm {
+  height: 260px;
+}
+
+.dashboard-mb {
+  margin-bottom: 16px;
+}
+
+.dashboard-actions-cell {
+  white-space: nowrap;
+}
+
+.dashboard-actions-cell .dashboard-linkbtn {
+  margin-right: 12px;
+}
+
+.dashboard-delete-btn {
+  color: #ff6666;
+}
+
+.dashboard-delete-btn.confirm {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.dashboard-delete-banner {
+  background: rgba(255, 68, 68, 0.08);
+  border: 1px solid #442222;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  padding: 12px 20px;
+  border: 2px solid #333;
+  background: #111;
+  font-size: 1.1rem;
+  max-width: 420px;
+}
+
+.dashboard-toast-success {
+  border-color: #538d4e;
+  color: #8fbc8f;
+}
+
+.dashboard-toast-error {
+  border-color: #884444;
+  color: #ff8888;
 }
 
 @media (max-width: 768px) {

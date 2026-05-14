@@ -6,7 +6,7 @@ const GameLayout = ({ gameName, player1Name, player2Name, onBack, children, stat
     <div className="game-layout">
       <div className="game-layout-header">
         <button className="game-layout-back" onClick={onBack}>
-          ← BACK
+          ← Back
         </button>
 
         <div className="game-layout-players">

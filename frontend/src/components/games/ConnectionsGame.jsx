@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import SidebarVote from '../SidebarVote';
 import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
 import { getDisplayName } from '../../utils/modelUtils';
+import useGameFlow from '../../hooks/useGameFlow';
 import './ConnectionsGame.css';
 
 const MAX_INCORRECT = 15;
@@ -16,8 +16,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const [player1Processing, setPlayer1Processing] = useState(false);
   const [player2Processing, setPlayer2Processing] = useState(false);
   const [ws, setWs] = useState(null);
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [votingDone, setVotingDone] = useState(false);
+  const { isCountdown, isRunning, startCountdown, startRunning, goToSetup } = useGameFlow();
   const abortRef = React.useRef(null);
 
   useEffect(() => {
@@ -48,10 +47,20 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       
       const data = await response.json();
       setGameId(data.game_id);
-      setPlayer1State(data.player1_state);
-      setPlayer2State(data.player2_state);
+      const stateRes = await fetch(`${getApiBase()}/api/connections/game/${data.game_id}/state`, {
+        signal: abortRef.current?.signal,
+      });
+      if (stateRes.ok) {
+        const stateData = await stateRes.json();
+        setPlayer1State(stateData.player1_state || null);
+        setPlayer2State(stateData.player2_state || null);
+      } else {
+        setPlayer1State(null);
+        setPlayer2State(null);
+      }
       setLoading(false);
       setError(null);
+      startCountdown();
     } catch (err) {
       if (err.name === 'AbortError') return;
       setError(err.message);
@@ -140,25 +149,20 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   };
 
   useEffect(() => {
-    if (!votingDone || showCountdown) return;
+    if (!isRunning || isCountdown) return;
     if (player1State && !p1Done && !player1Processing) {
       const timer = setTimeout(() => processAITurn(1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [player1State, player1Processing, p1Done, showCountdown, votingDone]);
+  }, [player1State, player1Processing, p1Done, isCountdown, isRunning]);
 
   useEffect(() => {
-    if (!votingDone || showCountdown) return;
+    if (!isRunning || isCountdown) return;
     if (player2State && !p2Done && !player2Processing) {
       const timer = setTimeout(() => processAITurn(2), 1500);
       return () => clearTimeout(timer);
     }
-  }, [player2State, player2Processing, p2Done, showCountdown, votingDone]);
-
-  const handleVotingDone = () => {
-    setVotingDone(true);
-    setShowCountdown(true);
-  };
+  }, [player2State, player2Processing, p2Done, isCountdown, isRunning]);
 
   const getLevelColor = (level) => {
     const colors = ['#f9df6d', '#a0c35a', '#b0c4ef', '#ba81c5'];
@@ -173,7 +177,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
     <div className="conn-player-side">
       <div className="conn-status-bar">
         {processing && <span className="game-player-thinking">Thinking...</span>}
-        {playerDone && !processing && <span className="conn-done-tag">DONE</span>}
+        {playerDone && !processing && <span className="conn-done-tag">Done</span>}
         <div className="conn-stats">
           <span>Groups: <strong>{state.found_groups.length}/4</strong></span>
           <span>Wrong: <strong style={{ color: state.incorrect_guesses.length >= MAX_INCORRECT ? '#ef4444' : '#888' }}>{state.incorrect_guesses.length}/{MAX_INCORRECT}</strong></span>
@@ -218,21 +222,11 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       onBack={onBack}
       statusText={statusText}
     >
-      {!votingDone && (
-        <SidebarVote
-          gameId={gameId}
-          player1Label={p1Name}
-          player2Label={p2Name}
-          onGameStart={handleVotingDone}
-          onBack={onBack}
-        />
-      )}
-
-      {showCountdown && (
+      {isCountdown && (
         <GameCountdown
           player1Name={p1Name}
           player2Name={p2Name}
-          onComplete={() => setShowCountdown(false)}
+          onComplete={startRunning}
         />
       )}
 
@@ -253,18 +247,18 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
                 <div>{player2State.found_groups.length} groups / {player2State.incorrect_guesses.length} wrong</div>
               </div>
             </div>
-            <button onClick={() => { setVotingDone(false); setShowCountdown(false); startNewGame(); }} className="new-game-overlay-button">NEW GAME</button>
+            <button onClick={() => { goToSetup(); startNewGame(); }} className="new-game-overlay-button">Play again</button>
           </div>
         </div>
       )}
 
-      {votingDone && !showCountdown && player1State && player2State ? (
+      {isRunning && !isCountdown && player1State && player2State ? (
         <div className="connections-split-view">
           {renderPlayerBoard(player1State, player1Processing, p1Done)}
           <div className="game-split-vs">VS</div>
           {renderPlayerBoard(player2State, player2Processing, p2Done)}
         </div>
-      ) : votingDone && !showCountdown ? (
+      ) : isRunning && !isCountdown ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '1.5rem' }}>
           {loading ? 'Loading...' : 'Failed to load game.'}
         </div>

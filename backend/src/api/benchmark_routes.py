@@ -15,8 +15,28 @@ from pydantic import BaseModel
 
 from src.db.database import get_connection
 from src.benchmark.recorder import get_recorder
+from src.benchmark.analytics import (
+    delete_run_hard,
+    display_name,
+    fetch_head_to_head,
+    fetch_model_performance,
+    fetch_overview,
+    fetch_quality,
+    fetch_trends,
+    rebuild_elo_ratings,
+)
 
 router = APIRouter(prefix="/api/benchmark", tags=["benchmark"])
+
+
+def _enrich_leaderboard_rows(rows) -> list:
+    out = []
+    for r in rows:
+        d = dict(r)
+        mid = d.get("model_id") or ""
+        d["display_name"] = display_name(mid)
+        out.append(d)
+    return out
 
 
 @router.get("/leaderboard")
@@ -36,7 +56,75 @@ async def leaderboard(
             """,
             (scope,),
         ).fetchall()
-        return {"scope": scope, "rows": [dict(r) for r in rows]}
+        return {"scope": scope, "rows": _enrich_leaderboard_rows(rows)}
+    finally:
+        conn.close()
+
+
+@router.delete("/runs/{run_id}")
+async def delete_run(run_id: str):
+    conn = get_connection()
+    try:
+        result = delete_run_hard(conn, run_id)
+        if not result.get("deleted"):
+            raise HTTPException(status_code=404, detail="Run not found")
+        return result
+    finally:
+        conn.close()
+
+
+@router.get("/analytics/overview")
+async def analytics_overview():
+    conn = get_connection()
+    try:
+        return fetch_overview(conn)
+    finally:
+        conn.close()
+
+
+@router.get("/analytics/model-performance")
+async def analytics_model_performance(scope: str = Query("overall")):
+    conn = get_connection()
+    try:
+        return {"scope": scope, "models": fetch_model_performance(conn, scope)}
+    finally:
+        conn.close()
+
+
+@router.get("/analytics/head-to-head")
+async def analytics_head_to_head(limit: int = Query(20, le=100)):
+    conn = get_connection()
+    try:
+        return {"pairs": fetch_head_to_head(conn, limit)}
+    finally:
+        conn.close()
+
+
+@router.get("/analytics/quality")
+async def analytics_quality():
+    conn = get_connection()
+    try:
+        return fetch_quality(conn)
+    finally:
+        conn.close()
+
+
+@router.get("/analytics/trends")
+async def analytics_trends(days: int = Query(14, ge=1, le=90)):
+    conn = get_connection()
+    try:
+        return fetch_trends(conn, days)
+    finally:
+        conn.close()
+
+
+@router.post("/analytics/rebuild-elo")
+async def analytics_rebuild_elo():
+    conn = get_connection()
+    try:
+        rebuild_elo_ratings(conn)
+        conn.commit()
+        return {"elo_rebuilt": True, "recalculated_at": time.time()}
     finally:
         conn.close()
 

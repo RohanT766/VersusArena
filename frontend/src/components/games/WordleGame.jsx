@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import SidebarVote from '../SidebarVote';
 import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
 import { getDisplayName } from '../../utils/modelUtils';
+import useGameFlow from '../../hooks/useGameFlow';
 import './wordle/Wordle.css';
 
 const getApiBase = () => {
@@ -36,9 +36,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
 
   const [selectedWord, setSelectedWord] = useState('');
   const [gameId, setGameId] = useState(null);
-  const [showStartModal, setShowStartModal] = useState(true);
-  const [showVoting, setShowVoting] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
+  const { isSetup, isCountdown, isRunning, goToSetup, startCountdown, startRunning } = useGameFlow();
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
@@ -87,12 +85,11 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       setGameId(data.game_id);
       const wl = data.word_length || wordLength;
       setWordLength(wl);
-      setShowStartModal(false);
       const displaySecret =
         word.length === wl && word ? word : Array.from({ length: wl }).map(() => '?').join('');
       setGameState((prev) => ({ ...prev, gameStarted: true, secretWord: displaySecret }));
       pendingGameRef.current = data.game_id;
-      setShowVoting(true);
+      startCountdown();
     } catch (error) {
       setErrorMsg(`Cannot reach backend at ${getApiBase()}. Is the server running?`);
     }
@@ -101,7 +98,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   const gameLoopRunning = useRef(false);
 
   const handleCountdownComplete = () => {
-    setShowCountdown(false);
+    startRunning();
     const gid = pendingGameRef.current;
     if (!gid) return;
     const controller = new AbortController();
@@ -113,9 +110,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   useEffect(() => {
     if (
       gameState.gameStarted &&
-      !showVoting &&
-      !showCountdown &&
-      !showStartModal &&
+      isRunning &&
       !gameState.gameOver &&
       !gameLoopRunning.current &&
       pendingGameRef.current
@@ -125,7 +120,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       gameLoopRunning.current = true;
       runGameLoop(pendingGameRef.current, controller.signal);
     }
-  }, [gameState.gameStarted, showVoting, showCountdown, showStartModal, gameState.gameOver]);
+  }, [gameState.gameStarted, isRunning, gameState.gameOver]);
 
   const runGameLoop = async (gid, signal) => {
     if (!gid) {
@@ -287,7 +282,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       onBack={handleGoBack}
       statusText={statusText}
     >
-      {showCountdown && (
+      {isCountdown && (
         <GameCountdown
           player1Name={player1.name}
           player2Name={player2.name}
@@ -295,20 +290,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
         />
       )}
 
-      {showVoting && gameId && (
-        <SidebarVote
-          gameId={gameId}
-          player1Label={player1.name}
-          player2Label={player2.name}
-          onGameStart={() => {
-            setShowVoting(false);
-            setShowCountdown(true);
-          }}
-          onBack={handleGoBack}
-        />
-      )}
-
-      {showStartModal && (
+      {isSetup && (
         <div className="wordle-modal">
           <div className="wordle-modal-content">
             <h2>Start Wordle Battle</h2>
@@ -336,13 +318,13 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
             </div>
             {errorMsg && <p style={{ color: '#ef4444', fontSize: '18px', margin: '10px 0' }}>{errorMsg}</p>}
             <button onClick={startGame} className="start-button">
-              Start Battle
+              Start Match
             </button>
           </div>
         </div>
       )}
 
-      {gameState.gameStarted && !showVoting && !showCountdown && !showStartModal && (
+      {gameState.gameStarted && isRunning && (
         <div
           className="wordle-board"
           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px' }}
@@ -350,7 +332,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           <div className="player-section">
             <div className="game-player-label" style={{ color: '#10b981' }}>
               {player1.name}
-              {gameState.player1.isThinking && <span className="game-player-thinking">THINKING...</span>}
+              {gameState.player1.isThinking && <span className="game-player-thinking">Thinking...</span>}
             </div>
             {renderGrid('player1')}
             <div className="guess-count">Guesses: {gameState.player1.guesses.length}/6</div>
@@ -361,7 +343,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           <div className="player-section">
             <div className="game-player-label" style={{ color: '#a78bfa' }}>
               {player2.name}
-              {gameState.player2.isThinking && <span className="game-player-thinking">THINKING...</span>}
+              {gameState.player2.isThinking && <span className="game-player-thinking">Thinking...</span>}
             </div>
             {renderGrid('player2')}
             <div className="guess-count">Guesses: {gameState.player2.guesses.length}/6</div>
@@ -397,7 +379,28 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
               </div>
             </div>
             <button onClick={handleGoBack} className="new-game-overlay-button">
-              BACK
+              Back to Arena
+            </button>
+            <button
+              onClick={() => {
+                if (abortRef.current) abortRef.current.abort();
+                setGameState({
+                  player1: { guesses: [], feedback: [], reasoning: [], isThinking: false },
+                  player2: { guesses: [], feedback: [], reasoning: [], isThinking: false },
+                  gameOver: false,
+                  winner: null,
+                  secretWord: null,
+                  gameStarted: false,
+                });
+                setSelectedWord('');
+                setGameId(null);
+                pendingGameRef.current = null;
+                goToSetup();
+              }}
+              className="new-game-overlay-button"
+              style={{ marginTop: 10 }}
+            >
+              Play again
             </button>
           </div>
         </div>
