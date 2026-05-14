@@ -5,10 +5,12 @@ Common utilities and base classes for all games
 import os
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 from enum import Enum
 from dotenv import load_dotenv
 import asyncio
+
+from src.benchmark.cost_estimate import estimate_cost_usd
 
 # Load environment variables from backend/.env
 backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))  # Go up 3 levels from src/utils/common.py
@@ -83,9 +85,57 @@ class LLMClient:
         else:
             raise ValueError(f"Unknown model type: {self.model_type}")
     
-    def get_response(self, prompt: str, max_tokens: int = 100, temperature: float = 0.7, max_retries: int = 3) -> str:
-        """Get a response from the LLM with retry and backoff"""
+    def _fill_usage_openai(self, usage_out: Dict[str, Any], response: Any, t0: float) -> None:
+        usage_out["latency_ms"] = (time.time() - t0) * 1000.0
+        u = getattr(response, "usage", None)
+        if u:
+            inp = getattr(u, "prompt_tokens", None) or getattr(u, "input_tokens", None)
+            outp = getattr(u, "completion_tokens", None) or getattr(u, "output_tokens", None)
+            usage_out["input_tokens"] = inp
+            usage_out["output_tokens"] = outp
+            usage_out["cost_usd"] = estimate_cost_usd(
+                self.model_type, self.model_name.lower(),
+                inp or 0, outp or 0,
+            )
+
+    def _fill_usage_anthropic(self, usage_out: Dict[str, Any], response: Any, t0: float) -> None:
+        usage_out["latency_ms"] = (time.time() - t0) * 1000.0
+        u = getattr(response, "usage", None)
+        if u:
+            inp = getattr(u, "input_tokens", None)
+            outp = getattr(u, "output_tokens", None)
+            usage_out["input_tokens"] = inp
+            usage_out["output_tokens"] = outp
+            usage_out["cost_usd"] = estimate_cost_usd(
+                self.model_type, self.model_name.lower(),
+                inp or 0, outp or 0,
+            )
+
+    def _fill_usage_google(self, usage_out: Dict[str, Any], response: Any, t0: float) -> None:
+        usage_out["latency_ms"] = (time.time() - t0) * 1000.0
+        um = getattr(response, "usage_metadata", None)
+        if um:
+            inp = getattr(um, "prompt_token_count", None)
+            outp = getattr(um, "candidates_token_count", None)
+            usage_out["input_tokens"] = inp
+            usage_out["output_tokens"] = outp
+            usage_out["cost_usd"] = estimate_cost_usd(
+                self.model_type, self.model_name.lower(),
+                inp or 0, outp or 0,
+            )
+
+    def get_response(
+        self,
+        prompt: str,
+        max_tokens: int = 100,
+        temperature: float = 0.7,
+        max_retries: int = 3,
+        usage_out: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Get a response from the LLM with retry and backoff."""
+        out = usage_out if usage_out is not None else None
         for attempt in range(max_retries):
+            t0 = time.time()
             try:
                 if self.model_type == "OPENAI":
                     params = {
@@ -99,7 +149,12 @@ class LLMClient:
                         params["temperature"] = temperature
                         params["max_tokens"] = max_tokens
                     response = self.client.chat.completions.create(**params)
-                    return response.choices[0].message.content.strip()
+                    text = response.choices[0].message.content
+                    text = text.strip() if text else ""
+                    if out is not None:
+                        self._fill_usage_openai(out, response, t0)
+                        out["error"] = None
+                    return text
                 elif self.model_type == "ANTHROPIC":
                     response = self.client.messages.create(
                         model=self.model_name,
@@ -107,38 +162,63 @@ class LLMClient:
                         temperature=temperature,
                         max_tokens=max_tokens,
                     )
-                    return response.content[0].text.strip()
+                    text = response.content[0].text.strip()
+                    if out is not None:
+                        self._fill_usage_anthropic(out, response, t0)
+                        out["error"] = None
+                    return text
                 elif self.model_type == "GOOGLE":
                     response = self.client.generate_content(prompt)
-                    return response.text.strip()
+                    text = getattr(response, "text", "") or ""
+                    text = text.strip()
+                    if out is not None:
+                        self._fill_usage_google(out, response, t0)
+                        out["error"] = None
+                    return text
                 else:
                     raise ValueError(f"Unknown model type: {self.model_type}")
             except Exception as e:
                 print(f"LLM call attempt {attempt+1}/{max_retries} failed for {self.model_id}: {e}")
+                if out is not None:
+                    out["latency_ms"] = (time.time() - t0) * 1000.0
+                    out["error"] = str(e)
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)
                 else:
                     print(f"All {max_retries} attempts failed for {self.model_id}")
                     return None
     
-    def get_move(self, prompt: str, game_state: dict = None, max_retries: int = 3) -> str:
+    def get_move(
+        self,
+        prompt: str,
+        game_state: dict = None,
+        max_retries: int = 3,
+        usage_out: Optional[Dict[str, Any]] = None,
+        board_letters: str = "ABCDEFGH",
+    ) -> str:
         """Get a move from the LLM with retry and backoff (sync version for battleship)"""
         import re
         import random
         import string
 
+        n = len(board_letters)
+
         def _random_move():
-            col = random.choice(string.ascii_uppercase[:8])
-            row = random.randint(1, 8)
+            col = random.choice(board_letters)
+            row = random.randint(1, n)
             return f"{col}{row}"
 
         def _fallback_move():
-            suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
+            pat = rf"Suggested position: ([{board_letters}]\d+)"
+            suggested_match = re.search(pat, prompt, re.I)
             if suggested_match:
-                return suggested_match.group(1)
+                return suggested_match.group(1).upper()
             return _random_move()
 
+        coord_re = re.compile(rf"([{board_letters}])(\d+)", re.I)
+
         for attempt in range(max_retries):
+            t0 = time.time()
             try:
                 if self.model_type == "OPENAI":
                     params = {
@@ -156,6 +236,9 @@ class LLMClient:
                         params["max_tokens"] = 10
                     response = self.client.chat.completions.create(**params)
                     content = response.choices[0].message.content.strip()
+                    if usage_out is not None:
+                        self._fill_usage_openai(usage_out, response, t0)
+                        usage_out["error"] = None
                 elif self.model_type == "ANTHROPIC":
                     response = self.client.messages.create(
                         model=self.model_name,
@@ -164,24 +247,33 @@ class LLMClient:
                         temperature=0.7,
                     )
                     content = response.content[0].text.strip()
+                    if usage_out is not None:
+                        self._fill_usage_anthropic(usage_out, response, t0)
+                        usage_out["error"] = None
                 elif self.model_type == "GOOGLE":
                     response = self.client.generate_content(prompt)
                     content = response.text.strip()
+                    if usage_out is not None:
+                        self._fill_usage_google(usage_out, response, t0)
+                        usage_out["error"] = None
                 else:
                     return _fallback_move()
 
-                coord_match = re.search(r'[A-Ha-h][1-8]', content)
+                coord_match = coord_re.search(content)
                 if coord_match:
-                    return coord_match.group(0).upper()
+                    return f"{coord_match.group(1).upper()}{coord_match.group(2)}"
 
-                suggested_match = re.search(r'Suggested position: ([A-H][1-8])', prompt)
+                suggested_match = re.search(rf"Suggested position: ([{board_letters}]\d+)", prompt, re.I)
                 if suggested_match:
-                    return suggested_match.group(1)
+                    return suggested_match.group(1).upper()
 
                 return _random_move()
 
             except Exception as e:
                 print(f"get_move attempt {attempt+1}/{max_retries} failed for {self.model_type} ({self.model_name}): {e}")
+                if usage_out is not None:
+                    usage_out["latency_ms"] = (time.time() - t0) * 1000.0
+                    usage_out["error"] = str(e)
                 if attempt < max_retries - 1:
                     time.sleep(2 ** attempt)
                 else:

@@ -5,7 +5,7 @@ NYT Connections Game Implementation for VERSUS
 import json
 import random
 import os
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 from src.utils.common import LLMClient
 from dotenv import load_dotenv
 
@@ -44,7 +44,18 @@ class ConnectionsGame:
         self.game_over = False
         self.winner = None
         self.current_player = None
-    
+        self.difficulty_avg = sum(g.get("level", 0) for g in self.answers) / max(len(self.answers), 1)
+        self.difficulty_band = (
+            "expert"
+            if self.difficulty_avg >= 2.5
+            else "hard"
+            if self.difficulty_avg >= 2.0
+            else "medium"
+            if self.difficulty_avg >= 1.25
+            else "easy"
+        )
+        self._last_llm_usage: Dict[str, Any] = {}
+
     def check_guess(self, guess: List[str]) -> Dict:
         """Check if a guess of 4 words forms a valid group"""
         guess_set = set(word.upper() for word in guess)
@@ -290,7 +301,13 @@ Respond with ONLY 4 words separated by commas. Example format:
 WORD1, WORD2, WORD3, WORD4"""
 
         try:
-            response = llm_client.get_response(prompt, max_tokens=50, temperature=0.3)
+            usage: Dict[str, Any] = {}
+            response = llm_client.get_response(
+                prompt, max_tokens=50, temperature=0.3, usage_out=usage
+            )
+            self._last_llm_usage = usage
+            if response is None:
+                return self._get_unique_guess()
 
             response = response.strip()
             for prefix in ["Answer:", "Guess:", "Response:", "My guess:", "I choose:"]:
@@ -349,7 +366,9 @@ WORD1, WORD2, WORD3, WORD4"""
             'incorrect_guesses': self.incorrect_guesses,
             'game_over': self.game_over,
             'winner': self.winner,
-            'solution': self.answers if self.game_over else None
+            'solution': self.answers if self.game_over else None,
+            'difficulty_avg': self.difficulty_avg,
+            'difficulty_band': self.difficulty_band,
         }
     
     def _analyze_patterns(self) -> str:
