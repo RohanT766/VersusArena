@@ -30,28 +30,10 @@ from src.engine.agent_loop import AgentLoop, GameRunner
 from src.db.database import init_db
 from src.benchmark.recorder import get_recorder
 from src.api.benchmark_routes import router as benchmark_router
-from src.games.prisoners_dilemma import (
-    play_round as pd_play_round,
-    start_session as pd_start_session,
-    winner_side as pd_winner_side,
-)
-from src.games.twenty_questions import start_session as tq_start, play_turn as tq_play_turn, SECRETS
 from src.games.code_debug_challenge import (
     CodeDebugSession,
     new_code_debug_session,
     run_player as code_debug_run_player,
-)
-from src.games.maze_race import (
-    start_session as maze_start_session,
-    play_step as maze_play_step,
-    session_state as maze_session_state,
-    winner_side as maze_winner_side,
-)
-from src.games.snake_game import (
-    start_session as snake_start_session,
-    play_step as snake_play_step,
-    session_state as snake_session_state,
-    winner_side as snake_winner_side,
 )
 
 # Default model configurations
@@ -92,11 +74,7 @@ battleship_games = {}
 wordle_games: Dict[str, Dict[str, Any]] = {}
 connections_games: Dict[str, Dict] = {}
 
-prisoners_sessions: Dict[str, Dict] = {}
-twenty_questions_sessions: Dict[str, Dict] = {}
 code_debug_sessions: Dict[str, Dict] = {}
-maze_sessions: Dict[str, Dict] = {}
-snake_sessions: Dict[str, Dict] = {}
 
 # Store active game runners
 game_runners: Dict[str, GameRunner] = {}
@@ -999,160 +977,8 @@ def _connections_try_finish(game_id: str) -> None:
 
 
 # ==========================
-# BENCHMARK MINI-GAMES (REST)
+# CODE DEBUG (REST, kept for batch benchmarks)
 # ==========================
-
-
-class PrisonersStartBody(BaseModel):
-    player1_model: str = "gpt-5.5"
-    player2_model: str = "claude-sonnet-4-6"
-    rounds: int = 10
-
-
-@app.post("/api/prisoners/start")
-async def prisoners_start(body: PrisonersStartBody):
-    sess = pd_start_session(body.player1_model, body.player2_model, rounds=body.rounds)
-    rec = get_recorder()
-    rid = rec.start_run(
-        "prisoners_dilemma",
-        body.player1_model,
-        body.player2_model,
-        {"rounds": body.rounds},
-    )
-    sess.benchmark_run_id = rid
-    prisoners_sessions[sess.id] = {"session": sess, "move_seq": 0, "finished": False}
-    return {"session_id": sess.id, "benchmark_run_id": rid, "rounds": body.rounds}
-
-
-@app.post("/api/prisoners/{session_id}/step")
-async def prisoners_step(session_id: str):
-    entry = prisoners_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    sess: Any = entry["session"]
-    if entry.get("finished"):
-        return {"done": True, "scores": sess.scores, "history": sess.history}
-
-    out = pd_play_round(sess)
-    br = getattr(sess, "benchmark_run_id", None)
-    rnd = out.get("round")
-    if br and isinstance(rnd, dict):
-        rec = get_recorder()
-        for ag, u in (("player1", rnd.get("usage1")), ("player2", rnd.get("usage2"))):
-            u = u or {}
-            entry["move_seq"] += 1
-            rec.add_move(
-                br,
-                ag,
-                entry["move_seq"],
-                latency_ms=u.get("latency_ms"),
-                input_tokens=u.get("input_tokens"),
-                output_tokens=u.get("output_tokens"),
-                cost_usd=u.get("cost_usd"),
-                correctness=1.0,
-                response_preview=(rnd.get("raw1") if ag == "player1" else rnd.get("raw2")),
-                error=u.get("error"),
-            )
-
-    if out.get("done") and br and not entry.get("finished"):
-        entry["finished"] = True
-        w = pd_winner_side(sess)
-        get_recorder().finish_run(
-            br,
-            "prisoners_dilemma",
-            w,
-            float(sess.scores[0]),
-            float(sess.scores[1]),
-            {"rounds": len(sess.history)},
-        )
-
-    return out
-
-
-class TwentyQuestionsStartBody(BaseModel):
-    answerer_model: str = "gpt-5.5"
-    questioner_model: str = "claude-sonnet-4-6"
-    secret: Optional[str] = None
-    max_questions: int = 20
-
-
-@app.post("/api/twenty-questions/start")
-async def twenty_questions_start(body: TwentyQuestionsStartBody):
-    sess = tq_start(body.answerer_model, body.questioner_model, body.secret)
-    rec = get_recorder()
-    rid = rec.start_run(
-        "twenty_questions",
-        body.questioner_model,
-        body.answerer_model,
-        {"max_questions": body.max_questions},
-    )
-    sess.benchmark_run_id = rid
-    twenty_questions_sessions[sess.id] = {"session": sess, "seq": 0, "finished": False}
-    return {"session_id": sess.id, "benchmark_run_id": rid}
-
-
-@app.post("/api/twenty-questions/{session_id}/step")
-async def twenty_questions_step(session_id: str):
-    entry = twenty_questions_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    sess: Any = entry["session"]
-    if entry.get("finished"):
-        return {"done": True}
-
-    out = tq_play_turn(sess)
-    br = getattr(sess, "benchmark_run_id", None)
-    rec = get_recorder()
-    if br:
-        entry["seq"] += 1
-        uq = out.get("usage_q") or {}
-        rec.add_move(
-            br,
-            "questioner",
-            entry["seq"],
-            latency_ms=uq.get("latency_ms"),
-            input_tokens=uq.get("input_tokens"),
-            output_tokens=uq.get("output_tokens"),
-            cost_usd=uq.get("cost_usd"),
-            correctness=None,
-            response_preview=str(out.get("exchange", {}).get("q", ""))[:500],
-            error=uq.get("error"),
-        )
-        if not out.get("done"):
-            ua = out.get("usage_a") or {}
-            entry["seq"] += 1
-            rec.add_move(
-                br,
-                "answerer",
-                entry["seq"],
-                latency_ms=ua.get("latency_ms"),
-                input_tokens=ua.get("input_tokens"),
-                output_tokens=ua.get("output_tokens"),
-                cost_usd=ua.get("cost_usd"),
-                correctness=None,
-                response_preview=str(out.get("exchange", {}).get("a", ""))[:80],
-                error=ua.get("error"),
-            )
-
-    if out.get("done") and br and not entry.get("finished"):
-        entry["finished"] = True
-        oc = out.get("outcome")
-        if oc == "win":
-            w = 1
-        elif oc == "loss":
-            w = 2
-        else:
-            w = 0
-        rec.finish_run(
-            br,
-            "twenty_questions",
-            w,
-            float(out.get("questions_used") or len(sess.transcript)),
-            0.0,
-            {"outcome": oc, "secret": sess.secret},
-        )
-
-    return out
 
 
 class CodeDebugStartBody(BaseModel):
@@ -1218,130 +1044,6 @@ async def code_debug_run(session_id: str):
         rec.finish_run(br, "code_debug", w, float(s1), float(s2), {"challenge": sess.challenge.get("id")})
     entry["finished"] = True
     return {"scores": {"player1": s1, "player2": s2}, "winner_side": w, "details": outs}
-
-
-# ====================
-# MAZE RACE
-# ====================
-
-class MazeStartBody(BaseModel):
-    player1_model: str = "gpt-5.5"
-    player2_model: str = "claude-sonnet-4-6"
-    rows: int = 10
-    cols: int = 10
-
-
-@app.post("/api/maze/start")
-async def maze_start(body: MazeStartBody):
-    sess = maze_start_session(body.player1_model, body.player2_model, body.rows, body.cols)
-    rec = get_recorder()
-    rid = rec.start_run(
-        "maze_race",
-        body.player1_model,
-        body.player2_model,
-        {"rows": body.rows, "cols": body.cols},
-    )
-    sess.benchmark_run_id = rid
-    maze_sessions[sess.id] = {"session": sess, "finished": False}
-    state = maze_session_state(sess)
-    state["benchmark_run_id"] = rid
-    return state
-
-
-@app.post("/api/maze/{session_id}/step")
-async def maze_step(session_id: str):
-    entry = maze_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    sess = entry["session"]
-    if sess.done:
-        return {"done": True, "winner": sess.winner, "step": sess.step_count}
-
-    result = await asyncio.to_thread(maze_play_step, sess)
-
-    if result.get("done") and not entry.get("finished"):
-        entry["finished"] = True
-        br = getattr(sess, "benchmark_run_id", None)
-        if br:
-            rec = get_recorder()
-            w = maze_winner_side(sess)
-            rec.finish_run(
-                br, "maze_race", w,
-                float(sess.step_count), float(sess.step_count),
-                {"rows": sess.rows, "cols": sess.cols, "steps": sess.step_count},
-            )
-
-    return result
-
-
-@app.get("/api/maze/{session_id}/state")
-async def maze_state(session_id: str):
-    entry = maze_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return maze_session_state(entry["session"])
-
-
-# ====================
-# SNAKE DUEL
-# ====================
-
-class SnakeStartBody(BaseModel):
-    player1_model: str = "gpt-5.5"
-    player2_model: str = "claude-sonnet-4-6"
-    rows: int = 15
-    cols: int = 15
-
-
-@app.post("/api/snake/start")
-async def snake_start(body: SnakeStartBody):
-    sess = snake_start_session(body.player1_model, body.player2_model, body.rows, body.cols)
-    rec = get_recorder()
-    rid = rec.start_run(
-        "snake_duel",
-        body.player1_model,
-        body.player2_model,
-        {"rows": body.rows, "cols": body.cols},
-    )
-    sess.benchmark_run_id = rid
-    snake_sessions[sess.id] = {"session": sess, "finished": False}
-    state = snake_session_state(sess)
-    state["benchmark_run_id"] = rid
-    return state
-
-
-@app.post("/api/snake/{session_id}/step")
-async def snake_step(session_id: str):
-    entry = snake_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    sess = entry["session"]
-    if sess.done:
-        return snake_session_state(sess)
-
-    result = await asyncio.to_thread(snake_play_step, sess)
-
-    if result.get("done") and not entry.get("finished"):
-        entry["finished"] = True
-        br = getattr(sess, "benchmark_run_id", None)
-        if br:
-            rec = get_recorder()
-            w = snake_winner_side(sess)
-            rec.finish_run(
-                br, "snake_duel", w,
-                float(sess.score1), float(sess.score2),
-                {"rows": sess.rows, "cols": sess.cols, "steps": sess.step_count},
-            )
-
-    return result
-
-
-@app.get("/api/snake/{session_id}/state")
-async def snake_state(session_id: str):
-    entry = snake_sessions.get(session_id)
-    if not entry:
-        raise HTTPException(status_code=404, detail="Session not found")
-    return snake_session_state(entry["session"])
 
 
 # ====================
