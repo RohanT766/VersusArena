@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import SidebarVote from '../SidebarVote';
 import GameCountdown from '../common/GameCountdown';
+import GameLayout from '../common/GameLayout';
+import { getDisplayName } from '../../utils/modelUtils';
 import './ConnectionsGame.css';
+
+const MAX_INCORRECT = 15;
 
 const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.history.back() }) => {
   const [gameId, setGameId] = useState('');
@@ -22,472 +26,243 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
     return () => { controller.abort(); };
   }, []);
 
-  // Get display names for models
-  const getDisplayName = (modelId) => {
-    if (!modelId) return 'Unknown'
-    if (modelId.includes('gpt-5.5')) return 'GPT-5.5'
-    if (modelId.includes('gpt-5.4-mini')) return 'GPT-5.4 Mini'
-    if (modelId.includes('gpt-4o')) return 'GPT-4o'
-    if (modelId.includes('o4-mini')) return 'o4-mini'
-    if (modelId.includes('claude-opus-4-7')) return 'Claude Opus 4.7'
-    if (modelId.includes('claude-sonnet-4-6')) return 'Claude Sonnet 4.6'
-    if (modelId.includes('claude-haiku-4-5')) return 'Claude Haiku 4.5'
-    if (modelId.includes('claude-sonnet-4')) return 'Claude Sonnet 4'
-    if (modelId.includes('gemini-3.1-pro')) return 'Gemini 3.1 Pro'
-    if (modelId.includes('gemini-2.5-pro')) return 'Gemini 2.5 Pro'
-    if (modelId.includes('gemini-2.5-flash')) return 'Gemini 2.5 Flash'
-    if (modelId.includes('gemini')) return 'Gemini'
-    return modelId.charAt(0).toUpperCase() + modelId.slice(1)
-  }
+  const p1Name = getDisplayName(player1Model);
+  const p2Name = getDisplayName(player2Model);
 
-  // Start a new game when component mounts
-  useEffect(() => {
-    // Try to start the game but handle failures gracefully
-    startNewGame();
-    
-    return () => {
-      if (ws) {
-        ws.close();
-      }
-    };
-  }, []);
+  const getApiBase = () => {
+    const h = window.location.hostname;
+    return (h === 'localhost' || h === '127.0.0.1') ? 'http://localhost:8000' : `http://${h}:8000`;
+  };
 
   const startNewGame = async () => {
     try {
-      const h = window.location.hostname;
-      const apiBase = (h === 'localhost' || h === '127.0.0.1') ? 'http://localhost:8000' : `http://${h}:8000`;
-      const response = await fetch(`${apiBase}/api/connections/start`, {
+      setLoading(true);
+      const response = await fetch(`${getApiBase()}/api/connections/start`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          player1_model: player1Model,
-          player2_model: player2Model,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player1_model: player1Model, player2_model: player2Model }),
+        signal: abortRef.current?.signal,
       });
-
-      if (!response.ok) {
-        throw new Error('Backend not available');
-      }
-
+      
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      
       const data = await response.json();
-      
-      // Use the game ID from the backend
       setGameId(data.game_id);
-      
-      // Initialize both player states
-      const initialState = {
-        puzzle_id: data.puzzle_id || 'demo',
-        date: data.date || new Date().toISOString().split('T')[0],
-        all_words: data.words || ['DEMO', 'WORDS', 'FOR', 'TESTING'],
-        remaining_words: data.words || ['DEMO', 'WORDS', 'FOR', 'TESTING'],
-        found_groups: [],
-        incorrect_guesses: [],
-        game_over: false,
-        winner: null,
-      };
-      
-      setPlayer1State(initialState);
-      setPlayer2State({...initialState});
+      setPlayer1State(data.player1_state);
+      setPlayer2State(data.player2_state);
       setLoading(false);
-    } catch (error) {
-      console.error('Error starting game:', error);
-      setError('Backend not available - showing demo mode');
-      
-      // Generate a fallback game ID for demo mode
-      const fallbackGameId = `connections-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      setGameId(fallbackGameId);
-      
-      // Show demo state instead of failing
-      const demoState = {
-        puzzle_id: 'demo',
-        date: new Date().toISOString().split('T')[0],
-        all_words: ['DEMO', 'MODE', 'GAME', 'SOON'],
-        remaining_words: ['DEMO', 'MODE', 'GAME', 'SOON'],
-        found_groups: [],
-        incorrect_guesses: [],
-        game_over: false,
-        winner: null,
-      };
-      
-      setPlayer1State(demoState);
-      setPlayer2State({...demoState});
+      setError(null);
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      setError(err.message);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (gameId) {
-      const h = window.location.hostname;
-      const wsHost = (h === 'localhost' || h === '127.0.0.1') ? 'localhost:8000' : `${h}:8000`;
-      const websocket = new WebSocket(`ws://${wsHost}/api/connections/ws/${gameId}`);
-      
-      websocket.onopen = () => {
-        console.log('Connected to Connections WebSocket');
-      };
+    startNewGame();
+    return () => { if (ws) ws.close(); };
+  }, []);
 
+  useEffect(() => {
+    if (!gameId) return;
+    
+    const h = window.location.hostname;
+    const wsHost = (h === 'localhost' || h === '127.0.0.1') ? 'localhost:8000' : `${h}:8000`;
+    
+    try {
+      const websocket = new WebSocket(`ws://${wsHost}/games/connections/${gameId}`);
+      
       websocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.type === 'game_update') {
+          if (data.type === 'game_update' && data.data) {
             const { player, game_state } = data.data;
             if (player === 1) {
               setPlayer1State(game_state);
               setPlayer1Processing(false);
-            } else {
+            } else if (player === 2) {
               setPlayer2State(game_state);
               setPlayer2Processing(false);
             }
           }
-        } catch (err) {
-          console.error('Error parsing WebSocket message:', err);
-        }
+        } catch (_) {}
       };
-
-      websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-      };
-
+      
+      websocket.onerror = () => {};
       setWs(websocket);
-
-      return () => {
-        websocket.close();
-      };
-    }
+      
+      return () => websocket.close();
+    } catch (_) {}
   }, [gameId]);
 
   const processAITurn = async (player) => {
     if (!gameId) return;
     
-    const gameState = player === 1 ? player1State : player2State;
-    if (gameState?.game_over) return;
+    const state = player === 1 ? player1State : player2State;
+    if (state?.game_over) return;
+    if (state && state.incorrect_guesses.length >= MAX_INCORRECT) return;
 
-    if (player === 1) {
-      setPlayer1Processing(true);
-    } else {
-      setPlayer2Processing(true);
-    }
+    if (player === 1) setPlayer1Processing(true);
+    else setPlayer2Processing(true);
 
     try {
-      const h = window.location.hostname;
-      const apiBase = (h === 'localhost' || h === '127.0.0.1') ? 'http://localhost:8000' : `http://${h}:8000`;
-      const response = await fetch(`${apiBase}/api/connections/game/${gameId}/player/${player}/ai-turn`, {
+      const response = await fetch(`${getApiBase()}/api/connections/game/${gameId}/player/${player}/ai-turn`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
         signal: abortRef.current?.signal,
       });
 
-      const data = await response.json();
-      console.log(`Player ${player} AI turn result:`, data);
+      if (!response.ok) throw new Error('API error');
+      await response.json();
     } catch (error) {
-      console.error(`Error processing AI turn for player ${player}:`, error);
-      if (player === 1) {
-        setPlayer1Processing(false);
-      } else {
-        setPlayer2Processing(false);
-      }
+      if (player === 1) setPlayer1Processing(false);
+      else setPlayer2Processing(false);
     }
   };
 
-  // Check for game over
-  const checkGameOver = () => {
-    if (player1State && player1State.found_groups.length === 4) {
-      return { gameOver: true, winner: 'Player 1' };
-    }
-    if (player2State && player2State.found_groups.length === 4) {
-      return { gameOver: true, winner: 'Player 2' };
-    }
-    return { gameOver: false, winner: null };
+  const p1Done = player1State && (player1State.game_over || player1State.found_groups.length === 4 || player1State.incorrect_guesses.length >= MAX_INCORRECT);
+  const p2Done = player2State && (player2State.game_over || player2State.found_groups.length === 4 || player2State.incorrect_guesses.length >= MAX_INCORRECT);
+  const bothDone = p1Done && p2Done;
+  
+  const getWinner = () => {
+    if (!player1State || !player2State) return null;
+    const p1Groups = player1State.found_groups.length;
+    const p2Groups = player2State.found_groups.length;
+    if (p1Groups > p2Groups) return p1Name;
+    if (p2Groups > p1Groups) return p2Name;
+    const p1Wrong = player1State.incorrect_guesses.length;
+    const p2Wrong = player2State.incorrect_guesses.length;
+    if (p1Wrong < p2Wrong) return p1Name;
+    if (p2Wrong < p1Wrong) return p2Name;
+    return null;
   };
 
-  const gameStatus = checkGameOver();
-
-  // Auto-play for player 1 (waits for countdown to finish)
   useEffect(() => {
-    if (showCountdown) return;
-    if (player1State && !player1State.game_over && !player1Processing && !gameStatus.gameOver) {
-      const timer = setTimeout(() => {
-        processAITurn(1);
-      }, 1000);
+    if (!votingDone || showCountdown) return;
+    if (player1State && !p1Done && !player1Processing) {
+      const timer = setTimeout(() => processAITurn(1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [player1State, player1Processing, gameStatus.gameOver, showCountdown]);
+  }, [player1State, player1Processing, p1Done, showCountdown, votingDone]);
 
-  // Auto-play for player 2 (waits for countdown to finish)
   useEffect(() => {
-    if (showCountdown) return;
-    if (player2State && !player2State.game_over && !player2Processing && !gameStatus.gameOver) {
-      const timer = setTimeout(() => {
-        processAITurn(2);
-      }, 1500);
+    if (!votingDone || showCountdown) return;
+    if (player2State && !p2Done && !player2Processing) {
+      const timer = setTimeout(() => processAITurn(2), 1500);
       return () => clearTimeout(timer);
     }
-  }, [player2State, player2Processing, gameStatus.gameOver, showCountdown]);
+  }, [player2State, player2Processing, p2Done, showCountdown, votingDone]);
 
   const handleVotingDone = () => {
     setVotingDone(true);
     setShowCountdown(true);
   };
 
-  if (loading) {
-    return (
-      <div className="connections-game" style={{ paddingRight: '60px' }}>
-        <SidebarVote 
-          gameId={gameId} 
-          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
-          onGameStart={handleVotingDone}
-        />
-        <div className="connections-container">
-          <button onClick={onBack} className="back-button">
-            ← Back to Menu
-          </button>
-          <div className="loading" style={{ textAlign: 'center', padding: '50px', color: 'white' }}>
-            Loading NYT Connections...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!player1State || !player2State) {
-    return (
-      <div className="connections-game" style={{ paddingRight: '60px' }}>
-        <SidebarVote 
-          gameId={gameId} 
-          gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
-          onGameStart={handleVotingDone}
-        />
-        <div className="connections-container">
-          <button onClick={onBack} className="back-button">
-            ← Back to Menu
-          </button>
-          <div className="error" style={{ textAlign: 'center', padding: '50px', color: 'white' }}>
-            Failed to load game. Please try again.
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const getLevelColor = (level) => {
     const colors = ['#f9df6d', '#a0c35a', '#b0c4ef', '#ba81c5'];
     return colors[level] || '#999';
   };
 
+  const statusText = loading ? 'Loading...'
+    : bothDone ? `${getWinner() ? getWinner() + ' Wins!' : 'Draw!'}`
+    : player1State ? `Puzzle #${player1State.puzzle_id} - ${player1State.date}` : null;
+
+  const renderPlayerBoard = (state, processing, playerDone) => (
+    <div className="conn-player-side">
+      <div className="conn-status-bar">
+        {processing && <span className="game-player-thinking">Thinking...</span>}
+        {playerDone && !processing && <span className="conn-done-tag">DONE</span>}
+        <div className="conn-stats">
+          <span>Groups: <strong>{state.found_groups.length}/4</strong></span>
+          <span>Wrong: <strong style={{ color: state.incorrect_guesses.length >= MAX_INCORRECT ? '#ef4444' : '#888' }}>{state.incorrect_guesses.length}/{MAX_INCORRECT}</strong></span>
+        </div>
+      </div>
+
+      {state.found_groups.length > 0 && (
+        <div className="conn-found-groups">
+          {state.found_groups.map((group, i) => (
+            <div key={i} className="conn-found-group" style={{ backgroundColor: getLevelColor(group.level) }}>
+              <div className="conn-group-name">{group.group_name}</div>
+              <div className="conn-group-words">{group.words.join(', ')}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {state.remaining_words.length > 0 && !state.game_over && (
+        <div className="conn-words-grid">
+          {state.remaining_words.map((word, i) => (
+            <div key={i} className="conn-word-tile">{word}</div>
+          ))}
+        </div>
+      )}
+
+      {state.incorrect_guesses.length > 0 && (
+        <div className="conn-guesses-scroll">
+          <h4 className="conn-guesses-title">Incorrect Guesses:</h4>
+          {state.incorrect_guesses.map((guess, i) => (
+            <div key={i} className="conn-guess-item">{guess.join(', ')}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="connections-game" style={{ paddingRight: '60px' }}>
+    <GameLayout
+      gameName="Connections"
+      player1Name={p1Name}
+      player2Name={p2Name}
+      onBack={onBack}
+      statusText={statusText}
+    >
+      {!votingDone && <SidebarVote gameId={gameId} onGameStart={handleVotingDone} onBack={onBack} />}
+
       {showCountdown && (
         <GameCountdown
-          player1Name={getDisplayName(player1Model)}
-          player2Name={getDisplayName(player2Model)}
+          player1Name={p1Name}
+          player2Name={p2Name}
           onComplete={() => setShowCountdown(false)}
         />
       )}
 
-      <SidebarVote 
-        gameId={gameId} 
-        gameName={`Connections: ${getDisplayName(player1Model)} vs ${getDisplayName(player2Model)}`}
-        onGameStart={handleVotingDone}
-      />
-      
-      <div className="connections-container">
-        <button onClick={onBack} className="back-button">
-          ← Back to Menu
-        </button>
-
-        {error && (
-          <div style={{ 
-            background: '#f59e0b', 
-            color: 'white', 
-            padding: '10px', 
-            margin: '10px 0', 
-            borderRadius: '5px' 
-          }}>
-            {error}
-          </div>
-        )}
-
-        <div className="connections-header">
-          <h1>NYT Connections</h1>
-          <div className="puzzle-info">
-            Puzzle #{player1State.puzzle_id} • {player1State.date}
+      {bothDone && (
+        <div className="game-overlay">
+          <div className="game-overlay-content">
+            <h2 className="game-over-title">GAME OVER</h2>
+            <div className="winner-name">
+              {getWinner() ? `${getWinner()} WINS!` : 'DRAW!'}
+            </div>
+            <div className="conn-final-stats">
+              <div className="conn-final-stat">
+                <div className="conn-final-name" style={{ color: '#10b981' }}>{p1Name}</div>
+                <div>{player1State.found_groups.length} groups / {player1State.incorrect_guesses.length} wrong</div>
+              </div>
+              <div className="conn-final-stat">
+                <div className="conn-final-name" style={{ color: '#a78bfa' }}>{p2Name}</div>
+                <div>{player2State.found_groups.length} groups / {player2State.incorrect_guesses.length} wrong</div>
+              </div>
+            </div>
+            <button onClick={() => { setVotingDone(false); setShowCountdown(false); startNewGame(); }} className="new-game-overlay-button">NEW GAME</button>
           </div>
         </div>
+      )}
 
-        {/* Game Overlay */}
-        {gameStatus.gameOver && (
-          <div className="game-overlay">
-            <div className="game-overlay-content">
-              <h2 className="game-over-title">GAME OVER!</h2>
-              <div className="winner-name">
-                {gameStatus.winner === 'Player 1' ? getDisplayName(player1Model) : getDisplayName(player2Model)} WINS!
-              </div>
-              
-              <div className="final-stats">
-                <div className="stat-box">
-                  <h3>{getDisplayName(player1Model)}</h3>
-                  <div className="value">{player1State.found_groups.length}</div>
-                </div>
-                <div className="stat-box">
-                  <h3>{getDisplayName(player2Model)}</h3>
-                  <div className="value">{player2State.found_groups.length}</div>
-                </div>
-              </div>
-              
-              <button onClick={startNewGame} className="new-game-overlay-button">
-                NEW GAME
-              </button>
-            </div>
-          </div>
-        )}
-
+      {votingDone && !showCountdown && player1State && player2State ? (
         <div className="connections-split-view">
-          {/* Player 1 Side */}
-          <div className={`player-side ${player1Processing ? 'active' : ''}`}>
-            <div className="player-header">
-              <h2>{getDisplayName(player1Model)}</h2>
-              {player1Processing && <span className="thinking">Thinking...</span>}
-            </div>
-            
-            <div className="player-stats">
-              <div className="stat">
-                <span className="stat-label">Groups Found:</span>
-                <span className="stat-value">{player1State.found_groups.length}</span>
-              </div>
-              <div className="stat">
-                <span className="stat-label">Incorrect Guesses:</span>
-                <span className="stat-value">{player1State.incorrect_guesses.length}</span>
-              </div>
-            </div>
-
-            {/* Player 1 Game Board */}
-            <div className="player-game-board">
-              {/* Found Groups */}
-              {player1State.found_groups.length > 0 && (
-                <div className="found-groups-small">
-                  {player1State.found_groups.map((group, index) => (
-                    <div 
-                      key={index} 
-                      className="found-group-small"
-                      style={{ backgroundColor: getLevelColor(group.level) }}
-                    >
-                      <div className="group-name-small">{group.group_name}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Remaining Words */}
-              {player1State.remaining_words.length > 0 && !player1State.game_over && (
-                <div className="words-grid-small">
-                  {player1State.remaining_words.map((word, index) => (
-                    <div key={index} className="word-tile-small">
-                      {word}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Recent Incorrect Guesses */}
-              {player1State.incorrect_guesses.length > 0 && (
-                <div className="player-guesses">
-                  <h4>Recent Guesses:</h4>
-                  {player1State.incorrect_guesses.slice(-3).map((guess, index) => (
-                    <div key={index} className="guess-item">
-                      {guess.join(', ')}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Game Over */}
-              {player1State.game_over && (
-                <div className="player-game-over">
-                  <p>All groups found!</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* VS Divider */}
-          <div className="center-info">
-            <div className="vs-divider">VS</div>
-          </div>
-
-          {/* Player 2 Side */}
-          <div className={`player-side ${player2Processing ? 'active' : ''}`}>
-            <div className="player-header">
-              <h2>{getDisplayName(player2Model)}</h2>
-              {player2Processing && <span className="thinking">Thinking...</span>}
-            </div>
-            
-            <div className="player-stats">
-              <div className="stat">
-                <span className="stat-label">Groups Found:</span>
-                <span className="stat-value">{player2State.found_groups.length}</span>
-              </div>
-              <div className="stat">
-                <span className="stat-label">Incorrect Guesses:</span>
-                <span className="stat-value">{player2State.incorrect_guesses.length}</span>
-              </div>
-            </div>
-
-            {/* Player 2 Game Board */}
-            <div className="player-game-board">
-              {/* Found Groups */}
-              {player2State.found_groups.length > 0 && (
-                <div className="found-groups-small">
-                  {player2State.found_groups.map((group, index) => (
-                    <div 
-                      key={index} 
-                      className="found-group-small"
-                      style={{ backgroundColor: getLevelColor(group.level) }}
-                    >
-                      <div className="group-name-small">{group.group_name}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Remaining Words */}
-              {player2State.remaining_words.length > 0 && !player2State.game_over && (
-                <div className="words-grid-small">
-                  {player2State.remaining_words.map((word, index) => (
-                    <div key={index} className="word-tile-small">
-                      {word}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Recent Incorrect Guesses */}
-              {player2State.incorrect_guesses.length > 0 && (
-                <div className="player-guesses">
-                  <h4>Recent Guesses:</h4>
-                  {player2State.incorrect_guesses.slice(-3).map((guess, index) => (
-                    <div key={index} className="guess-item">
-                      {guess.join(', ')}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Game Over */}
-              {player2State.game_over && (
-                <div className="player-game-over">
-                  <p>All groups found!</p>
-                </div>
-              )}
-            </div>
-          </div>
+          {renderPlayerBoard(player1State, player1Processing, p1Done)}
+          <div className="game-split-vs">VS</div>
+          {renderPlayerBoard(player2State, player2Processing, p2Done)}
         </div>
-      </div>
-    </div>
+      ) : votingDone && !showCountdown ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '1.5rem' }}>
+          {loading ? 'Loading...' : 'Failed to load game.'}
+        </div>
+      ) : null}
+    </GameLayout>
   );
 };
 
-export default ConnectionsGame; 
+export default ConnectionsGame;
