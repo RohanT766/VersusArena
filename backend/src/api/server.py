@@ -23,8 +23,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Import game implementations
 from src.games.battleship.battleship import BattleshipGame
-from src.games.trivia.trivia_game import TriviaGame
-from src.games.trivia.questions import TRIVIA_QUESTIONS, get_random_questions
 from src.games.nyt_connections.connections_game import ConnectionsGame
 from src.games.wordle.wordle_simple import WordleSimpleGame, get_llm_guess, parse_reasoning_for_ui, pick_secret_word
 
@@ -47,7 +45,6 @@ from src.games.code_debug_challenge import (
 # Default model configurations
 DEFAULT_MODELS = {
     "battleship": {"player1": "openai", "player2": "anthropic"},
-    "trivia": {"player1": "openai", "player2": "anthropic"},
     "wordle": {"player1": "openai", "player2": "anthropic"},
     "connections": {"player1": "openai", "player2": "anthropic"}
 }
@@ -80,7 +77,6 @@ async def startup_event():
 # Store active games
 active_games = {}
 battleship_games = {}
-trivia_sessions: Dict[str, Dict] = {}
 wordle_games: Dict[str, Dict[str, Any]] = {}
 connections_games: Dict[str, Dict] = {}
 
@@ -98,15 +94,12 @@ async def cleanup_stale_games():
     while True:
         await asyncio.sleep(300)
         removed = 0
-        for store_name, store in [("trivia", trivia_sessions), ("connections", connections_games)]:
+        for store_name, store in [("connections", connections_games)]:
             stale_ids = []
             for gid, session in store.items():
-                if store_name == "trivia" and not session.get("is_active", True):
+                game_data = session.get("player1_game")
+                if game_data and getattr(game_data, "game_over", False):
                     stale_ids.append(gid)
-                elif store_name == "connections":
-                    game_data = session.get("player1_game")
-                    if game_data and getattr(game_data, "game_over", False):
-                        stale_ids.append(gid)
             for gid in stale_ids:
                 del store[gid]
                 removed += 1
@@ -491,225 +484,6 @@ async def run_battleship_game_loop(game: BattleshipGame, websocket: WebSocket, g
         print(f"Error in game loop for {game_id}: {e}")
         import traceback
         traceback.print_exc()
-
-# =================
-# TRIVIA ENDPOINTS
-# =================
-
-class GameStartRequest(BaseModel):
-    player1_model: Optional[str] = None
-    player2_model: Optional[str] = None
-    question_count: Optional[int] = 20
-
-@app.post("/api/trivia/start")
-async def start_trivia_game(request: GameStartRequest):
-    """Start a new trivia game session"""
-    try:
-        game_id = str(uuid.uuid4())
-        questions = get_random_questions(request.question_count)
-        
-        player1_model = request.player1_model or "gpt-5.5"
-        player2_model = request.player2_model or "claude-sonnet-4-6"
-        
-        print(f"Starting trivia game with models: {player1_model} vs {player2_model}")
-        
-        trivia_game = TriviaGame(
-            player1_model=player1_model,
-            player2_model=player2_model,
-            questions=questions
-        )
-        benchmark_run_id = get_recorder().start_run(
-            "trivia",
-            player1_model,
-            player2_model,
-            {"question_count": request.question_count},
-        )
-        
-        trivia_sessions[game_id] = {
-            "game": trivia_game,
-            "is_active": True,
-            "benchmark_run_id": benchmark_run_id,
-            "player1_model": player1_model,
-            "player2_model": player2_model,
-            "move_seq": 0,
-        }
-        
-        return {
-            "game_id": game_id,
-            "status": "started",
-            "total_questions": len(questions),
-            "player1_model": player1_model,
-            "player2_model": player2_model,
-            "benchmark_run_id": benchmark_run_id,
-        }
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start game: {str(e)}")
-
-@app.websocket("/api/trivia/ws/{game_id}")
-async def trivia_websocket(websocket: WebSocket, game_id: str):
-    """WebSocket endpoint for trivia real-time updates"""
-    await manager.connect(websocket, game_id)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            try:
-                message = json.loads(data)
-                if message.get("type") == "ping":
-                    await websocket.send_text(json.dumps({"type": "pong"}))
-            except (json.JSONDecodeError, Exception):
-                pass
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, game_id)
-        if game_id not in manager.active_connections or not manager.active_connections.get(game_id):
-            if game_id in game_runners:
-                print(f"All clients disconnected from trivia {game_id}, stopping runner")
-                game_runners[game_id].stop_all()
-                del game_runners[game_id]
-
-@app.post("/api/trivia/game/{game_id}/player/{player}/next-question")
-async def player_next_question(game_id: str, player: int):
-    """Process next question for a specific player"""
-    if game_id not in trivia_sessions:
-        raise HTTPException(status_code=404, detail="Game not found")
-    
-    session = trivia_sessions[game_id]
-    game = session["game"]
-    
-    if game.game_over:
-        return {"error": "Race is already over"}
-    
-    if player not in [1, 2]:
-        raise HTTPException(status_code=400, detail="Player must be 1 or 2")
-    
-    try:
-        rec = get_recorder()
-        br = session.get("benchmark_run_id")
-        t0 = time.time()
-        result = await game.ask_question_to_player(player)
-        latency_ms = (time.time() - t0) * 1000.0
-        
-        if br:
-            session["move_seq"] = session.get("move_seq", 0) + 1
-            corr = 1.0 if result.get("correct") else 0.0
-            rec.add_move(
-                br,
-                f"player{player}",
-                session["move_seq"],
-                latency_ms=latency_ms,
-                correctness=corr,
-                response_preview=(result.get("response") or "")[:500],
-                extra={"question_number": result.get("question_number")},
-            )
-        
-        await manager.broadcast_to_game(
-            json.dumps({
-                "type": "player_question_result",
-                "data": result
-            }),
-            game_id
-        )
-        
-        if game.race_finished:
-            final_results = game.get_final_results()
-            if br:
-                w = game.race_winner or 0
-                rec.finish_run(
-                    br,
-                    "trivia",
-                    int(w),
-                    float(game.player1_score),
-                    float(game.player2_score),
-                    final_results,
-                )
-            await manager.broadcast_to_game(
-                json.dumps({
-                    "type": "race_finished",
-                    "data": final_results
-                }),
-                game_id
-            )
-            session["is_active"] = False
-        
-        return result
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/trivia/game/{game_id}/start-race")
-async def start_trivia_race(game_id: str):
-    """Start the autonomous trivia race with async agent loops"""
-    if game_id not in trivia_sessions:
-        raise HTTPException(status_code=404, detail="Game not found")
-    
-    session = trivia_sessions[game_id]
-    game = session["game"]
-    
-    if game_id in game_runners:
-        return {"status": "already_running"}
-
-    async def broadcast_fn(gid, data):
-        await manager.broadcast_to_game(json.dumps(data), gid)
-
-    runner = GameRunner(game_id, broadcast_fn=broadcast_fn)
-
-    async def make_trivia_move(agent_id: str, state: dict):
-        player = 1 if agent_id == "player1" else 2
-        async with runner.lock:
-            if game.race_finished:
-                runner.mark_game_over()
-                return
-            result = await game.ask_question_to_player(player)
-            await runner.broadcast("player_question_result", {"data": result})
-            if game.race_finished:
-                final_results = game.get_final_results()
-                await runner.broadcast("race_finished", {"data": final_results})
-                session["is_active"] = False
-                runner.mark_game_over()
-
-    agent1 = AgentLoop(
-        agent_id="player1",
-        game_state_fn=lambda: game.game_state,
-        move_fn=make_trivia_move,
-        is_game_over_fn=lambda: runner.is_game_over,
-        think_delay=0.3,
-    )
-    agent2 = AgentLoop(
-        agent_id="player2",
-        game_state_fn=lambda: game.game_state,
-        move_fn=make_trivia_move,
-        is_game_over_fn=lambda: runner.is_game_over,
-        think_delay=0.5,
-    )
-
-    runner.add_agent(agent1)
-    runner.add_agent(agent2)
-    game_runners[game_id] = runner
-
-    asyncio.create_task(runner.run())
-    return {"status": "race_started", "game_id": game_id}
-
-@app.get("/api/trivia/game/{game_id}/player/{player}/current-question")
-async def get_player_current_question(game_id: str, player: int):
-    """Get the current question for a specific player"""
-    if game_id not in trivia_sessions:
-        raise HTTPException(status_code=404, detail="Game not found")
-    
-    game = trivia_sessions[game_id]["game"]
-    
-    if player not in [1, 2]:
-        raise HTTPException(status_code=400, detail="Player must be 1 or 2")
-    
-    current_question = game.get_player_current_question(player)
-    question_index = game.player1_question_index if player == 1 else game.player2_question_index
-    
-    return {
-        "player": player,
-        "question_index": question_index,
-        "current_question": current_question,
-        "total_questions": len(game.questions),
-        "finished": question_index >= len(game.questions)
-    }
 
 # =================
 # WORDLE ENDPOINTS
@@ -1585,13 +1359,11 @@ async def root():
         "version": "2.0.0",
         "games": {
             "battleship": {"active": len([g for g in active_games.items() if g[1].get("type") == "battleship"])},
-            "trivia": {"active": len(trivia_sessions)},
             "wordle": {"active": len(wordle_games)},
             "connections": {"active": len(connections_games)}
         },
         "endpoints": {
             "battleship": "/games/battleship/{game_id}",
-            "trivia": "/api/trivia/*",
             "wordle": "/api/wordle/*",
             "connections": "/api/connections/*"
         }
@@ -1604,7 +1376,6 @@ async def health_check():
         "status": "healthy",
         "games": {
             "battleship": "ready",
-            "trivia": "ready",
             "wordle": "ready",
             "connections": "ready"
         }
@@ -1626,7 +1397,6 @@ if __name__ == "__main__":
     print("-" * 50)
     print("Available games:")
     print("  - Battleship: WebSocket at /games/battleship/{game_id}")
-    print("  - Trivia: API at /api/trivia/*")
     print("  - Wordle: API at /api/wordle/*")
     print("  - NYT Connections: API at /api/connections/*")
     print("-" * 50)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import SidebarVote from '../../SidebarVote';
 import GameTimer from '../../common/GameTimer';
 import GameCountdown from '../../common/GameCountdown';
@@ -16,6 +16,7 @@ const SHIP_DEFS = {
   scout:      { name: 'Scout',      len: 2, color: '#7a7a6a' },
 };
 
+const BOARD_SIZE = 10;
 const emptyBoard = (n) => Array(n).fill(null).map(() => Array(n).fill(null));
 
 const GAME_STATUS = {
@@ -26,14 +27,14 @@ const GAME_STATUS = {
 };
 
 const Battleship = ({ player1Model, player2Model, onBack = () => window.history.back() }) => {
-  const [boardSize, setBoardSize] = useState(8);
+  const [boardSize, setBoardSize] = useState(BOARD_SIZE);
   const [gameId, setGameId] = useState('');
   const [gameStatus, setGameStatus] = useState(GAME_STATUS.WAITING);
   const [currentPlayer, setCurrentPlayer] = useState(1);
-  const [player1Board, setPlayer1Board] = useState(() => emptyBoard(8));
-  const [player2Board, setPlayer2Board] = useState(() => emptyBoard(8));
-  const [player1Shots, setPlayer1Shots] = useState(() => emptyBoard(8));
-  const [player2Shots, setPlayer2Shots] = useState(() => emptyBoard(8));
+  const [player1Board, setPlayer1Board] = useState(() => emptyBoard(BOARD_SIZE));
+  const [player2Board, setPlayer2Board] = useState(() => emptyBoard(BOARD_SIZE));
+  const [player1Shots, setPlayer1Shots] = useState(() => emptyBoard(BOARD_SIZE));
+  const [player2Shots, setPlayer2Shots] = useState(() => emptyBoard(BOARD_SIZE));
   const [message, setMessage] = useState('Starting game...');
   const [winner, setWinner] = useState(null);
   const [gameStartTime, setGameStartTime] = useState(null);
@@ -42,6 +43,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const [showCountdown, setShowCountdown] = useState(false);
   const [votingDone, setVotingDone] = useState(false);
   const wsRef = useRef(null);
+  const handlerRef = useRef(null);
 
   const getBackendModelName = (modelId) => modelId || 'gpt-5.5';
   const backendPlayer1 = getBackendModelName(player1Model);
@@ -136,7 +138,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
           setGameStatus(GAME_STATUS.IN_PROGRESS);
         }
       };
-      ws.onmessage = (event) => { try { handleGameStateUpdate(JSON.parse(event.data)); } catch(e) {} };
+      ws.onmessage = (event) => { try { handlerRef.current(JSON.parse(event.data)); } catch(e) {} };
       ws.onerror = () => { setIsConnected(false); setupDemoGame(); };
       ws.onclose = () => { setIsConnected(false); if (!winner) setupDemoGame(); };
       wsRef.current = ws;
@@ -144,22 +146,23 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   };
 
   const setupDemoGame = () => {
-    const b1 = emptyBoard(8), b2 = emptyBoard(8);
+    const sz = BOARD_SIZE;
+    const b1 = emptyBoard(sz), b2 = emptyBoard(sz);
     for (let i = 0; i < 5; i++) b1[0][i] = 'carrier';
     for (let i = 0; i < 4; i++) b1[2][i] = 'battleship';
-    for (let i = 0; i < 3; i++) b1[4][i] = 'destroyer';
+    for (let i = 0; i < 3; i++) b1[4][i] = 'cruiser';
     for (let i = 0; i < 3; i++) b1[i][6] = 'submarine';
     for (let i = 0; i < 2; i++) b1[6][i] = 'patrol';
     for (let i = 0; i < 5; i++) b2[1][i+1] = 'carrier';
     for (let i = 0; i < 4; i++) b2[3][i+2] = 'battleship';
-    for (let i = 0; i < 3; i++) b2[5][i] = 'destroyer';
+    for (let i = 0; i < 3; i++) b2[5][i] = 'cruiser';
     for (let i = 0; i < 3; i++) b2[i+3][7] = 'submarine';
     for (let i = 0; i < 2; i++) b2[7][i+4] = 'patrol';
     setPlayer1Board(b1); setPlayer2Board(b2);
     setGameStatus(GAME_STATUS.IN_PROGRESS);
     setMessage('Demo mode - AI battle simulation');
     setTimeout(() => {
-      const s1 = emptyBoard(8), s2 = emptyBoard(8);
+      const s1 = emptyBoard(sz), s2 = emptyBoard(sz);
       s1[1][1] = 'hit'; s1[3][3] = 'miss'; s1[1][2] = 'hit';
       s2[0][0] = 'hit'; s2[2][1] = 'miss'; s2[0][1] = 'hit';
       setPlayer1Shots(s1); setPlayer2Shots(s2);
@@ -167,19 +170,13 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     }, 2000);
   };
 
-  const handleGameStateUpdate = (data) => {
+  const handleGameStateUpdate = useCallback((data) => {
     if (data.type === 'placement_complete') {
+      if (data.board_size) setBoardSize(Number(data.board_size));
       setPlayer1Board(data.player1Board); setPlayer2Board(data.player2Board);
       setMessage(data.message); setGameStatus(GAME_STATUS.IN_PROGRESS);
     } else if (data.type === 'game_state') {
-      if (data.board_size && Number(data.board_size) !== boardSize) {
-        const sz = Number(data.board_size);
-        setBoardSize(sz);
-        setPlayer1Board(emptyBoard(sz));
-        setPlayer2Board(emptyBoard(sz));
-        setPlayer1Shots(emptyBoard(sz));
-        setPlayer2Shots(emptyBoard(sz));
-      }
+      if (data.board_size) setBoardSize(Number(data.board_size));
       setCurrentPlayer(data.currentPlayer);
       if (data.player1Shots) setPlayer1Shots(data.player1Shots);
       if (data.player2Shots) setPlayer2Shots(data.player2Shots);
@@ -193,7 +190,9 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     } else if (data.type === 'ship_placed') {
       if (data.player === 1) setPlayer1Board(data.board); else setPlayer2Board(data.board);
     }
-  };
+  }, []);
+
+  handlerRef.current = handleGameStateUpdate;
 
   const ShipSVG = ({ seg, color }) => {
     const c = color;

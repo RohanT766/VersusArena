@@ -1,11 +1,5 @@
 import React from 'react';
 
-const P = 4; // pixel size
-
-const Pixel = ({ x, y, color, size = P }) => (
-  <rect x={x * size} y={y * size} width={size} height={size} fill={color} />
-);
-
 export const WordleIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
     {/* 5-tile wordle row - green/yellow/gray pattern */}
@@ -36,46 +30,6 @@ export const WordleIcon = ({ size = 64 }) => (
   </svg>
 );
 
-export const TriviaIcon = ({ size = 64 }) => (
-  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    {/* Pixelated question mark / brain */}
-    {/* Top curve of ? */}
-    <Pixel x={4} y={1} color="#fff" />
-    <Pixel x={5} y={1} color="#fff" />
-    <Pixel x={6} y={1} color="#fff" />
-    <Pixel x={7} y={1} color="#fff" />
-    <Pixel x={8} y={1} color="#fff" />
-    <Pixel x={3} y={2} color="#fff" />
-    <Pixel x={9} y={2} color="#fff" />
-    <Pixel x={3} y={3} color="#fff" />
-    <Pixel x={9} y={3} color="#fff" />
-    {/* Right side down */}
-    <Pixel x={8} y={4} color="#fff" />
-    <Pixel x={9} y={4} color="#fff" />
-    <Pixel x={7} y={5} color="#fff" />
-    <Pixel x={8} y={5} color="#fff" />
-    <Pixel x={6} y={6} color="#fff" />
-    <Pixel x={7} y={6} color="#fff" />
-    {/* Stem */}
-    <Pixel x={6} y={7} color="#fff" />
-    <Pixel x={7} y={7} color="#fff" />
-    <Pixel x={6} y={8} color="#fff" />
-    <Pixel x={7} y={8} color="#fff" />
-    {/* Gap */}
-    {/* Dot */}
-    <Pixel x={6} y={10} color="#fff" />
-    <Pixel x={7} y={10} color="#fff" />
-    <Pixel x={6} y={11} color="#fff" />
-    <Pixel x={7} y={11} color="#fff" />
-    {/* Lightning bolt accent */}
-    <Pixel x={11} y={3} color="#ffcc00" />
-    <Pixel x={10} y={4} color="#ffcc00" />
-    <Pixel x={11} y={4} color="#ffcc00" />
-    <Pixel x={12} y={4} color="#ffcc00" />
-    <Pixel x={11} y={5} color="#ffcc00" />
-  </svg>
-);
-
 export const ConnectionsIcon = ({ size = 64 }) => (
   <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
     {/* 4x4 grid with colored groups */}
@@ -99,6 +53,47 @@ export const ConnectionsIcon = ({ size = 64 }) => (
     <rect x="18" y="46" width="12" height="12" fill="#ba81c5" rx="2" />
     <rect x="32" y="46" width="12" height="12" fill="#ba81c5" rx="2" />
     <rect x="46" y="46" width="12" height="12" fill="#ba81c5" rx="2" />
+  </svg>
+);
+
+export const PrisonersIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="4" width="26" height="26" fill="#538d4e" rx="2" />
+    <rect x="34" y="4" width="26" height="26" fill="#b59f3b" rx="2" />
+    <rect x="4" y="34" width="26" height="26" fill="#b59f3b" rx="2" />
+    <rect x="34" y="34" width="26" height="26" fill="#8b3a3a" rx="2" />
+    <text x="17" y="21" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">3,3</text>
+    <text x="47" y="21" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">0,5</text>
+    <text x="17" y="51" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">5,0</text>
+    <text x="47" y="51" fill="#fff" fontSize="10" textAnchor="middle" fontFamily="monospace" fontWeight="bold">1,1</text>
+  </svg>
+);
+
+export const TwentyQIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="6" width="52" height="36" rx="6" fill="none" stroke="#6366f1" strokeWidth="2.5" />
+    <polygon points="22,42 32,42 26,54" fill="#6366f1" />
+    <text x="32" y="30" fill="#fff" fontSize="18" textAnchor="middle" fontFamily="monospace" fontWeight="bold">20?</text>
+  </svg>
+);
+
+export const CodeDebugIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <text x="6" y="42" fill="#555" fontSize="36" fontFamily="monospace">{'{'}</text>
+    <text x="40" y="42" fill="#555" fontSize="36" fontFamily="monospace">{'}'}</text>
+    <circle cx="32" cy="28" r="10" fill="none" stroke="#ef4444" strokeWidth="2" />
+    <rect x="30" y="20" width="4" height="10" rx="1" fill="#ef4444" />
+    <circle cx="32" cy="34" r="2" fill="#ef4444" />
+  </svg>
+);
+
+export const AnalyticsIcon = ({ size = 64 }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="36" width="10" height="20" fill="#538d4e" rx="1" />
+    <rect x="22" y="24" width="10" height="32" fill="#b59f3b" rx="1" />
+    <rect x="36" y="14" width="10" height="42" fill="#6366f1" rx="1" />
+    <rect x="50" y="28" width="10" height="28" fill="#a78bfa" rx="1" />
+    <line x1="4" y1="58" x2="62" y2="58" stroke="#444" strokeWidth="1.5" />
   </svg>
 );
 

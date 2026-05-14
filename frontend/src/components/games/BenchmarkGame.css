@@ -1,0 +1,251 @@
+.bench-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.bench-game-desc {
+  color: #888;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bench-game-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.bench-btn {
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  padding: 0.75rem 2rem;
+  border: 2px solid #555;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.2s ease;
+}
+
+.bench-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bench-btn-primary {
+  background: transparent;
+  color: #ffcc00;
+  border-color: #ffcc00;
+}
+
+.bench-btn-primary:hover:not(:disabled) {
+  background: rgba(255, 204, 0, 0.1);
+  box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+}
+
+.bench-btn-secondary {
+  background: transparent;
+  color: #999;
+  border-color: #555;
+}
+
+.bench-btn-secondary:hover:not(:disabled) {
+  color: #fff;
+  border-color: #fff;
+}
+
+/* Prisoner's Dilemma */
+.bench-rounds-table {
+  width: 100%;
+  border: 1px solid #222;
+  font-size: 1rem;
+}
+
+.bench-rounds-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 80px;
+  padding: 0.6rem 1rem;
+  background: #111;
+  border-bottom: 1px solid #333;
+  color: #888;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.bench-rounds-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 80px;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #1a1a1a;
+  align-items: center;
+}
+
+.bench-rounds-row:last-child {
+  border-bottom: none;
+}
+
+.bench-col-round {
+  color: #666;
+  text-align: center;
+}
+
+.bench-col-choice {
+  text-align: center;
+}
+
+.bench-col-pts {
+  text-align: center;
+  color: #aaa;
+  font-family: monospace;
+}
+
+.bench-choice-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.bench-score-bar {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+  border: 1px solid #222;
+  background: #0a0a0a;
+}
+
+.bench-score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bench-score-label {
+  color: #888;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.bench-score-val {
+  color: #ffcc00;
+  font-size: 2rem;
+}
+
+/* 20 Questions */
+.bench-transcript {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bench-exchange {
+  border-left: 2px solid #333;
+  padding-left: 1rem;
+}
+
+.bench-q {
+  color: #ccc;
+  margin-bottom: 4px;
+}
+
+.bench-q-num {
+  color: #6366f1;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.bench-a {
+  color: #888;
+  padding-left: 2rem;
+  font-style: italic;
+}
+
+.bench-guess {
+  color: #ffcc00;
+  padding-left: 2rem;
+  margin-top: 4px;
+}
+
+/* Code Debug */
+.bench-code-block {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.bench-code-label {
+  color: #888;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.bench-code {
+  background: #0a0a14;
+  border: 1px solid #1e293b;
+  padding: 1rem;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  color: #e2e8f0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  white-space: pre-wrap;
+}
+
+.bench-code-hint {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.bench-submissions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+.bench-submission-card {
+  border: 1px solid #222;
+  background: #0a0a0a;
+}
+
+.bench-submission-header {
+  padding: 0.5rem 1rem;
+  background: #111;
+  border-bottom: 1px solid #222;
+  color: #ffcc00;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.bench-submission-score {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid #222;
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  .bench-submissions {
+    grid-template-columns: 1fr;
+  }
+  .bench-rounds-header,
+  .bench-rounds-row {
+    grid-template-columns: 40px 1fr 1fr 60px;
+    font-size: 0.85rem;
+  }
+}

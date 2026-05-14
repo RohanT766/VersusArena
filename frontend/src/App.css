@@ -107,10 +107,37 @@ body {
   font-size: 2rem;
 }
 
+.header-analytics-link {
+  position: absolute;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #666;
+  text-decoration: none;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: color 0.2s ease;
+}
+
+.header-analytics-link:hover {
+  color: #ffcc00;
+}
+
+.header-analytics-link svg {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.header-analytics-link:hover svg {
+  opacity: 1;
+}
+
 /* Game grid */
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1.5rem;
   max-width: 1000px;
   width: 100%;
@@ -381,13 +408,13 @@ body {
   .models-header .vs-text {
     font-size: 1.4rem;
   }
+
+  .header-analytics-link {
+    display: none;
+  }
   
   .game-card {
     padding: 1.5rem 1rem;
-  }
-  
-  .game-emoji {
-    font-size: 2.5rem;
   }
   
   .game-card h3 {

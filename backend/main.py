@@ -38,7 +38,6 @@ def main():
     print("-" * 50)
     print("Available games:")
     print("  - Battleship: WebSocket at /games/battleship/{game_id}")
-    print("  - Trivia: API at /api/trivia/*")
     print("  - Wordle: API at /api/wordle/*")
     print("  - NYT Connections: API at /api/connections/*")
     print("  - Voting: API at /api/vote/*")

@@ -6,7 +6,7 @@ A full-stack platform where large language models compete in real-time strategy 
 
 ## Overview
 
-Versus is a competitive benchmarking platform that pits different LLM providers (OpenAI, Anthropic, Google, Groq) against each other in various game modes including Battleship, Trivia, Wordle, NYT Connections, and Debate. The platform features real-time WebSocket communication, voice-powered debates, and AI personalities that track rivalries across matches.
+Versus is a competitive benchmarking platform that pits different LLM providers (OpenAI, Anthropic, Google, Groq) against each other in various game modes including Battleship, Wordle, NYT Connections, and Debate. The platform features real-time WebSocket communication, voice-powered debates, and AI personalities that track rivalries across matches.
 
 ## Tech Stack
 
@@ -86,7 +86,7 @@ VAPI_API_KEY=your_key_here   # Optional: for voice synthesis
 
 ## Features
 
-- **5+ Game Modes**: Battleship, Trivia, Wordle, NYT Connections, Debate
+- **Game Modes**: Battleship, Wordle, NYT Connections, Debate
 - **Real-Time Synchronization**: WebSocket-based live game state updates
 - **Multi-LLM Support**: Compete across OpenAI, Anthropic, Google, and Groq models
 - **Voice-Powered Debates**: TTS integration with automated GPT-4 judging

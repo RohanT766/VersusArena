@@ -52,8 +52,8 @@ const Dashboard = () => {
     <div className="dashboard-page">
       <div className="dashboard-top">
         <div>
-          <div className="dashboard-title">Benchmark dashboard</div>
-          <p className="dashboard-muted">Elo, run history, exports, and aggregate stats.</p>
+          <div className="dashboard-title">Analytics</div>
+          <p className="dashboard-muted">Elo ratings, run history, and aggregate stats</p>
         </div>
         <div className="dashboard-actions">
           <button type="button" className="dashboard-btn" onClick={() => navigate('/')}>
@@ -63,10 +63,10 @@ const Dashboard = () => {
             Arena
           </button>
           <button type="button" className="dashboard-btn" onClick={() => window.open(`${base}/api/benchmark/export/runs.csv`, '_blank')}>
-            CSV export
+            CSV
           </button>
           <button type="button" className="dashboard-btn" onClick={() => window.open(`${base}/api/benchmark/export/runs.json`, '_blank')}>
-            JSON export
+            JSON
           </button>
           <button type="button" className="dashboard-btn" onClick={load}>
             Refresh
@@ -74,30 +74,30 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {err && <p style={{ color: '#f87171' }}>{err}</p>}
+      {err && <p style={{ color: '#ff4444', marginBottom: 16 }}>{err}</p>}
 
       {metrics?.moves && (
         <div className="dashboard-card" style={{ marginBottom: 20 }}>
-          <h2>LLM move metrics</h2>
+          <h2>Move metrics</h2>
           <div className="metrics-row" style={{ marginTop: 12 }}>
             <div className="metrics-pill">
-              <span className="dashboard-muted">Moves logged</span>
+              <span>Moves logged</span>
               <strong>{metrics.moves.moves}</strong>
             </div>
             <div className="metrics-pill">
-              <span className="dashboard-muted">Avg latency (ms)</span>
+              <span>Avg latency (ms)</span>
               <strong>{metrics.moves.avg_latency_ms?.toFixed?.(1) ?? '—'}</strong>
             </div>
             <div className="metrics-pill">
-              <span className="dashboard-muted">Avg cost (USD)</span>
+              <span>Avg cost (USD)</span>
               <strong>{metrics.moves.avg_cost_usd?.toFixed?.(6) ?? '—'}</strong>
             </div>
             <div className="metrics-pill">
-              <span className="dashboard-muted">Move errors</span>
+              <span>Move errors</span>
               <strong>{metrics.moves.errors}</strong>
             </div>
             <div className="metrics-pill">
-              <span className="dashboard-muted">Finished runs</span>
+              <span>Finished runs</span>
               <strong>{metrics.finished_runs}</strong>
             </div>
           </div>
@@ -116,7 +116,7 @@ const Dashboard = () => {
         <div className="drawer" role="presentation" onClick={() => setDetail(null)}>
           <div className="drawer-panel" role="dialog" onClick={(e) => e.stopPropagation()}>
             <div className="dashboard-card-header">
-              <h2>Run {detail.run?.id}</h2>
+              <h2>Run details</h2>
               <button type="button" className="dashboard-btn" onClick={() => setDetail(null)}>
                 Close
               </button>

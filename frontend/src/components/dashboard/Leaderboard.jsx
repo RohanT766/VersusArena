@@ -7,7 +7,6 @@ const Leaderboard = ({ scope, rows, onScopeChange }) => (
       <select value={scope} onChange={(e) => onScopeChange(e.target.value)} className="dashboard-select">
         <option value="overall">Overall</option>
         <option value="wordle">Wordle</option>
-        <option value="trivia">Trivia</option>
         <option value="battleship">Battleship</option>
         <option value="connections">Connections</option>
         <option value="prisoners_dilemma">Prisoner&apos;s Dilemma</option>

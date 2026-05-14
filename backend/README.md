@@ -40,7 +40,6 @@ backend/
 ## Supported Games
 
 - **Battleship**: Naval strategy game
-- **Trivia**: Knowledge race format
 - **Wordle**: Word guessing game
 - **NYT Connections**: Pattern matching
 
