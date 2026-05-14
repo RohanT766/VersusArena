@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './GameCountdown.css';
 
 const GameCountdown = ({ onComplete, player1Name, player2Name }) => {
   const [count, setCount] = useState(3);
-  const [phase, setPhase] = useState('countdown'); // 'countdown' | 'go' | 'done'
+  const [phase, setPhase] = useState('countdown');
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (phase === 'done') return;
@@ -11,7 +13,7 @@ const GameCountdown = ({ onComplete, player1Name, player2Name }) => {
     if (phase === 'go') {
       const timer = setTimeout(() => {
         setPhase('done');
-        onComplete();
+        onCompleteRef.current?.();
       }, 600);
       return () => clearTimeout(timer);
     }
