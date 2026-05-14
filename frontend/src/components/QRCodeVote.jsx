@@ -2,29 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Settings } from 'lucide-react';
 
+const getInitialHost = () => {
+  const hostname = window.location.hostname;
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') return hostname;
+  const stored = localStorage.getItem('versus_network_ip');
+  if (stored) return stored;
+  return hostname;
+};
+
 const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
-  const [displayUrl, setDisplayUrl] = useState('');
+  const initialHost = getInitialHost();
+  const [displayUrl, setDisplayUrl] = useState(`http://${initialHost}:5174/vote?gameId=${gameId}`);
   const [showIpConfig, setShowIpConfig] = useState(false);
-  const [manualIP, setManualIP] = useState('');
-  const [detectedIP, setDetectedIP] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [manualIP, setManualIP] = useState(localStorage.getItem('versus_network_ip') || '');
+  const [detectedIP, setDetectedIP] = useState(initialHost);
+  const [isLoading, setIsLoading] = useState(false);
 
   const detectNetworkIP = async () => {
     const hostname = window.location.hostname;
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return hostname;
-    }
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return hostname;
 
     return new Promise((resolve) => {
       try {
         const pc = new RTCPeerConnection({
           iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         });
-        
         let resolved = false;
         pc.createDataChannel('');
         pc.createOffer().then(offer => pc.setLocalDescription(offer));
-        
         pc.onicecandidate = (ice) => {
           if (!ice || !ice.candidate || !ice.candidate.candidate || resolved) return;
           const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(ice.candidate.candidate);
@@ -37,36 +42,20 @@ const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
             }
           }
         };
-        
-        setTimeout(() => {
-          if (!resolved) {
-            pc.close();
-            resolve('10.56.123.217');
-          }
-        }, 2000);
-      } catch (error) {
-        resolve('10.56.123.217');
-      }
+        setTimeout(() => { if (!resolved) { pc.close(); resolve(hostname); } }, 2000);
+      } catch { resolve(hostname); }
     });
   };
 
   useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-      const storedIP = localStorage.getItem('versus_network_ip');
-      if (storedIP) {
-        setManualIP(storedIP);
-        setDetectedIP(storedIP);
-        setDisplayUrl(`http://${storedIP}:5174/vote?gameId=${gameId}`);
-        setIsLoading(false);
-        return;
-      }
+    if (localStorage.getItem('versus_network_ip')) return;
+    const detect = async () => {
       const networkIP = await detectNetworkIP();
       setDetectedIP(networkIP);
       setDisplayUrl(`http://${networkIP}:5174/vote?gameId=${gameId}`);
-      setIsLoading(false);
+      localStorage.setItem('versus_network_ip', networkIP);
     };
-    init();
+    detect();
   }, [gameId]);
 
   const handleIPSave = () => {
@@ -91,21 +80,31 @@ const QRCodeVote = ({ gameId, className = '', size = 280 }) => {
 
   return (
     <div className={className} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* QR Code */}
       <div style={{
         background: '#fff',
         padding: '16px',
         borderRadius: '8px',
         lineHeight: 0,
+        minWidth: size + 32,
+        minHeight: size + 32,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
-        <QRCodeSVG
-          value={displayUrl || `http://10.56.123.217:5174/vote?gameId=${gameId}`}
-          size={size}
-          level="M"
-          includeMargin={false}
-          fgColor="#000000"
-          bgColor="#ffffff"
-        />
+        {displayUrl ? (
+          <QRCodeSVG
+            value={displayUrl}
+            size={size}
+            level="M"
+            includeMargin={false}
+            fgColor="#000000"
+            bgColor="#ffffff"
+          />
+        ) : (
+          <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontFamily: "'VT323', monospace", fontSize: '18px' }}>
+            LOADING...
+          </div>
+        )}
       </div>
 
       {/* URL + gear icon */}
