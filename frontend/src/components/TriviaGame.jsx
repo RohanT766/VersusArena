@@ -27,12 +27,10 @@ const TriviaGame = () => {
   }
 
   useEffect(() => {
-    const newGameId = `trivia-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    setGameId(newGameId)
+    startNewGame()
   }, [])
 
   const startNewGame = async () => {
-    console.log('Starting new trivia game...')
     setIsLoading(true)
     setError(null)
 
@@ -40,9 +38,8 @@ const TriviaGame = () => {
       const requestBody = {
         player1_model: player1Model.id,
         player2_model: player2Model.id,
-        question_count: 20
+        question_count: 50
       }
-      console.log('Request body:', requestBody)
 
       const h = window.location.hostname
       const apiBase = (h === 'localhost' || h === '127.0.0.1') ? 'http://localhost:8000' : `http://${h}:8000`
@@ -54,7 +51,6 @@ const TriviaGame = () => {
         body: JSON.stringify(requestBody)
       })
 
-      console.log('Response status:', response.status)
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -63,7 +59,6 @@ const TriviaGame = () => {
       }
 
       const data = await response.json()
-      console.log('Game started successfully:', data)
       setGameId(data.game_id)
       setGameStarted(true)
     } catch (err) {
@@ -109,13 +104,26 @@ const TriviaGame = () => {
     )
   }
 
-  // Show the TriviaGameView with pre-game voting system
+  if (!gameStarted || !gameId) {
+    return (
+      <div className="trivia-container">
+        <div className="loading-screen">
+          <div className="loading-text">INITIALIZING TRIVIA...</div>
+          <div className="loading-subtext">
+            {player1Model.name} VS {player2Model.name}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <TriviaGameView 
       gameId={gameId}
       player1Model={player1Model}
       player2Model={player2Model}
       onGameEnd={handleGameEnd}
+      onBack={handleGameEnd}
     />
   )
 }

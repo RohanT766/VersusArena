@@ -126,7 +126,7 @@ body {
   font-size: 36px;
   color: #666;
   letter-spacing: 4px;
-  animation: blink 1s infinite;
+  animation: blink 1.5s infinite;
 }
 
 /* Header */
@@ -241,7 +241,7 @@ body {
 .thinking-text {
   font-size: 32px;
   letter-spacing: 3px;
-  animation: pulse 1s infinite;
+  animation: pulse 1.5s infinite;
   color: #fff;
 }
 
@@ -531,7 +531,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  flex: 1;
   gap: 2rem;
   text-align: center;
 }
@@ -540,6 +540,86 @@ body {
   font-size: 5rem;
   letter-spacing: 6px;
   color: #fff;
+}
+
+/* Trivia pre-race (inside GameLayout) */
+.trivia-pre-race {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.trivia-pre-info {
+  font-size: 2rem;
+  letter-spacing: 3px;
+  color: #fff;
+}
+
+.trivia-pre-sub {
+  font-size: 1.3rem;
+  color: #666;
+  letter-spacing: 1px;
+}
+
+/* Trivia end screen */
+.trivia-end-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  text-align: center;
+}
+
+.trivia-end-screen h1 {
+  font-size: 4rem;
+  letter-spacing: 6px;
+}
+
+.player-race-name {
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.result-badge {
+  margin-top: 0.8rem;
+  padding: 0.5rem 1rem;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  text-align: center;
+  border: 1px solid;
+}
+
+.result-badge.correct {
+  color: #4CAF50;
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.result-badge.incorrect {
+  color: #f44336;
+  border-color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.choice-correct {
+  border-color: #4CAF50 !important;
+  background: rgba(76, 175, 80, 0.15) !important;
+  color: #4CAF50 !important;
+}
+
+.choice-wrong {
+  border-color: #f44336 !important;
+  background: rgba(244, 67, 54, 0.15) !important;
+  color: #f44336 !important;
 }
 
 .vs-setup {
@@ -623,10 +703,12 @@ body {
   display: flex;
   gap: 1rem;
   width: 100%;
-  max-width: 1400px;
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   flex: 1;
   align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .player-race-side {
@@ -687,7 +769,7 @@ body {
   font-size: 1.5rem;
   color: #999;
   letter-spacing: 2px;
-  animation: pulse 1.2s infinite;
+  animation: pulse 1.5s infinite;
 }
 
 .spinner {
@@ -754,13 +836,13 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  flex: 1;
   gap: 2rem;
   text-align: center;
 }
 
 .game-over-screen h1 {
-  font-size: 5rem;
+  font-size: 4rem;
   letter-spacing: 6px;
 }
 
