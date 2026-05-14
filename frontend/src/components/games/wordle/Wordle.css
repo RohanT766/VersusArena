@@ -348,57 +348,62 @@
 
 /* Wordle Grid */
 .wordle-grid {
-  display: grid;
-  gap: 5px;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
+  display: inline-grid;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .wordle-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
+  gap: 6px;
 }
 
 .wordle-tile {
-  width: 58px;
-  height: 58px;
-  border: 1px solid #333;
+  width: 62px;
+  height: 62px;
+  min-width: 62px;
+  min-height: 62px;
+  max-width: 62px;
+  max-height: 62px;
+  border: 2px solid #3a3a3c;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 400;
   text-transform: uppercase;
-  transition: all 0.3s ease;
-  background: #000;
+  transition: background 0.3s, border-color 0.3s;
+  background: #121213;
   color: #fff;
   font-family: 'VT323', monospace;
+  box-sizing: border-box;
 }
 
 /* Tile States */
 .wordle-tile.correct {
   background: #538d4e;
   border-color: #538d4e;
-  animation: flip 0.6s ease-in-out;
+  animation: flip 0.5s ease-in-out;
 }
 
 .wordle-tile.present {
   background: #b59f3b;
   border-color: #b59f3b;
-  animation: flip 0.6s ease-in-out;
+  animation: flip 0.5s ease-in-out;
 }
 
 .wordle-tile.absent {
   background: #3a3a3c;
   border-color: #3a3a3c;
-  animation: flip 0.6s ease-in-out;
+  animation: flip 0.5s ease-in-out;
 }
 
 .wordle-tile.thinking {
-  border-color: #666;
-  /* Removed animation to stop moving rectangle */
+  border-color: #565656;
+  background: #1a1a1e;
 }
 
 /* VS Divider */
@@ -428,28 +433,89 @@
   font-family: 'VT323', monospace;
 }
 
-/* Play Again */
-.play-again-container {
-  margin-top: 50px;
+/* Game Over Overlay */
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
-.play-again-button {
-  background: #000;
-  color: #fff;
-  border: 1px solid #fff;
-  padding: 15px 40px;
-  font-size: 20px;
-  font-weight: 400;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.game-overlay-content {
+  background: #0a0a0a;
+  border: 2px solid #4CAF50;
+  padding: 48px 60px;
+  text-align: center;
+}
+
+.game-over-title {
+  font-size: 48px;
   font-family: 'VT323', monospace;
+  color: #4CAF50;
+  margin: 0 0 16px;
+  letter-spacing: 4px;
 }
 
-.play-again-button:hover {
-  background: #fff;
+.winner-name {
+  font-size: 32px;
+  font-family: 'VT323', monospace;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.wordle-final-word {
+  font-size: 22px;
+  font-family: 'VT323', monospace;
+  color: #888;
+  margin-bottom: 32px;
+  letter-spacing: 2px;
+}
+.wordle-final-word strong {
+  color: #4CAF50;
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+
+.conn-final-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 32px;
+}
+.conn-final-stat {
+  text-align: center;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #aaa;
+}
+.conn-final-name {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.new-game-overlay-button {
+  background: #4CAF50;
   color: #000;
+  border: none;
+  padding: 12px 36px;
+  font-size: 22px;
+  font-family: 'VT323', monospace;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+.new-game-overlay-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Animations */
@@ -492,8 +558,8 @@
   }
   
   .wordle-tile {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     font-size: 28px;
   }
   
