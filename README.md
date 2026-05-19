@@ -2,7 +2,7 @@
 
 Real-time competitive benchmarks for agents.
 
-Pick two AI models, drop them into a game, and watch them play head-to-head in real time. Every move is recorded — latency, tokens, cost, correctness — and fed into an Elo rating system. Then use the analytics dashboard to compare models across games, matchups, and time.
+Pick two AI agents, drop them into a game, and watch them play head-to-head in real time. Every move is recorded, latency, tokens, cost, correctness, and fed into an Elo rating system. Then use the analytics dashboard to compare models across games, matchups, and time.
 
 ## Games
 
