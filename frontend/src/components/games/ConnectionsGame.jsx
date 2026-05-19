@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
+import GameOverModal from '../common/GameOverModal';
 import { getDisplayName } from '../../utils/modelUtils';
+import { cancelBenchmarkRun } from '../../utils/networkUtils';
 import useGameFlow from '../../hooks/useGameFlow';
 import './ConnectionsGame.css';
 
@@ -18,11 +20,22 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const [ws, setWs] = useState(null);
   const { isCountdown, isRunning, startCountdown, startRunning, goToSetup } = useGameFlow();
   const abortRef = React.useRef(null);
+  const benchmarkRunIdRef = useRef(null);
+  const gameFinishedRef = useRef(false);
+  const [gameOverDismissed, setGameOverDismissed] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
     abortRef.current = controller;
-    return () => { controller.abort(); };
+    const handleUnload = () => {
+      if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      controller.abort();
+      if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
+    };
   }, []);
 
   const p1Name = getDisplayName(player1Model);
@@ -47,6 +60,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       
       const data = await response.json();
       setGameId(data.game_id);
+      benchmarkRunIdRef.current = data.benchmark_run_id || null;
       const stateRes = await fetch(`${getApiBase()}/api/connections/game/${data.game_id}/state`, {
         signal: abortRef.current?.signal,
       });
@@ -134,7 +148,15 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const p1Done = player1State && (player1State.game_over || player1State.found_groups.length === 4 || player1State.incorrect_guesses.length >= MAX_INCORRECT);
   const p2Done = player2State && (player2State.game_over || player2State.found_groups.length === 4 || player2State.incorrect_guesses.length >= MAX_INCORRECT);
   const bothDone = p1Done && p2Done;
-  
+
+  useEffect(() => {
+    if (bothDone) setGameOverDismissed(false);
+  }, [bothDone]);
+
+  useEffect(() => {
+    if (bothDone) gameFinishedRef.current = true;
+  }, [bothDone]);
+
   const getWinner = () => {
     if (!player1State || !player2State) return null;
     const p1Groups = player1State.found_groups.length;
@@ -176,7 +198,7 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const renderPlayerBoard = (state, processing, playerDone) => (
     <div className="conn-player-side">
       <div className="conn-status-bar">
-        {processing && <span className="game-player-thinking">Thinking...</span>}
+        {processing && <span className="game-player-thinking">Agents using tools…</span>}
         {playerDone && !processing && <span className="conn-done-tag">Done</span>}
         <div className="conn-stats">
           <span>Groups: <strong>{state.found_groups.length}/4</strong></span>
@@ -219,7 +241,10 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
       gameName="Connections"
       player1Name={p1Name}
       player2Name={p2Name}
-      onBack={onBack}
+      onBack={() => {
+        if (!bothDone) cancelBenchmarkRun(benchmarkRunIdRef.current);
+        onBack();
+      }}
       statusText={statusText}
     >
       {isCountdown && (
@@ -230,27 +255,30 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
         />
       )}
 
-      {bothDone && (
-        <div className="game-overlay">
-          <div className="game-overlay-content">
-            <h2 className="game-over-title">GAME OVER</h2>
-            <div className="winner-name">
-              {getWinner() ? `${getWinner()} WINS!` : 'DRAW!'}
-            </div>
-            <div className="conn-final-stats">
-              <div className="conn-final-stat">
-                <div className="conn-final-name" style={{ color: '#10b981' }}>{p1Name}</div>
-                <div>{player1State.found_groups.length} groups / {player1State.incorrect_guesses.length} wrong</div>
-              </div>
-              <div className="conn-final-stat">
-                <div className="conn-final-name" style={{ color: '#a78bfa' }}>{p2Name}</div>
-                <div>{player2State.found_groups.length} groups / {player2State.incorrect_guesses.length} wrong</div>
-              </div>
-            </div>
-            <button onClick={() => { goToSetup(); startNewGame(); }} className="new-game-overlay-button">Play again</button>
+      <GameOverModal
+        open={bothDone && !gameOverDismissed}
+        onClose={() => setGameOverDismissed(true)}
+        actions={
+          <>
+            <button type="button" onClick={() => { goToSetup(); startNewGame(); }} className="new-game-overlay-button">Play again</button>
+            <button type="button" onClick={onBack} className="new-game-overlay-button">Back to Arena</button>
+          </>
+        }
+      >
+        <div className="winner-name">
+          {getWinner() ? `${getWinner()} WINS!` : 'DRAW!'}
+        </div>
+        <div className="conn-final-stats">
+          <div className="conn-final-stat">
+            <div className="conn-final-name" style={{ color: '#10b981' }}>{p1Name}</div>
+            <div>{player1State?.found_groups?.length} groups / {player1State?.incorrect_guesses?.length} wrong</div>
+          </div>
+          <div className="conn-final-stat">
+            <div className="conn-final-name" style={{ color: '#a78bfa' }}>{p2Name}</div>
+            <div>{player2State?.found_groups?.length} groups / {player2State?.incorrect_guesses?.length} wrong</div>
           </div>
         </div>
-      )}
+      </GameOverModal>
 
       {isRunning && !isCountdown && player1State && player2State ? (
         <div className="connections-split-view">

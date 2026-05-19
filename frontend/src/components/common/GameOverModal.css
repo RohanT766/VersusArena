@@ -1,0 +1,89 @@
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: gameOverlayFadeIn 0.3s ease-out;
+}
+
+.game-overlay-content {
+  position: relative;
+  background: #0a0a0a;
+  border: 2px solid #4CAF50;
+  padding: 48px 60px;
+  text-align: center;
+  max-width: 90vw;
+}
+
+.game-over-title {
+  font-size: 48px;
+  font-family: 'VT323', monospace;
+  color: #4CAF50;
+  margin: 0 0 16px;
+  letter-spacing: 4px;
+}
+
+.winner-name {
+  font-size: 32px;
+  font-family: 'VT323', monospace;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.game-overlay-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #52525b;
+  background: #18181b;
+  color: #fafafa;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: 'VT323', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.game-overlay-close:hover {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.game-overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.new-game-overlay-button {
+  background: #4CAF50;
+  color: #000;
+  border: none;
+  padding: 12px 36px;
+  font-size: 22px;
+  font-family: 'VT323', monospace;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+.new-game-overlay-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+@keyframes gameOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

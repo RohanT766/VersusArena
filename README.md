@@ -1,28 +1,28 @@
 # Versus Arena
 
-Real-time competitive benchmarks for agents.
+Real-time competitive benchmarks for AI agents across classic games.
 
-Pick two AI agents, drop them into a game, and watch them play head-to-head in real time. Every move is recorded, latency, tokens, cost, correctness, and fed into an Elo rating system. Then use the analytics dashboard to compare models across games, matchups, and time.
+Versus Arena pits two AI agents against each other in head-to-head matches. Each model uses **structured tool calling**: game-specific tools to inspect state, then a terminal action to commit a move, in a multi-step observe-then-act loop. Every turn is logged with latency, tokens, cost, correctness, and tool usage, then rolled into Elo ratings and an analytics dashboard so you can compare models by game, matchup, and over time.
 
 ## Games
 
-**Arena games** — full UI, real-time playback, playable from the game menu:
+**Arena games** (full UI, real-time playback, playable from the game menu):
 
 | Game | What it tests | How it works |
 |------|---------------|--------------|
-| **Wordle** | Language, deduction, vocabulary | Both agents guess the same secret word (5–8 letters, optional hard mode). Fewer guesses wins. |
-| **NYT Connections** | Categorization, pattern recognition | Each agent independently groups 16 words into 4 hidden categories. Async race via the agent-loop engine. |
-| **Battleship** | Spatial reasoning, strategy | Agents place ships and fire shots on a configurable grid. Supports LLM-driven ship placement. |
-| **Minesweeper Race** | Logical deduction, risk assessment | Both agents sweep the same 8×8 board. Safe reveals score points; hitting a mine ends your run. |
-| **Auction Blitz** | Resource allocation, opponent modeling | Sealed-bid auction across 8 rounds. Agents get a budget and value hints, must outbid without overspending. |
-| **Poker Showdown** | Game theory, bluffing, bet sizing | Heads-up Texas Hold'em with chip stacks, blinds, and multi-street betting over 10 hands. |
+| **Wordle** | Language, deduction, vocabulary | Tools: `get_feedback_history`, `submit_guess`. Same secret word; fewer guesses wins. |
+| **NYT Connections** | Categorization, pattern recognition | Tools: `get_remaining_words`, `get_found_groups`, `submit_group`. Async race via agent-loop. |
+| **Battleship** | Spatial reasoning, strategy | Tools: `get_board_state`, `fire_shot`, `place_ships`. Configurable grid + agent ship placement. |
+| **Minesweeper Race** | Logical deduction, risk assessment | Tools: `get_board_view`, `reveal_cell`. Shared board; mines end your run. |
+| **Auction Blitz** | Resource allocation, opponent modeling | Tools: `get_auction_state`, `place_bid`. Sealed bids over 8 rounds. |
+| **Poker Showdown** | Game theory, bluffing, bet sizing | Tools: `get_hand_state`, `take_action`. Heads-up Hold'em over 10 hands. |
 
-**Batch-only games** — no live UI, run via the benchmark batch API:
+**Batch-only games** (no live UI; run via the benchmark batch API):
 
 | Game | What it tests |
 |------|---------------|
 | **Prisoner's Dilemma** | Cooperation vs. defection strategy over iterated rounds |
-| **Code Debug** | Code repair — fix a buggy snippet, graded against the canonical solution |
+| **Code Debug** | Code repair: fix a buggy snippet, graded against the canonical solution |
 | **20 Questions** | One agent holds a secret word, the other asks yes/no questions to guess it |
 
 ## Supported Models
@@ -39,14 +39,14 @@ Models are selected on the model-selection screen (Smash Bros-style card picker)
 
 Every completed game feeds into a SQLite-backed benchmark database. The dashboard (`/dashboard`) provides:
 
-- **Overview KPIs** — total runs, completion rate, median duration, unique models, avg latency & correctness
-- **Elo Leaderboard** — filterable by game or overall, with win rate
-- **Model Comparison** — bar charts of win rate and rating
-- **Head-to-Head** — pairwise matchup win/loss/draw breakdown
-- **Quality Metrics** — latency, cost, correctness, and error rate by model and game
-- **Trend Charts** — runs per day, Elo movement over time
-- **Run History** — filterable list with per-move detail drawer, delete with automatic Elo rebuild
-- **Export** — CSV and JSON export of all run data
+- **Overview KPIs**: total runs, completion rate, median duration, unique models, avg latency and correctness
+- **Elo Leaderboard**: filterable by game or overall, with win rate
+- **Model Comparison**: bar charts of win rate and rating
+- **Head-to-Head**: pairwise matchup win/loss/draw breakdown
+- **Quality Metrics**: latency, cost, correctness, and error rate by model and game
+- **Trend Charts**: runs per day, Elo movement over time
+- **Run History**: filterable list with per-move detail drawer, delete with automatic Elo rebuild
+- **Export**: CSV and JSON export of all run data
 
 ## Getting Started
 
@@ -103,7 +103,7 @@ Only the providers you want to use need a key. The `BENCHMARK_DB_PATH` env var c
 ```
 VersusArena/
 ├── backend/
-│   ├── main.py                          # Entry point — runs uvicorn on port 8000
+│   ├── main.py                          # Entry point: runs uvicorn on port 8000
 │   ├── src/
 │   │   ├── api/
 │   │   │   ├── server.py                # FastAPI app, all game endpoints (REST + WebSocket)
@@ -119,7 +119,9 @@ VersusArena/
 │   │   │   ├── code_debug_challenge.py  # Code repair benchmark
 │   │   │   └── twenty_questions.py      # 20 Questions
 │   │   ├── engine/
-│   │   │   └── agent_loop.py            # Async agent engine (observe → think → act)
+│   │   │   ├── agent_client.py          # Multi-step tool-call loop (OpenAI/Anthropic/Google)
+│   │   │   ├── game_tools.py            # Per-game tool schemas
+│   │   │   └── agent_loop.py            # Async race orchestration (Connections)
 │   │   ├── benchmark/
 │   │   │   ├── recorder.py              # Records runs, moves, and updates Elo
 │   │   │   ├── analytics.py             # Aggregation queries (overview, h2h, trends, quality)
@@ -128,7 +130,7 @@ VersusArena/
 │   │   ├── db/
 │   │   │   └── database.py              # SQLite schema + connection pool
 │   │   └── utils/
-│   │       └── common.py                # LLMClient (OpenAI/Anthropic/Google) + BaseGame
+│   │       └── common.py                # LLMClient (batch games) + BaseGame
 │   ├── tests/                           # pytest suite
 │   ├── data/                            # SQLite DB (auto-created at runtime)
 │   ├── requirements.txt
@@ -164,24 +166,24 @@ VersusArena/
 ┌────────────────────────▼────────────────────────────┐
 │  Backend (FastAPI, port 8000)                        │
 │                                                      │
-│  ┌──────────┐  ┌────────────┐  ┌──────────────────┐ │
-│  │ Game     │  │ Agent Loop │  │ Benchmark        │ │
-│  │ Modules  │──│ Engine     │  │ Recorder + Elo   │ │
-│  └────┬─────┘  └────────────┘  └────────┬─────────┘ │
-│       │                                  │           │
-│  ┌────▼─────┐                  ┌────────▼─────────┐ │
-│  │ LLMClient│                  │ SQLite           │ │
-│  └────┬─────┘                  │ (benchmark.db)   │ │
-│       │                        └──────────────────┘ │
+│  ┌──────────┐  ┌─────────────┐  ┌──────────────────┐ │
+│  │ Game     │  │ AgentClient │  │ Benchmark        │ │
+│  │ Modules  │──│ + game_tools│  │ Recorder + Elo   │ │
+│  └────┬─────┘  └──────┬──────┘  └────────┬─────────┘ │
+│       │               │                  │           │
+│  ┌────▼─────┐  ┌──────▼──────┐  ┌────────▼─────────┐ │
+│  │ LLMClient│  │ Agent Loop  │  │ SQLite           │ │
+│  │ (batch)  │  │ (race UI)   │  │ (benchmark.db)   │ │
+│  └────┬─────┘  └─────────────┘  └──────────────────┘ │
 └───────┼─────────────────────────────────────────────┘
         │
 ┌───────▼─────────────────────────────────────────────┐
-│  LLM Providers                                       │
+│  LLM Providers (tool calling)                        │
 │  OpenAI · Anthropic · Google Gemini                  │
 └─────────────────────────────────────────────────────┘
 ```
 
-`LLMClient` in `backend/src/utils/common.py` routes to the correct provider based on model ID prefix. Every game module creates client instances and crafts game-specific prompts. The agent-loop engine (`agent_loop.py`) powers concurrent async races (used by Connections). All moves are recorded with latency, token counts, cost estimates, and correctness scores.
+**AgentClient** (`agent_client.py`) sends tool definitions with each turn and runs up to 5 observe→act steps: observation tools return game state; a terminal action tool ends the turn. **LLMClient** remains for batch-only games (Prisoner's Dilemma, Code Debug, 20 Questions). Move records store `tool_calls_count`, `tools_used`, and a tool trace in `extra_json` when benchmarking.
 
 ## API Reference
 

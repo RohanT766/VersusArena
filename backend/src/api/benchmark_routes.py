@@ -61,6 +61,15 @@ async def leaderboard(
         conn.close()
 
 
+@router.post("/runs/{run_id}/cancel")
+async def cancel_run(run_id: str):
+    rec = get_recorder()
+    cancelled = rec.cancel_run(run_id)
+    if not cancelled:
+        raise HTTPException(status_code=404, detail="Run not found or already finished")
+    return {"cancelled": True, "run_id": run_id}
+
+
 @router.delete("/runs/{run_id}")
 async def delete_run(run_id: str):
     conn = get_connection()

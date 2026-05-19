@@ -22,6 +22,7 @@ const OverviewKpis = ({ overview, loading, error }) => {
   const pills = [
     { label: 'Total runs', value: overview.total_runs },
     { label: 'Finished', value: overview.finished_runs },
+    { label: 'Cancelled', value: overview.cancelled_runs ?? 0 },
     { label: 'In progress', value: overview.in_progress_runs },
     { label: 'Errors / abandoned', value: overview.abandoned_or_error_runs },
     { label: 'Completion rate', value: `${overview.completion_rate}%` },

@@ -24,9 +24,16 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Import game implementations
 from src.games.battleship.battleship import BattleshipGame
 from src.games.nyt_connections.connections_game import ConnectionsGame
-from src.games.wordle.wordle_simple import WordleSimpleGame, get_llm_guess, parse_reasoning_for_ui, pick_secret_word
+from src.games.wordle.wordle_simple import (
+    WordleSimpleGame,
+    WordleAgentError,
+    get_llm_guess,
+    parse_reasoning_for_ui,
+    pick_secret_word,
+)
 
 from src.engine.agent_loop import AgentLoop, GameRunner
+from src.engine.agent_client import agent_extra_from_usage
 from src.db.database import init_db
 from src.benchmark.recorder import get_recorder
 from src.api.benchmark_routes import router as benchmark_router
@@ -35,6 +42,9 @@ from src.games.code_debug_challenge import (
     new_code_debug_session,
     run_player as code_debug_run_player,
 )
+from src.games import minesweeper as ms_game
+from src.games import auction as auc_game
+from src.games import poker as poker_game
 
 # Default model configurations
 DEFAULT_MODELS = {
@@ -75,6 +85,9 @@ wordle_games: Dict[str, Dict[str, Any]] = {}
 connections_games: Dict[str, Dict] = {}
 
 code_debug_sessions: Dict[str, Dict] = {}
+minesweeper_sessions: Dict[str, ms_game.MinesweeperSession] = {}
+auction_sessions: Dict[str, auc_game.AuctionSession] = {}
+poker_sessions: Dict[str, poker_game.PokerSession] = {}
 
 # Store active game runners
 game_runners: Dict[str, GameRunner] = {}
@@ -203,7 +216,8 @@ async def battleship_websocket(websocket: WebSocket, game_id: str):
                     "currentPlayer": 1,
                     "player1Shots": game.game_state["player1_shots"],
                     "player2Shots": game.game_state["player2_shots"],
-                    "shipsPlaced": game.ships_placed
+                    "shipsPlaced": game.ships_placed,
+                    "benchmark_run_id": br,
                 })
                 
                 for player in [1, 2]:
@@ -349,9 +363,9 @@ async def run_battleship_game_loop(game: BattleshipGame, websocket: WebSocket, g
                     break
                 prompt = game.get_prompt_for_player(current_player)
                 usage: Dict[str, Any] = {}
-                llm = game.player1 if current_player == 1 else game.player2
-                move_response = llm.get_move(
-                    prompt, game.game_state, usage_out=usage, board_letters=letters
+                model_id = game.player1_model if current_player == 1 else game.player2_model
+                move_response = game.agent_fire_shot(
+                    current_player, model_id, usage_out=usage
                 )
 
                 try:
@@ -384,6 +398,7 @@ async def run_battleship_game_loop(game: BattleshipGame, websocket: WebSocket, g
                                 correctness=1.0 if move_result["result"] == "hit" else 0.0,
                                 response_preview=move_str,
                                 error=usage.get("error"),
+                                extra=agent_extra_from_usage(usage),
                             )
 
                         col_letter = chr(col_idx + ord("A"))
@@ -598,13 +613,12 @@ async def _wordle_guess_impl(game: WordleSimpleGame, body: dict, benchmark_run_i
 
     try:
         guess, reasoning = await asyncio.to_thread(_call)
+    except WordleAgentError as e:
+        print(f"Wordle agent error ({model_id}): {e}")
+        raise HTTPException(status_code=502, detail=str(e)) from e
     except Exception as e:
         print(f"Error getting guess from {model_id}: {e}")
-        pool = ["CRANE", "SLATE", "AUDIO", "HOUSE", "ROUND", "LIGHT"]
-        guess = pool[len(model_data["guesses"]) % len(pool)][: game.word_len].ljust(game.word_len, "A")[
-            : game.word_len
-        ]
-        reasoning = f"API error - fallback: {guess}"
+        raise HTTPException(status_code=502, detail=f"Agent request failed: {e}") from e
 
     result = game.make_guess(side, guess, reasoning)
 
@@ -629,6 +643,7 @@ async def _wordle_guess_impl(game: WordleSimpleGame, body: dict, benchmark_run_i
             correctness=1.0 if guess == game.secret_word else 0.0,
             response_preview=guess,
             error=usage.get("error"),
+            extra=agent_extra_from_usage(usage),
         )
 
     detailed = parse_reasoning_for_ui(side, reasoning, model_data["guesses"], model_data["feedback"])
@@ -809,6 +824,7 @@ async def connections_ai_turn(game_id: str, player: str, request: dict):
                 correctness=corr,
                 response_preview=str(guess)[:500],
                 error=u.get("error"),
+                extra=agent_extra_from_usage(u),
             )
         _connections_try_finish(game_id)
         
@@ -886,6 +902,7 @@ async def start_connections_race(game_id: str):
                         correctness=corr,
                         response_preview=str(guess)[:500],
                         error=u.get("error"),
+                        extra=agent_extra_from_usage(u),
                     )
                 _connections_try_finish(game_id)
                 await runner.broadcast("game_update", {
@@ -1044,6 +1061,199 @@ async def code_debug_run(session_id: str):
         rec.finish_run(br, "code_debug", w, float(s1), float(s2), {"challenge": sess.challenge.get("id")})
     entry["finished"] = True
     return {"scores": {"player1": s1, "player2": s2}, "winner_side": w, "details": outs}
+
+
+# ==========================
+# MINESWEEPER RACE
+# ==========================
+
+
+class MinesweeperStartBody(BaseModel):
+    player1_model: str = "gpt-5.5"
+    player2_model: str = "claude-sonnet-4-6"
+
+
+@app.post("/api/minesweeper/start")
+async def minesweeper_start(body: MinesweeperStartBody):
+    sess = ms_game.start_session(body.player1_model, body.player2_model)
+    rec = get_recorder()
+    br = rec.start_run("minesweeper", body.player1_model, body.player2_model, {"rows": sess.rows, "mines": len(sess.mine_set)})
+    sess.benchmark_run_id = br
+    minesweeper_sessions[sess.id] = sess
+    st = ms_game.session_state(sess)
+    st["benchmark_run_id"] = br
+    return st
+
+
+@app.post("/api/minesweeper/{session_id}/step")
+async def minesweeper_step(session_id: str, body: dict):
+    sess = minesweeper_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found — server may have restarted")
+    player = body.get("player", "player1")
+    if player not in ("player1", "player2"):
+        raise HTTPException(status_code=400, detail="player must be player1 or player2")
+    try:
+        result = ms_game.play_step(sess, player)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    br = sess.benchmark_run_id
+    if br and not result.get("skipped"):
+        u = result.get("usage") or {}
+        rec = get_recorder()
+        rec.add_move(
+            br, player, sess.move_seq,
+            latency_ms=u.get("latency_ms"),
+            input_tokens=u.get("input_tokens"),
+            output_tokens=u.get("output_tokens"),
+            cost_usd=u.get("cost_usd"),
+            correctness=1.0 if not result.get("hit_mine") else 0.0,
+            error=u.get("error"),
+            extra=agent_extra_from_usage(u),
+        )
+    if sess.done and br:
+        w = ms_game.winner_side(sess)
+        rec = get_recorder()
+        rec.finish_run(br, "minesweeper", w, float(sess.player1.score), float(sess.player2.score), {})
+    out = ms_game.session_state(sess)
+    out["step"] = {k: v for k, v in result.items() if k != "usage"}
+    return out
+
+
+@app.get("/api/minesweeper/{session_id}/state")
+async def minesweeper_state(session_id: str):
+    sess = minesweeper_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return ms_game.session_state(sess)
+
+
+# ==========================
+# AUCTION BLITZ
+# ==========================
+
+
+class AuctionStartBody(BaseModel):
+    player1_model: str = "gpt-5.5"
+    player2_model: str = "claude-sonnet-4-6"
+
+
+@app.post("/api/auction/start")
+async def auction_start(body: AuctionStartBody):
+    sess = auc_game.start_session(body.player1_model, body.player2_model)
+    rec = get_recorder()
+    br = rec.start_run("auction", body.player1_model, body.player2_model, {"rounds": len(sess.rounds)})
+    sess.benchmark_run_id = br
+    auction_sessions[sess.id] = sess
+    st = auc_game.session_state(sess)
+    st["benchmark_run_id"] = br
+    return st
+
+
+@app.post("/api/auction/{session_id}/round")
+async def auction_round(session_id: str):
+    sess = auction_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if sess.done:
+        raise HTTPException(status_code=400, detail="Auction finished")
+    result = auc_game.play_round(sess)
+    br = sess.benchmark_run_id
+    if br:
+        rec = get_recorder()
+        for side, ukey in (("player1", "usage_p1"), ("player2", "usage_p2")):
+            u = result.get(ukey) or {}
+            rec.add_move(
+                br, side, sess.move_seq,
+                latency_ms=u.get("latency_ms"),
+                input_tokens=u.get("input_tokens"),
+                output_tokens=u.get("output_tokens"),
+                cost_usd=u.get("cost_usd"),
+                error=u.get("error"),
+                extra=agent_extra_from_usage(u),
+            )
+    if sess.done and br:
+        w = auc_game.winner_side(sess)
+        rec.finish_run(br, "auction", w, float(sess.value_p1), float(sess.value_p2), {})
+    out = auc_game.session_state(sess)
+    out["round_result"] = result.get("round_result")
+    return out
+
+
+@app.get("/api/auction/{session_id}/state")
+async def auction_state(session_id: str):
+    sess = auction_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return auc_game.session_state(sess)
+
+
+# ==========================
+# POKER SHOWDOWN
+# ==========================
+
+
+class PokerStartBody(BaseModel):
+    player1_model: str = "gpt-5.5"
+    player2_model: str = "claude-sonnet-4-6"
+
+
+@app.post("/api/poker/start")
+async def poker_start(body: PokerStartBody):
+    sess = poker_game.start_session(body.player1_model, body.player2_model)
+    rec = get_recorder()
+    br = rec.start_run("poker", body.player1_model, body.player2_model, {"max_hands": poker_game.MAX_HANDS})
+    sess.benchmark_run_id = br
+    poker_sessions[sess.id] = sess
+    st = poker_game.session_state(sess)
+    st["benchmark_run_id"] = br
+    return st
+
+
+@app.post("/api/poker/{session_id}/hand")
+async def poker_hand(session_id: str):
+    sess = poker_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found — server may have restarted")
+    if sess.done:
+        raise HTTPException(status_code=400, detail="Poker session finished")
+    try:
+        result = poker_game.play_hand(sess)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    br = sess.benchmark_run_id
+    if sess.done and br:
+        w = poker_game.winner_side(sess)
+        get_recorder().finish_run(br, "poker", w, float(sess.chips_p1), float(sess.chips_p2), {"hands": sess.hand_num})
+    out = poker_game.session_state(sess)
+    out["hand_result"] = result.get("hand")
+    return out
+
+
+@app.post("/api/poker/{session_id}/step")
+async def poker_step(session_id: str):
+    sess = poker_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found — server may have restarted")
+    if sess.done:
+        raise HTTPException(status_code=400, detail="Poker session finished")
+    try:
+        result = poker_game.advance_step(sess)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    br = sess.benchmark_run_id
+    if sess.done and br:
+        w = poker_game.winner_side(sess)
+        get_recorder().finish_run(br, "poker", w, float(sess.chips_p1), float(sess.chips_p2), {"hands": sess.hand_num})
+    return result
+
+
+@app.get("/api/poker/{session_id}/state")
+async def poker_state(session_id: str):
+    sess = poker_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return poker_game.session_state(sess)
 
 
 # ====================

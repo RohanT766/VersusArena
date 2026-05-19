@@ -105,4 +105,10 @@ export const getLocalIP = () => {
 };
 
 // Simple utility for backward compatibility
-export const detectNetworkIP = getLocalIP; 
+export const detectNetworkIP = getLocalIP;
+
+export const cancelBenchmarkRun = (runId) => {
+  if (!runId) return;
+  const base = getBackendUrl();
+  fetch(`${base}/api/benchmark/runs/${runId}/cancel`, { method: 'POST' }).catch(() => {});
+};

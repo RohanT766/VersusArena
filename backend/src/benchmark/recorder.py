@@ -118,6 +118,25 @@ class BenchmarkRecorder:
             finally:
                 conn.close()
 
+    def cancel_run(self, run_id: str) -> bool:
+        now = time.time()
+        with _lock:
+            conn = get_connection()
+            try:
+                row = conn.execute(
+                    "SELECT status FROM benchmark_runs WHERE id = ?", (run_id,)
+                ).fetchone()
+                if not row or row["status"] == "finished":
+                    return False
+                conn.execute(
+                    "UPDATE benchmark_runs SET ended_at = ?, status = ? WHERE id = ?",
+                    (now, "cancelled", run_id),
+                )
+                conn.commit()
+                return True
+            finally:
+                conn.close()
+
     def finish_run(
         self,
         run_id: str,

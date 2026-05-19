@@ -1,19 +1,40 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import GameCountdown from '../../common/GameCountdown';
 import GameLayout from '../../common/GameLayout';
+import GameOverModal from '../../common/GameOverModal';
 import { getDisplayName } from '../../../utils/modelUtils';
+import { cancelBenchmarkRun } from '../../../utils/networkUtils';
 import useGameFlow from '../../../hooks/useGameFlow';
 import './Battleship.css';
+import { ShipSegmentSprite, FLEET_HULL_COLOR } from './ShipSprites';
+import { ShotEffect } from './ShotEffect';
 
 const SHIP_DEFS = {
-  carrier:    { name: 'Carrier',    len: 5, color: '#6a7b8a' },
-  battleship: { name: 'Battleship', len: 4, color: '#5a7a6a' },
-  destroyer:  { name: 'Destroyer',  len: 3, color: '#7a8a9a' },
-  submarine:  { name: 'Submarine',  len: 3, color: '#4a6a5a' },
-  patrol:     { name: 'Patrol',     len: 2, color: '#8a8a7a' },
-  cruiser:    { name: 'Cruiser',    len: 3, color: '#6a6a8a' },
-  scout:      { name: 'Scout',      len: 2, color: '#7a7a6a' },
+  carrier:    { name: 'Carrier',    len: 5 },
+  battleship: { name: 'Battleship', len: 4 },
+  destroyer:  { name: 'Destroyer',  len: 3 },
+  submarine:  { name: 'Submarine',  len: 3 },
+  patrol:     { name: 'Patrol',     len: 2 },
+  cruiser:    { name: 'Cruiser',    len: 3 },
+  scout:      { name: 'Scout',      len: 2 },
 };
+
+function findNewShot(prev, next, size) {
+  if (!prev || !next) return null;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const n = next[r]?.[c];
+      if ((n === 'hit' || n === 'miss') && !prev[r]?.[c]) {
+        return { row: r, col: c, result: n };
+      }
+    }
+  }
+  return null;
+}
+
+function cloneShots(shots, size) {
+  return shots?.map((row) => [...row]) ?? emptyBoard(size);
+}
 
 const BOARD_SIZE = 10;
 const emptyBoard = (n) => Array(n).fill(null).map(() => Array(n).fill(null));
@@ -41,6 +62,14 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const { isCountdown, isRunning, startCountdown, startRunning } = useGameFlow();
   const wsRef = useRef(null);
   const handlerRef = useRef(null);
+  const benchmarkRunIdRef = useRef(null);
+  const gameFinishedRef = useRef(false);
+  const [gameOverDismissed, setGameOverDismissed] = useState(false);
+  const [revealedP1Shots, setRevealedP1Shots] = useState(() => emptyBoard(BOARD_SIZE));
+  const [revealedP2Shots, setRevealedP2Shots] = useState(() => emptyBoard(BOARD_SIZE));
+  const [activeShotAnim, setActiveShotAnim] = useState(null);
+  const prevShotsRef = useRef({ p1: null, p2: null });
+  const shotsInitRef = useRef(false);
 
   const getBackendModelName = (modelId) => modelId || 'gpt-5.5';
   const backendPlayer1 = getBackendModelName(player1Model);
@@ -111,8 +140,14 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     const newGameId = `battleship-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     setGameId(newGameId);
     startCountdown();
+    const handleUnload = () => {
+      if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
+    };
+    window.addEventListener('beforeunload', handleUnload);
     return () => {
+      window.removeEventListener('beforeunload', handleUnload);
       if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+      if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
     };
   }, [startCountdown]);
 
@@ -169,6 +204,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   };
 
   const handleGameStateUpdate = useCallback((data) => {
+    if (data.benchmark_run_id) benchmarkRunIdRef.current = data.benchmark_run_id;
     if (data.type === 'placement_complete') {
       if (data.board_size) setBoardSize(Number(data.board_size));
       setPlayer1Board(data.player1Board); setPlayer2Board(data.player2Board);
@@ -181,9 +217,11 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       if (data.player1Board) setPlayer1Board(data.player1Board);
       if (data.player2Board) setPlayer2Board(data.player2Board);
       if (data.status) setGameStatus(data.status);
-      if (data.winner) setWinner(data.winner);
+      if (data.winner) { gameFinishedRef.current = true;
+      setGameOverDismissed(false); setWinner(data.winner); }
       if (data.message) setMessage(data.message);
     } else if (data.type === 'game_over') {
+      gameFinishedRef.current = true;
       setWinner(data.winner); setGameStatus(GAME_STATUS.FINISHED); setMessage(data.message);
     } else if (data.type === 'ship_placed') {
       if (data.player === 1) setPlayer1Board(data.board); else setPlayer2Board(data.board);
@@ -192,99 +230,77 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
 
   handlerRef.current = handleGameStateUpdate;
 
-  const ShipSVG = ({ seg, color }) => {
-    const c = color;
-    const hi = '#9aa8b4';
-    const dk = '#2a3a4a';
-    const deck = '#3a4a5a';
+  useEffect(() => {
+    if (!shotsInitRef.current) {
+      prevShotsRef.current = { p1: player1Shots, p2: player2Shots };
+      setRevealedP1Shots(cloneShots(player1Shots, boardSize));
+      setRevealedP2Shots(cloneShots(player2Shots, boardSize));
+      shotsInitRef.current = true;
+      return;
+    }
+    if (activeShotAnim) return;
+    const onP1 = findNewShot(prevShotsRef.current.p2, player2Shots, boardSize);
+    if (onP1) {
+      setActiveShotAnim({ board: 'p1', ...onP1 });
+      prevShotsRef.current = { p1: player1Shots, p2: player2Shots };
+      return;
+    }
+    const onP2 = findNewShot(prevShotsRef.current.p1, player1Shots, boardSize);
+    if (onP2) setActiveShotAnim({ board: 'p2', ...onP2 });
+    prevShotsRef.current = { p1: player1Shots, p2: player2Shots };
+  }, [player1Shots, player2Shots, boardSize, activeShotAnim]);
 
-    if (seg === 'h-bow') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <polygon points="6,8 40,8 40,32 6,32 0,20" fill={c} />
-        <polygon points="6,8 40,8 40,16 6,16 2,12" fill={hi} opacity="0.2" />
-        <line x1="6" y1="20" x2="40" y2="20" stroke={dk} strokeWidth="1.5" />
-        <rect x="20" y="14" width="6" height="4" rx="1" fill={deck} />
-        <rect x="12" y="18" width="10" height="1" fill={dk} />
-      </svg>
-    );
-    if (seg === 'h-mid') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <rect x="0" y="8" width="40" height="24" fill={c} />
-        <rect x="0" y="8" width="40" height="8" fill={hi} opacity="0.15" />
-        <line x1="0" y1="20" x2="40" y2="20" stroke={dk} strokeWidth="1.5" />
-        <rect x="14" y="11" width="12" height="8" rx="1" fill={deck} />
-        <rect x="16" y="13" width="8" height="4" rx="1" fill={hi} opacity="0.2" />
-        <rect x="8" y="26" width="4" height="3" rx="0.5" fill={deck} />
-        <rect x="28" y="26" width="4" height="3" rx="0.5" fill={deck} />
-      </svg>
-    );
-    if (seg === 'h-stern') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <polygon points="0,8 34,8 40,14 40,26 34,32 0,32" fill={c} />
-        <polygon points="0,8 34,8 40,14 40,12 34,12 0,12" fill={hi} opacity="0.2" />
-        <line x1="0" y1="20" x2="36" y2="20" stroke={dk} strokeWidth="1.5" />
-        <rect x="6" y="14" width="6" height="4" rx="1" fill={deck} />
-      </svg>
-    );
-    if (seg === 'v-bow') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <polygon points="8,6 32,6 32,40 8,40 8,6" fill={c} />
-        <polygon points="20,0 32,6 32,40 8,40 8,6" fill={c} />
-        <polygon points="20,0 32,6 32,14 8,14 8,6" fill={hi} opacity="0.2" />
-        <line x1="20" y1="6" x2="20" y2="40" stroke={dk} strokeWidth="1.5" />
-        <rect x="14" y="20" width="4" height="6" rx="1" fill={deck} />
-        <rect x="18" y="12" width="1" height="10" fill={dk} />
-      </svg>
-    );
-    if (seg === 'v-mid') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <rect x="8" y="0" width="24" height="40" fill={c} />
-        <rect x="8" y="0" width="8" height="40" fill={hi} opacity="0.15" />
-        <line x1="20" y1="0" x2="20" y2="40" stroke={dk} strokeWidth="1.5" />
-        <rect x="11" y="14" width="8" height="12" rx="1" fill={deck} />
-        <rect x="13" y="16" width="4" height="8" rx="1" fill={hi} opacity="0.2" />
-        <rect x="26" y="8" width="3" height="4" rx="0.5" fill={deck} />
-        <rect x="26" y="28" width="3" height="4" rx="0.5" fill={deck} />
-      </svg>
-    );
-    if (seg === 'v-stern') return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <polygon points="8,0 32,0 32,34 26,40 14,40 8,34" fill={c} />
-        <polygon points="8,0 16,0 16,34 14,40 8,34" fill={hi} opacity="0.2" />
-        <line x1="20" y1="0" x2="20" y2="36" stroke={dk} strokeWidth="1.5" />
-        <rect x="14" y="6" width="4" height="6" rx="1" fill={deck} />
-      </svg>
-    );
-    return (
-      <svg viewBox="0 0 40 40" width="100%" height="100%">
-        <ellipse cx="20" cy="20" rx="14" ry="14" fill={c} />
-        <ellipse cx="20" cy="16" rx="14" ry="8" fill={hi} opacity="0.15" />
-        <rect x="14" y="14" width="12" height="8" rx="2" fill={deck} />
-        <rect x="16" y="16" width="8" height="4" rx="1" fill={hi} opacity="0.2" />
-      </svg>
-    );
-  };
+  const completeShotAnim = useCallback(() => {
+    if (!activeShotAnim) return;
+    const { board, row, col, result } = activeShotAnim;
+    if (board === 'p1') {
+      setRevealedP2Shots((prev) => {
+        const next = prev.map((r) => [...r]);
+        next[row][col] = result;
+        return next;
+      });
+    } else {
+      setRevealedP1Shots((prev) => {
+        const next = prev.map((r) => [...r]);
+        next[row][col] = result;
+        return next;
+      });
+    }
+    setActiveShotAnim(null);
+  }, [activeShotAnim]);
 
-  const renderShipCell = (board, opponentShots, row, col) => {
+  const renderShipCell = (board, revealedShots, row, col, boardSide) => {
     const val = board[row][col];
-    const isHit = opponentShots[row][col] === 'hit';
-    const isMiss = opponentShots[row][col] === 'miss';
+    const isHit = revealedShots[row][col] === 'hit';
+    const isMiss = revealedShots[row][col] === 'miss';
+    const isAnimating =
+      activeShotAnim?.board === boardSide
+      && activeShotAnim.row === row
+      && activeShotAnim.col === col;
 
-    if (!val && isMiss) return <div className="cell-miss" />;
-    if (!val) return null;
-
-    const def = SHIP_DEFS[val] || { name: val, len: 1, color: '#888' };
-    const seg = getShipSegment(board, row, col);
+    const cellContent = (() => {
+      if (!val && isMiss) return <div className="cell-miss cell-miss-reveal" />;
+      if (!val) return null;
+      const seg = getShipSegment(board, row, col);
+      return (
+        <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`}>
+          <ShipSegmentSprite seg={seg} damaged={isHit} />
+          {isHit && <div className="damage-overlay" />}
+        </div>
+      );
+    })();
 
     return (
-      <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`}>
-        <ShipSVG seg={seg} color={def.color} />
-        {isHit && <div className="damage-overlay" />}
-      </div>
+      <>
+        {cellContent}
+        {isAnimating && (
+          <ShotEffect result={activeShotAnim.result} onComplete={completeShotAnim} />
+        )}
+      </>
     );
   };
 
-  const renderBoard = (board, opponentShots) => (
+  const renderBoard = (board, revealedShots, boardSide) => (
     <div className="board-wrap">
       <table className="bs-table">
         <thead>
@@ -301,7 +317,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
               <td className="row-lbl">{row + 1}</td>
               {Array.from({ length: boardSize }, (_, col) => (
                 <td key={`${row}-${col}`} className="bs-cell">
-                  {renderShipCell(board, opponentShots, row, col)}
+                  {renderShipCell(board, revealedShots, row, col, boardSide)}
                 </td>
               ))}
             </tr>
@@ -325,7 +341,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
             <div className="fleet-pips">
               {Array.from({ length: totalCells }, (_, i) => (
                 <div key={i} className={`pip ${i < hitCount ? 'pip-hit' : 'pip-ok'}`}
-                  style={{ '--pip-color': def.color }} />
+                  style={{ '--pip-color': FLEET_HULL_COLOR }} />
               ))}
             </div>
             {sunk && <span className="sunk-tag">SUNK</span>}
@@ -347,7 +363,11 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       gameName="Battleship"
       player1Name={player1DisplayName}
       player2Name={player2DisplayName}
-      onBack={onBack}
+      onBack={() => {
+        if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
+        if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+        onBack();
+      }}
       statusText={bsStatusText}
     >
       {isCountdown && (
@@ -359,36 +379,36 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
           }} />
       )}
 
-      {winner && (
-        <div className="bs-overlay">
-          <div className="bs-overlay-box">
-            <h2 className="bs-over-title">GAME OVER</h2>
-            <div className="bs-winner">
-              {winner === 1 ? player1DisplayName : player2DisplayName} WINS
-            </div>
-            <div className="bs-final-stats">
-              <div className="bs-stat">
-                <div className="bs-stat-name">{player1DisplayName}</div>
-                <div className="bs-stat-val">{p1ShotStats.hits}/{p1ShotStats.total}</div>
-              </div>
-              <div className="bs-stat">
-                <div className="bs-stat-name">{player2DisplayName}</div>
-                <div className="bs-stat-val">{p2ShotStats.hits}/{p2ShotStats.total}</div>
-              </div>
-            </div>
-            <button onClick={() => {
-              if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-              onBack();
-            }} className="bs-back-btn">Back to Arena</button>
+            <GameOverModal
+        open={Boolean(winner && !gameOverDismissed)}
+        onClose={() => setGameOverDismissed(true)}
+        actions={
+          <button type="button" onClick={() => {
+            if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+            onBack();
+          }} className="new-game-overlay-button">Back to Arena</button>
+        }
+      >
+        <div className="winner-name">
+          {winner === 1 ? player1DisplayName : player2DisplayName} WINS
+        </div>
+        <div className="bs-final-stats">
+          <div className="bs-stat">
+            <div className="bs-stat-name">{player1DisplayName}</div>
+            <div className="bs-stat-val">{p1ShotStats.hits}/{p1ShotStats.total}</div>
+          </div>
+          <div className="bs-stat">
+            <div className="bs-stat-name">{player2DisplayName}</div>
+            <div className="bs-stat-val">{p2ShotStats.hits}/{p2ShotStats.total}</div>
           </div>
         </div>
-      )}
+      </GameOverModal>
 
       {isRunning && !isCountdown && (
         <div className="bs-main">
           <div className={`bs-side ${isP1Active ? 'side-active' : ''}`}>
             {isP1Active && <div className="firing-badge">FIRING</div>}
-            {renderBoard(player1Board, player2Shots)}
+            {renderBoard(player1Board, revealedP2Shots, 'p1')}
             <FleetPanel ships={p1Ships} />
           </div>
 
@@ -396,7 +416,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
 
           <div className={`bs-side ${isP2Active ? 'side-active' : ''}`}>
             {isP2Active && <div className="firing-badge">FIRING</div>}
-            {renderBoard(player2Board, player1Shots)}
+            {renderBoard(player2Board, revealedP1Shots, 'p2')}
             <FleetPanel ships={p2Ships} />
           </div>
         </div>

@@ -10,7 +10,13 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from src.games.wordle.wordle_simple import WordleGame, build_wordle_prompt, pick_secret_word
+from src.games.wordle.wordle_simple import (
+    WordleGame,
+    WordleAgentError,
+    build_wordle_prompt,
+    parse_agent_guess,
+    pick_secret_word,
+)
 from src.games.battleship.battleship import BattleshipGame
 from src.games.nyt_connections.connections_game import ConnectionsGame
 from src.games.prisoners_dilemma import PrisonersSession, start_session as pd_start, PAYOFFS
@@ -221,6 +227,15 @@ class TestConnectionsGame:
         state = game.get_game_state()
         assert "difficulty_avg" in state
         assert "difficulty_band" in state
+
+
+class TestWordleGuessParsing:
+    def test_empty_agent_output_raises(self):
+        with pytest.raises(WordleAgentError):
+            parse_agent_guess("", 5)
+
+    def test_valid_word_passthrough(self):
+        assert parse_agent_guess("slate", 5) == "SLATE"
 
 
 class TestWordleBuildPrompt:

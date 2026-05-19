@@ -6,7 +6,8 @@ import json
 import random
 import os
 from typing import Any, Dict, List, Optional, Set
-from src.utils.common import LLMClient
+from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.game_tools import CONNECTIONS_TOOLS
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -222,17 +223,22 @@ class ConnectionsGame:
         return random.sample(self.remaining_words, 4)
     
     MAX_INCORRECT_GUESSES = 15
+    MAX_TOTAL_GUESSES = 40
 
     def get_ai_guess(self, model_id: str) -> Optional[List[str]]:
         """Get an AI guess for the current state"""
+        total_guesses = len(self.correct_guesses) + len(self.incorrect_guesses)
+        if total_guesses >= self.MAX_TOTAL_GUESSES:
+            self.game_over = True
+            return None
+
         if len(self.remaining_words) < 4:
+            self.game_over = True
             return None
 
         if len(self.incorrect_guesses) >= self.MAX_INCORRECT_GUESSES:
             self.game_over = True
             return None
-
-        llm_client = LLMClient(model_id)
 
         correct_history = ""
         if self.correct_guesses:
@@ -261,9 +267,16 @@ class ConnectionsGame:
 
         pattern_analysis = self._analyze_patterns()
 
+        progress = (
+            f"Progress: {len(self.found_groups)}/4 groups found | "
+            f"Wrong guesses: {len(self.incorrect_guesses)}/{self.MAX_INCORRECT_GUESSES} "
+            f"({self.MAX_INCORRECT_GUESSES - len(self.incorrect_guesses)} mistakes left before loss)\n"
+        )
+
         if len(self.found_groups) == 2:
             prompt = f"""NYT Connections: Find 4 words that share a common theme.
 
+{progress}
 CRITICAL SITUATION: You have found 2 groups. Only 2 groups remain among these 8 words.
 
 Available words ({len(self.remaining_words)} remaining):
@@ -283,6 +296,7 @@ Respond with ONLY 4 words separated by commas."""
         else:
             prompt = f"""NYT Connections: Find 4 words that share a common theme.
 
+{progress}
 RULES:
 - Select exactly 4 words that form a group
 - Common themes include: categories (e.g., types of birds), word associations (e.g., things that are red), phrases (e.g., words that go with 'time'), or wordplay
@@ -300,39 +314,51 @@ DO NOT repeat any combination listed above as WRONG.
 Respond with ONLY 4 words separated by commas. Example format:
 WORD1, WORD2, WORD3, WORD4"""
 
+        def executor(name: str, args: Dict[str, Any]) -> Any:
+            if name == "get_remaining_words":
+                return {"words": sorted(self.remaining_words), "count": len(self.remaining_words)}
+            if name == "get_found_groups":
+                return {
+                    "groups": [
+                        {
+                            "name": g.get("group_name"),
+                            "words": g.get("words"),
+                            "level": g.get("level"),
+                        }
+                        for g in self.found_groups
+                    ]
+                }
+            if name == "submit_group":
+                words = [str(w).upper() for w in (args.get("words") or [])]
+                return terminal_result({"words": words})
+            return {"error": f"Unknown tool {name}"}
+
         try:
             usage: Dict[str, Any] = {}
-            response = llm_client.get_response(
-                prompt, max_tokens=50, temperature=0.3, usage_out=usage
+            agent = AgentClient(model_id)
+            turn = agent.run_turn(
+                [{"role": "user", "content": prompt}],
+                CONNECTIONS_TOOLS,
+                executor,
+                max_steps=5,
+                max_tokens=128,
+                temperature=0.3,
+                usage_out=usage,
+                system="NYT Connections: use tools, then submit_group with exactly 4 words.",
             )
             self._last_llm_usage = usage
-            if response is None:
-                return self._get_unique_guess()
-
-            response = response.strip()
-            for prefix in ["Answer:", "Guess:", "Response:", "My guess:", "I choose:"]:
-                if response.startswith(prefix):
-                    response = response[len(prefix):].strip()
-
-            import re
-            parts = re.split(r'[,;]\s*|\s{2,}', response)
-            parts = [w.strip().upper() for w in parts if w.strip()]
-
-            valid_parts = [w for w in parts if w in [rw.upper() for rw in self.remaining_words]]
-
+            usage["tool_calls"] = turn.tool_calls
+            words = [w.upper() for w in turn.action_args.get("words", [])]
+            valid_parts = [w for w in words if w in [rw.upper() for rw in self.remaining_words]]
             if len(valid_parts) >= 4:
                 candidate = sorted(valid_parts[:4])
                 prev_guesses_sorted = [sorted([w.upper() for w in g]) for g in self.incorrect_guesses]
                 if candidate in prev_guesses_sorted:
-                    print(f"[Dedup] {model_id} tried to repeat a guess, using smart fallback")
                     return self._get_unique_guess()
                 return valid_parts[:4]
-            else:
-                print(f"[Warning] {model_id} gave incomplete guess: {parts}")
-                return self._get_unique_guess()
+            return self._get_unique_guess()
 
-        except Exception as e:
-            print(f"Error getting AI guess from {model_id}: {e}")
+        except Exception:
             return self._get_unique_guess()
 
     def _get_unique_guess(self) -> Optional[List[str]]:

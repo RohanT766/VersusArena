@@ -9,6 +9,8 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from src.utils.common import BaseGame, LLMClient
+from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.game_tools import BATTLESHIP_PLACEMENT_TOOLS, BATTLESHIP_SHOT_TOOLS
 
 BOARD_PRESETS: Dict[int, Dict[str, int]] = {
     8: {"carrier": 4, "battleship": 3, "destroyer": 3, "submarine": 2, "patrol": 2},
@@ -71,16 +73,26 @@ Return ONLY a JSON array, no markdown, shape:
 orientations are "horizontal" or "vertical". Indices are 0-based. Ships cannot overlap."""
 
         usage: Dict[str, Any] = {}
+
+        def executor(name: str, args: Dict[str, Any]) -> Any:
+            if name == "place_ships":
+                return terminal_result({"ships": args.get("ships", [])})
+            return {"error": f"Unknown tool {name}"}
+
         try:
-            raw = llm.get_response(prompt, max_tokens=600, temperature=0.2, usage_out=usage)
+            agent = AgentClient(llm.model_id)
+            turn = agent.run_turn(
+                [{"role": "user", "content": prompt}],
+                BATTLESHIP_PLACEMENT_TOOLS,
+                executor,
+                max_steps=3,
+                max_tokens=800,
+                temperature=0.2,
+                usage_out=usage,
+                system="Place all Battleship ships using place_ships tool.",
+            )
             self._last_shot_usage = usage
-            if not raw:
-                return False
-            raw = raw.strip()
-            if raw.startswith("```"):
-                raw = re.sub(r"^```[a-zA-Z]*", "", raw)
-                raw = re.sub(r"```$", "", raw).strip()
-            placements = json.loads(raw)
+            placements = turn.action_args.get("ships", [])
             if not isinstance(placements, list):
                 return False
 
@@ -318,6 +330,12 @@ orientations are "horizontal" or "vertical". Indices are 0-based. Ships cannot o
         if not available_positions:
             return "No positions available. Game should be over."
 
+        shots_taken = sum(1 for row in shots for s in row if s is not None)
+        total_cells = self.board_size * self.board_size
+        hits = sum(1 for row in shots for s in row if s == "hit")
+        opp_shots = self.game_state["player2_shots"] if player == 1 else self.game_state["player1_shots"]
+        opp_hits = sum(1 for row in opp_shots for s in row if s == "hit")
+
         header = "   " + " ".join(list(letters))
         board_str = "Your shots so far:\n" + header + "\n"
         for i in range(self.board_size):
@@ -369,11 +387,55 @@ orientations are "horizontal" or "vertical". Indices are 0-based. Ships cannot o
 
 Legend: X = hit, O = miss, . = not yet shot
 
+Shots: {shots_taken}/{total_cells} | Your hits: {hits} | Opponent hits on your fleet: {opp_hits} | Ship cells to sink: {self.total_ship_cells}
+
 Available shots remain: {len(available_positions)}{strategy_hint}
 
 Reply with ONLY one coordinate such as "{suggested}". Nothing else."""
 
         return prompt
+
+    def agent_fire_shot(self, player: int, model_id: str, usage_out: Optional[Dict[str, Any]] = None) -> str:
+        """Agent turn: tools get_board_state then fire_shot; returns coordinate like A5."""
+        letters = self.board_letters()
+        prompt = self.get_prompt_for_player(player)
+
+        def executor(name: str, args: Dict[str, Any]) -> Any:
+            if name == "get_board_state":
+                return {
+                    "board_ascii": prompt.split("Your shots so far:")[1].split("Legend:")[0].strip()
+                    if "Your shots so far:" in prompt
+                    else prompt,
+                    "available_count": prompt.count(". "),
+                }
+            if name == "fire_shot":
+                return terminal_result(
+                    {"row": int(args["row"]), "col": int(args["col"])}
+                )
+            return {"error": f"Unknown tool {name}"}
+
+        agent = AgentClient(model_id)
+        try:
+            turn = agent.run_turn(
+                [{"role": "user", "content": prompt}],
+                BATTLESHIP_SHOT_TOOLS,
+                executor,
+                max_steps=5,
+                max_tokens=64,
+                temperature=0.3,
+                usage_out=usage_out,
+                system="Battleship: inspect board then fire_shot once.",
+            )
+            if usage_out is not None:
+                usage_out["tool_calls"] = turn.tool_calls
+            r = int(turn.action_args["row"])
+            c = int(turn.action_args["col"])
+            if 0 <= r < self.board_size and 0 <= c < self.board_size:
+                return f"{letters[c]}{r + 1}"
+        except Exception:
+            pass
+        llm = LLMClient(model_id)
+        return llm.get_move(prompt, self.game_state, usage_out=usage_out, board_letters=letters)
 
     def is_valid_move(self, move: str) -> bool:
         if not move or len(move) < 2:
@@ -406,3 +468,65 @@ Reply with ONLY one coordinate such as "{suggested}". Nothing else."""
             state["player1_ships"] = self.game_state["player1_board"]
             state["player2_ships"] = self.game_state["player2_board"]
         return state
+
+
+MAX_BATTLESHIP_MOVES = 400
+
+
+def play_until_winner(
+    game: BattleshipGame,
+    *,
+    llm_placement: bool = False,
+    max_moves: int = MAX_BATTLESHIP_MOVES,
+) -> Dict[str, Any]:
+    """Run a full Battleship game in-process; always terminates."""
+    import re as _re
+
+    letters = game.board_letters()
+    coord_re = _re.compile(rf"([{letters}])(\d+)", _re.I)
+
+    for player in (1, 2):
+        if llm_placement:
+            llm = game.player1 if player == 1 else game.player2
+            if not game.place_ships_via_llm(player, llm):
+                game.place_ships_for_player(player)
+        else:
+            game.place_ships_for_player(player)
+        game.ships_placed[player] = True
+        game.game_state[f"player{player}_ships_placed"] = True
+
+    game.status = "active"
+    moves = 0
+    while game.status == "active" and not game.winner and moves < max_moves:
+        moves += 1
+        p = game.current_player
+        model_id = game.player1_model if p == 1 else game.player2_model
+        usage: Dict[str, Any] = {}
+        move_response = game.agent_fire_shot(p, model_id, usage_out=usage)
+        move_str = (move_response or "").strip().upper().split()[0] if move_response else ""
+        m = coord_re.search(move_str)
+        if m:
+            col_idx = ord(m.group(1).upper()) - ord("A")
+            row_idx = int(m.group(2)) - 1
+            if game.is_valid_move(f"{letters[col_idx]}{row_idx + 1}"):
+                game.make_move(row_idx, col_idx)
+                continue
+        shots = game.game_state[f"player{p}_shots"]
+        for i in range(game.board_size):
+            for j in range(game.board_size):
+                if shots[i][j] is None:
+                    game.make_move(i, j)
+                    break
+            else:
+                continue
+            break
+
+    if game.winner:
+        game.status = "finished"
+    elif moves >= max_moves:
+        game.status = "finished"
+    return {
+        "winner": game.winner or 0,
+        "moves": moves,
+        "status": game.status,
+    }

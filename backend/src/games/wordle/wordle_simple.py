@@ -1,5 +1,5 @@
 """
-AI vs AI Wordle — configurable length, hard mode, any provider via LLMClient.
+AI vs AI Wordle — configurable length, hard mode, agent tool calling.
 """
 
 from __future__ import annotations
@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from src.utils.common import LLMClient
+from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.game_tools import WORDLE_TOOLS
 
 app = Flask(__name__)
 CORS(app)
@@ -45,6 +46,31 @@ WORDS_BY_LEN: Dict[int, List[str]] = {
 def pick_secret_word(length: int) -> str:
     pool = WORDS_BY_LEN.get(length, WORDS_BY_LEN[5])
     return random.choice(pool)
+
+
+class WordleAgentError(RuntimeError):
+    """Agent failed to return a valid submit_guess tool call."""
+
+
+def parse_agent_guess(raw: str, word_len: int) -> str:
+    """Require a valid word from the agent — no substitution."""
+    text = (raw or "").upper().strip()
+    if len(text) == word_len and text.isalpha():
+        return text
+
+    for token in text.replace(",", " ").split():
+        if len(token) == word_len and token.isalpha():
+            return token
+
+    clean = "".join(c for c in text if c.isalpha())
+    if len(clean) >= word_len:
+        candidate = clean[:word_len]
+        if candidate.isalpha():
+            return candidate
+
+    raise WordleAgentError(
+        f"Agent did not submit a valid {word_len}-letter word (raw={raw!r})"
+    )
 
 
 class WordleGame:
@@ -195,7 +221,9 @@ def build_wordle_prompt(
     hm = "\nHARD MODE: Every later guess MUST use every revealed green letter in place, include every yellow letter somewhere (not same slot), and never reuse letters ruled out.\n" if hard_mode else ""
 
     if turn == 1:
-        return f"""You are playing Wordle. The hidden word has exactly {word_len} letters.{hm}
+        return f"""You are playing Wordle (max 6 guesses per player). The hidden word has exactly {word_len} letters.{hm}
+
+This is guess 1 of 6.
 
 RULES:
 - Green = correct letter and position
@@ -244,7 +272,7 @@ Respond with ONLY one {word_len}-letter English word in ALL CAPS, no punctuation
 {history}
 {constraints}
 
-Turn {turn}. Next guess: exactly {word_len} letters, ALL CAPS, one word only."""
+Turn {turn} of 6. Next guess: exactly {word_len} letters, ALL CAPS, one word only."""
 
 
 def get_llm_guess(
@@ -256,27 +284,48 @@ def get_llm_guess(
     hard_mode: bool,
     usage_out: Optional[Dict[str, Any]] = None,
 ) -> Tuple[str, str]:
-    client = LLMClient(model_id)
     prompt = build_wordle_prompt(word_len, previous_guesses, previous_feedback, hard_mode)
     usage: Dict[str, Any] = {}
-    text = client.get_response(prompt, max_tokens=32, temperature=0.4, usage_out=usage)
+
+    def executor(name: str, args: Dict[str, Any]) -> Any:
+        if name == "get_feedback_history":
+            history = []
+            for g, fb in zip(previous_guesses, previous_feedback):
+                history.append({"guess": g, "feedback": fb})
+            return {"turn": len(previous_guesses) + 1, "max_turns": 6, "history": history}
+        if name == "submit_guess":
+            word = str(args.get("word", "")).upper().strip()
+            return terminal_result({"word": word})
+        return {"error": f"Unknown tool {name}"}
+
+    agent = AgentClient(model_id)
+    turn = agent.run_turn(
+        [{"role": "user", "content": prompt}],
+        WORDLE_TOOLS,
+        executor,
+        max_steps=8,
+        max_tokens=128,
+        temperature=0.4,
+        usage_out=usage,
+        system=(
+            f"You are playing Wordle ({word_len} letters). "
+            "You must call submit_guess with a single real English word of exactly that length."
+        ),
+    )
+
+    if turn.action_name != "submit_guess":
+        raise WordleAgentError(
+            f"Agent did not call submit_guess (last tool: {turn.action_name!r})"
+        )
+
+    raw = str(turn.action_args.get("word", ""))
+    guess = parse_agent_guess(raw, word_len)
+    reasoning = turn.reasoning or f"Turn {len(previous_guesses) + 1} via {', '.join(turn.tools_used)}"
     if usage_out is not None:
         usage_out.update(usage)
+        usage_out["tool_calls"] = turn.tool_calls
+        usage_out["agent_raw_word"] = raw
 
-    if not text:
-        fb = WORDS_BY_LEN.get(word_len, WORDS_BY_LEN[5])
-        guess = fb[len(previous_guesses) % len(fb)][:word_len].ljust(word_len, "X")[:word_len]
-        return guess.upper(), "LLM unavailable — fallback guess"
-
-    raw = text.strip().upper()
-    words = [w for w in raw.replace(",", " ").split() if len(w) == word_len and w.isalpha()]
-    if words:
-        guess = words[0]
-    else:
-        clean = "".join(c for c in raw if c.isalpha())
-        guess = clean[:word_len].ljust(word_len, "A")[:word_len]
-
-    reasoning = f"Turn {len(previous_guesses) + 1} strategic guess"
     return guess, reasoning
 
 

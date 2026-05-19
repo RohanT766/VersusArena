@@ -1,0 +1,86 @@
+.ms-split {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.ms-side {
+  flex: 1;
+  max-width: 360px;
+}
+
+.ms-score {
+  text-align: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: #a1a1aa;
+}
+
+.ms-out {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  background: #27272a;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.ms-cell {
+  aspect-ratio: 1;
+  background: #3f3f46;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  border-radius: 2px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.ms-cell.revealed {
+  background: #18181b;
+  animation: msReveal 0.25s ease-out;
+}
+
+.ms-cell.mine {
+  background: #7f1d1d;
+  animation: msBoom 0.4s ease-out;
+}
+
+@keyframes msReveal {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes msBoom {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); background: #ef4444; }
+  100% { transform: scale(1); }
+}
+
+.ms-boom {
+  font-size: 1rem;
+}
+
+.ms-final {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 1rem 0;
+  color: #d4d4d8;
+}
+
+.ms-error {
+  color: #ef4444;
+  text-align: center;
+  padding: 1rem;
+}

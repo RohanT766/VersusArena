@@ -283,6 +283,11 @@ body {
   flex: 0 0 78px;
 }
 
+.game-icon-svg svg {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 .game-card:hover .game-icon-svg {
   opacity: 1;
   filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 204, 0, 0.4));

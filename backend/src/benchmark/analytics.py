@@ -109,13 +109,15 @@ def fetch_overview(conn) -> Dict[str, Any]:
             COUNT(*) AS total_runs,
             SUM(CASE WHEN status = 'finished' THEN 1 ELSE 0 END) AS finished_runs,
             SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_runs,
-            SUM(CASE WHEN status NOT IN ('finished', 'in_progress') THEN 1 ELSE 0 END) AS other_status_runs
+            SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_runs,
+            SUM(CASE WHEN status NOT IN ('finished', 'in_progress', 'cancelled') THEN 1 ELSE 0 END) AS other_status_runs
         FROM benchmark_runs
         """
     ).fetchone()
     total = int(row["total_runs"] or 0)
     finished = int(row["finished_runs"] or 0)
     in_prog = int(row["in_progress_runs"] or 0)
+    cancelled = int(row["cancelled_runs"] or 0)
     other = int(row["other_status_runs"] or 0)
 
     dur_rows = conn.execute(
@@ -159,6 +161,7 @@ def fetch_overview(conn) -> Dict[str, Any]:
         "total_runs": total,
         "finished_runs": finished,
         "in_progress_runs": in_prog,
+        "cancelled_runs": cancelled,
         "abandoned_or_error_runs": other,
         "completion_rate": round(100.0 * finished / total, 2) if total else 0,
         "median_duration_sec": round(median_duration, 2),

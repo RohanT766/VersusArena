@@ -467,6 +467,16 @@
   margin-bottom: 20px;
 }
 
+.wordle-agent-error {
+  color: #ef4444;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  text-align: center;
+  padding: 12px 20px;
+  margin: 0 auto;
+  max-width: 900px;
+}
+
 .wordle-final-word {
   font-size: 22px;
   font-family: 'VT323', monospace;

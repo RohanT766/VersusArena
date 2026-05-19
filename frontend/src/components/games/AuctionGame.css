@@ -1,0 +1,103 @@
+.auc-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  gap: 1.5rem;
+}
+
+.auc-players {
+  display: flex;
+  gap: 3rem;
+  width: 100%;
+  max-width: 700px;
+  justify-content: space-between;
+}
+
+.auc-player {
+  flex: 1;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+}
+
+.auc-p1 { border-color: #10b981; }
+.auc-p2 { border-color: #a78bfa; }
+
+.auc-name {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.auc-budget, .auc-value {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+.auc-item-card, .auc-reveal {
+  text-align: center;
+  padding: 2rem 3rem;
+  background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  min-width: 280px;
+}
+
+.auc-hint {
+  color: #a1a1aa;
+  margin: 0.5rem 0;
+}
+
+.auc-value-hidden {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f59e0b;
+}
+
+.auc-true-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #22c55e;
+  animation: aucPop 0.5s ease-out;
+}
+
+.auc-reveal-pop {
+  animation: aucPop 0.4s ease-out;
+}
+
+@keyframes aucPop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.auc-bids {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 1rem 0;
+  font-size: 1.1rem;
+}
+
+.auc-round-winner {
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.auc-thinking {
+  color: #71717a;
+}
+
+.auc-final {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.auc-error {
+  color: #ef4444;
+  text-align: center;
+}

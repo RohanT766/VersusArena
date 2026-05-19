@@ -1,5 +1,6 @@
 {
   "name": "versus-frontend",
+  "description": "React UI for Versus Arena: real-time AI vs AI game benchmarks with analytics",
   "private": true,
   "version": "0.0.0",
   "type": "module",

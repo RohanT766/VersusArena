@@ -29,6 +29,7 @@ class AgentLoop:
         move_fn: Callable[[str, Dict[str, Any]], Coroutine],
         is_game_over_fn: Callable[[], bool],
         think_delay: float = 0.5,
+        max_moves: int = 120,
     ):
         """
         Args:
@@ -37,12 +38,14 @@ class AgentLoop:
             move_fn: async callable(agent_id, state) that executes one move
             is_game_over_fn: callable that returns True when the game is finished
             think_delay: seconds to wait between moves (simulates thinking)
+            max_moves: hard cap so a stuck game cannot loop forever
         """
         self.agent_id = agent_id
         self._get_state = game_state_fn
         self._make_move = move_fn
         self._is_over = is_game_over_fn
         self.think_delay = think_delay
+        self.max_moves = max_moves
         self._task: Optional[asyncio.Task] = None
         self.moves_made = 0
         self.errors = 0
@@ -51,6 +54,11 @@ class AgentLoop:
         """Core loop: observe → act → sleep → repeat."""
         logger.info(f"Agent {self.agent_id} loop started")
         while not self._is_over():
+            if self.moves_made >= self.max_moves:
+                logger.error(
+                    f"Agent {self.agent_id} hit max_moves ({self.max_moves}), stopping"
+                )
+                return
             try:
                 state = self._get_state()
                 await self._make_move(self.agent_id, state)

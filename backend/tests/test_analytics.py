@@ -96,6 +96,45 @@ class TestDeleteAndEloRebuild:
             conn.close()
 
 
+class TestCancelRun:
+    def test_cancel_in_progress_run(self, temp_db):
+        rec = BenchmarkRecorder()
+        rid = rec.start_run("wordle", "gpt-5.5", "claude-sonnet-4-6", {})
+        assert rec.cancel_run(rid) is True
+        conn = get_connection()
+        try:
+            row = conn.execute("SELECT status FROM benchmark_runs WHERE id = ?", (rid,)).fetchone()
+            assert row["status"] == "cancelled"
+        finally:
+            conn.close()
+
+    def test_cancel_finished_run_returns_false(self, temp_db):
+        rec = BenchmarkRecorder()
+        rid = _finish_run(rec, "wordle", "gpt-5.5", "claude-sonnet-4-6", 1)
+        assert rec.cancel_run(rid) is False
+
+    def test_cancel_nonexistent_run_returns_false(self, temp_db):
+        rec = BenchmarkRecorder()
+        assert rec.cancel_run("does-not-exist") is False
+
+    def test_cancelled_run_excluded_from_analytics(self, temp_db):
+        rec = BenchmarkRecorder()
+        rid1 = _finish_run(rec, "wordle", "gpt-5.5", "claude-sonnet-4-6", 1)
+        rid2 = rec.start_run("wordle", "gpt-5.5", "claude-sonnet-4-6", {})
+        rec.cancel_run(rid2)
+
+        conn = get_connection()
+        try:
+            ov = fetch_overview(conn)
+            assert ov["finished_runs"] == 1
+            assert ov["cancelled_runs"] == 1
+            models = fetch_model_performance(conn, "overall")
+            for m in models:
+                assert m["games_played"] == 1
+        finally:
+            conn.close()
+
+
 class TestAnalyticsEndpoints:
     def test_overview_counts(self, temp_db):
         rec = BenchmarkRecorder()
