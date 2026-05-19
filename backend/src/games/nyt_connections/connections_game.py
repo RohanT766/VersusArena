@@ -114,7 +114,12 @@ class ConnectionsGame:
         else:
             # Add to incorrect guesses
             self.incorrect_guesses.append(guess)
-        
+            if len(self.incorrect_guesses) >= self.MAX_INCORRECT_GUESSES:
+                self.game_over = True
+
+        if len(self.remaining_words) < 4:
+            self.game_over = True
+
         return {
             'result': result,
             'remaining_words': self.remaining_words,

@@ -228,6 +228,14 @@ class TestConnectionsGame:
         assert "difficulty_avg" in state
         assert "difficulty_band" in state
 
+    def test_max_incorrect_guesses_ends_game(self):
+        game = ConnectionsGame()
+        fake = ["FAKE", "WORDS", "HERE", "NOW"]
+        for _ in range(ConnectionsGame.MAX_INCORRECT_GUESSES):
+            game.make_guess("player1", fake)
+        assert game.game_over is True
+        assert len(game.incorrect_guesses) == ConnectionsGame.MAX_INCORRECT_GUESSES
+
 
 class TestWordleGuessParsing:
     def test_empty_agent_output_raises(self):

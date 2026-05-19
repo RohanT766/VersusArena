@@ -954,12 +954,21 @@ async def get_connections_state(game_id: str):
     }
 
 
+def _connections_player_done(game) -> bool:
+    """Match frontend completion rules (groups, wrong limit, or game_over)."""
+    return (
+        game.game_over
+        or len(game.found_groups) >= 4
+        or len(game.incorrect_guesses) >= game.MAX_INCORRECT_GUESSES
+    )
+
+
 def _connections_try_finish(game_id: str) -> None:
     sess = connections_games.get(game_id)
     if not sess or sess.get("benchmark_finished"):
         return
     g1, g2 = sess["player1_game"], sess["player2_game"]
-    if not (g1.game_over and g2.game_over):
+    if not (_connections_player_done(g1) and _connections_player_done(g2)):
         return
     br = sess.get("benchmark_run_id")
     if not br:
@@ -991,6 +1000,20 @@ def _connections_try_finish(game_id: str) -> None:
         },
     )
     sess["benchmark_finished"] = True
+
+
+@app.post("/api/connections/game/{game_id}/finalize")
+async def finalize_connections_game(game_id: str):
+    """Mark benchmark run finished once both players have a final result."""
+    if game_id not in connections_games:
+        raise HTTPException(status_code=404, detail="Game not found")
+    _connections_try_finish(game_id)
+    sess = connections_games[game_id]
+    return {
+        "finalized": bool(sess.get("benchmark_finished")),
+        "player1_done": _connections_player_done(sess["player1_game"]),
+        "player2_done": _connections_player_done(sess["player2_game"]),
+    }
 
 
 # ==========================

@@ -152,10 +152,12 @@ class BenchmarkRecorder:
             conn = get_connection()
             try:
                 row = conn.execute(
-                    "SELECT player1_model, player2_model FROM benchmark_runs WHERE id = ?",
+                    "SELECT player1_model, player2_model, status FROM benchmark_runs WHERE id = ?",
                     (run_id,),
                 ).fetchone()
                 if not row:
+                    return
+                if row["status"] == "finished":
                     return
                 m1, m2 = row["player1_model"], row["player2_model"]
 

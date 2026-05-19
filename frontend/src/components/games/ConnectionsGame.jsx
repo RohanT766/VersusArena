@@ -157,6 +157,11 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
     if (bothDone) gameFinishedRef.current = true;
   }, [bothDone]);
 
+  useEffect(() => {
+    if (!bothDone || !gameId) return;
+    fetch(`${getApiBase()}/api/connections/game/${gameId}/finalize`, { method: 'POST' }).catch(() => {});
+  }, [bothDone, gameId]);
+
   const getWinner = () => {
     if (!player1State || !player2State) return null;
     const p1Groups = player1State.found_groups.length;
