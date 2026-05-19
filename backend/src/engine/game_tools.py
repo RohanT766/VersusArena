@@ -76,25 +76,33 @@ BATTLESHIP_PLACEMENT_TOOLS: List[Dict[str, Any]] = [
 
 # --- Wordle ---
 
-WORDLE_TOOLS: List[Dict[str, Any]] = [
-    _tool(
-        "get_feedback_history",
-        "Get your previous guesses and green/yellow/black feedback.",
-        {},
-    ),
-    _tool(
-        "submit_guess",
-        "Submit one Wordle guess (exact word length for this game).",
-        {
-            "word": {
-                "type": "string",
-                "description": "Uppercase letters only, exact word length",
+
+def wordle_tools(word_len: int) -> List[Dict[str, Any]]:
+    """Tool schemas for Wordle; word_len sets submit_guess constraints."""
+    return [
+        _tool(
+            "get_feedback_history",
+            "Get your previous guesses and green/yellow/black feedback.",
+            {},
+        ),
+        _tool(
+            "submit_guess",
+            f"Submit your Wordle guess. Required: exactly {word_len} uppercase letters in the word field.",
+            {
+                "word": {
+                    "type": "string",
+                    "description": f"Exactly {word_len} uppercase A-Z letters (e.g. {({5: 'SLATE', 6: 'BRIGHT', 7: 'ADAPTER', 8: 'ELEPHANT'}.get(word_len, 'CRANE'))})",
+                    "minLength": word_len,
+                    "maxLength": word_len,
+                },
             },
-        },
-        ["word"],
-        terminal=True,
-    ),
-]
+            ["word"],
+            terminal=True,
+        ),
+    ]
+
+
+WORDLE_TOOLS: List[Dict[str, Any]] = wordle_tools(5)
 
 
 # --- Connections ---

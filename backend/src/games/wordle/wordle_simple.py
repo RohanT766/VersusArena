@@ -11,7 +11,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from src.engine.agent_client import AgentClient, terminal_result
-from src.engine.game_tools import WORDLE_TOOLS
+from src.engine.agent_client import _fallback_parse_terminal
+from src.engine.game_tools import wordle_tools
 
 app = Flask(__name__)
 CORS(app)
@@ -50,6 +51,15 @@ def pick_secret_word(length: int) -> str:
 
 class WordleAgentError(RuntimeError):
     """Agent failed to return a valid submit_guess tool call."""
+
+
+def _word_from_tool_args(args: Dict[str, Any]) -> str:
+    """Read guess from tool args; models sometimes use alternate keys."""
+    for key in ("word", "guess", "letters", "answer"):
+        val = args.get(key)
+        if val is not None and str(val).strip():
+            return str(val).upper().strip()
+    return ""
 
 
 def parse_agent_guess(raw: str, word_len: int) -> str:
@@ -294,22 +304,31 @@ def get_llm_guess(
                 history.append({"guess": g, "feedback": fb})
             return {"turn": len(previous_guesses) + 1, "max_turns": 6, "history": history}
         if name == "submit_guess":
-            word = str(args.get("word", "")).upper().strip()
+            word = _word_from_tool_args(args)
+            if len(word) != word_len or not word.isalpha():
+                return {
+                    "error": (
+                        f"submit_guess.word must be exactly {word_len} uppercase letters "
+                        f"(received {word!r}). Call submit_guess again with a valid English word."
+                    )
+                }
             return terminal_result({"word": word})
         return {"error": f"Unknown tool {name}"}
 
     agent = AgentClient(model_id)
     turn = agent.run_turn(
         [{"role": "user", "content": prompt}],
-        WORDLE_TOOLS,
+        wordle_tools(word_len),
         executor,
         max_steps=8,
-        max_tokens=128,
+        max_tokens=256,
         temperature=0.4,
         usage_out=usage,
         system=(
             f"You are playing Wordle ({word_len} letters). "
-            "You must call submit_guess with a single real English word of exactly that length."
+            "Use get_feedback_history if needed, then call submit_guess with JSON "
+            f'{{"word": "YOURGUESS"}} where YOURGUESS is exactly {word_len} uppercase letters. '
+            "Do not call submit_guess until the word field is filled."
         ),
     )
 
@@ -318,7 +337,11 @@ def get_llm_guess(
             f"Agent did not call submit_guess (last tool: {turn.action_name!r})"
         )
 
-    raw = str(turn.action_args.get("word", ""))
+    raw = _word_from_tool_args(turn.action_args)
+    if not raw and turn.reasoning:
+        parsed = _fallback_parse_terminal("submit_guess", turn.reasoning)
+        if parsed:
+            raw = str(parsed.get("word", ""))
     guess = parse_agent_guess(raw, word_len)
     reasoning = turn.reasoning or f"Turn {len(previous_guesses) + 1} via {', '.join(turn.tools_used)}"
     if usage_out is not None:
