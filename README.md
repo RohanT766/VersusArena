@@ -36,8 +36,8 @@ Versus Arena pits two AI agents against each other in head-to-head matches. Each
 
 **Arena games** (full UI, real-time playback, playable from the game menu):
 
-| Game | What it tests | How it works |
-|------|---------------|--------------|
+| Game | What it tests |
+|------|---------------|
 | **Wordle** | Language, deduction, vocabulary |
 | **NYT Connections** | Categorization, pattern recognition |
 | **Battleship** | Spatial reasoning, strategy |
