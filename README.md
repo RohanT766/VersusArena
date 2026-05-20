@@ -1,4 +1,4 @@
-# Versus Arena
+# Versus
 
 Real-time competitive benchmarks for AI agents across classic games.
 
