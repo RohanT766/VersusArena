@@ -11,7 +11,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from src.engine.agent_client import AgentClient, terminal_result
-from src.engine.agent_client import _fallback_parse_terminal
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, _fallback_parse_terminal
 from src.engine.game_tools import wordle_submit_tools
 
 app = Flask(__name__)
@@ -320,7 +320,7 @@ def get_llm_guess(
         [{"role": "user", "content": prompt}],
         wordle_submit_tools(word_len),
         executor,
-        max_steps=6,
+        max_steps=ARENA_AGENT_MAX_STEPS,
         max_tokens=256,
         temperature=0.4,
         usage_out=usage,

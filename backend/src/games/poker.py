@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from src.utils.common import LLMClient
-from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, AgentClient, terminal_result
 from src.engine.game_tools import POKER_TOOLS
 from src.games.poker_chips import (
     CHIPS_PER_PLAYER,
@@ -327,9 +327,15 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
                 "history": hist,
             }
         if name == "take_action":
-            payload = {"action": str(args.get("action", "check")).lower()}
+            action = str(args.get("action", "")).lower().strip()
+            if action not in ("fold", "check", "call", "raise"):
+                return {"error": "take_action must be fold, check, call, or raise"}
+            payload: Dict[str, Any] = {"action": action}
             if args.get("amount") is not None:
-                payload["amount"] = int(args["amount"])
+                try:
+                    payload["amount"] = int(args["amount"])
+                except (TypeError, ValueError):
+                    return {"error": "raise amount must be an integer"}
             return terminal_result(payload)
         return {"error": f"Unknown tool {name}"}
 
@@ -339,7 +345,7 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
             [{"role": "user", "content": prompt}],
             POKER_TOOLS,
             executor,
-            max_steps=5,
+            max_steps=ARENA_AGENT_MAX_STEPS,
             max_tokens=64,
             temperature=0.4,
             usage_out=usage,

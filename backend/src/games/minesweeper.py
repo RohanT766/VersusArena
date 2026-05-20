@@ -8,7 +8,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, AgentClient, terminal_result
 from src.engine.game_tools import MINESWEEPER_TOOLS
 
 ROWS = 8
@@ -174,7 +174,17 @@ def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
                 "revealed_count": len(ps.revealed),
             }
         if name == "reveal_cell":
-            return terminal_result({"row": int(args["row"]), "col": int(args["col"])})
+            try:
+                r, c = int(args.get("row")), int(args.get("col"))
+            except (TypeError, ValueError):
+                return {"error": "reveal_cell requires integer row and col"}
+            if not (0 <= r < session.rows and 0 <= c < session.cols):
+                return {
+                    "error": f"row/col must be in range for {session.rows}x{session.cols}"
+                }
+            if (r, c) in ps.revealed:
+                return {"error": f"cell ({r}, {c}) is already revealed"}
+            return terminal_result({"row": r, "col": c})
         return {"error": f"Unknown tool {name}"}
 
     usage: Dict[str, Any] = {}
@@ -184,7 +194,7 @@ def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
             [{"role": "user", "content": user_msg}],
             MINESWEEPER_TOOLS,
             executor,
-            max_steps=5,
+            max_steps=ARENA_AGENT_MAX_STEPS,
             max_tokens=256,
             temperature=0.2,
             usage_out=usage,

@@ -8,7 +8,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, AgentClient, terminal_result
 from src.engine.game_tools import AUCTION_TOOLS
 
 ROUNDS = 8
@@ -130,7 +130,13 @@ def _get_bid(session: AuctionSession, player: str, rnd: AuctionRound) -> tuple[i
                 "recent_history": hist,
             }
         if name == "place_bid":
-            amount = max(0, min(int(args.get("amount", 0)), budget))
+            if args.get("amount") is None:
+                return {"error": "place_bid requires integer amount"}
+            try:
+                raw = int(args.get("amount"))
+            except (TypeError, ValueError):
+                return {"error": "place_bid amount must be an integer"}
+            amount = max(0, min(raw, budget))
             return terminal_result({"amount": amount})
         return {"error": f"Unknown tool {name}"}
 
@@ -141,7 +147,7 @@ def _get_bid(session: AuctionSession, player: str, rnd: AuctionRound) -> tuple[i
             [{"role": "user", "content": user_msg}],
             AUCTION_TOOLS,
             executor,
-            max_steps=5,
+            max_steps=ARENA_AGENT_MAX_STEPS,
             max_tokens=128,
             temperature=0.3,
             usage_out=usage,

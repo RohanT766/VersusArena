@@ -28,6 +28,38 @@ def _terminal_tool_names(tools: List[Dict[str, Any]]) -> set:
     return {t["name"] for t in tools if t.get("terminal")}
 
 
+def _primary_terminal_tool(tools: List[Dict[str, Any]]) -> Optional[str]:
+    """Return the sole terminal action tool name, if there is exactly one."""
+    names = [t["name"] for t in tools if t.get("terminal")]
+    if len(names) == 1:
+        return names[0]
+    return names[-1] if names else None
+
+
+def _tool_choice_for_step(
+    model_type: str,
+    *,
+    step: int,
+    max_steps: int,
+    terminal_tool: Optional[str],
+    has_tools: bool,
+) -> Optional[Dict[str, Any]]:
+    if not has_tools:
+        return None
+    late = max_steps >= 2 and step >= max_steps - 2
+    if model_type == "ANTHROPIC":
+        if terminal_tool and late:
+            return {"type": "tool", "name": terminal_tool}
+        if step == 0:
+            return {"type": "any"}
+        return None
+    if model_type == "OPENAI":
+        if terminal_tool and late:
+            return {"type": "function", "function": {"name": terminal_tool}}
+        return None
+    return None
+
+
 def _openai_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [
         {
@@ -79,6 +111,10 @@ def _parse_json_args(raw: Any) -> Dict[str, Any]:
     return {}
 
 
+# Default observe → act budget for arena games (observation tool + terminal action + retries).
+ARENA_AGENT_MAX_STEPS = 8
+
+
 class AgentClient:
     """Runs observe → act loops with structured tool calls."""
 
@@ -118,15 +154,17 @@ class AgentClient:
             api_system = None
 
         terminal = _terminal_tool_names(tools)
-        force_terminal = None
-        if len(terminal) == 1:
-            force_terminal = next(iter(terminal))
+        force_terminal = _primary_terminal_tool(tools)
 
         for step in range(max_steps):
             step_usage: Dict[str, Any] = {}
-            tool_choice = None
-            if self.model_type == "ANTHROPIC" and force_terminal and step >= max_steps - 2:
-                tool_choice = {"type": "tool", "name": force_terminal}
+            tool_choice = _tool_choice_for_step(
+                self.model_type,
+                step=step,
+                max_steps=max_steps,
+                terminal_tool=force_terminal,
+                has_tools=bool(tools),
+            )
             try:
                 text, calls = self._invoke_with_tools(
                     msgs,
@@ -222,11 +260,12 @@ class AgentClient:
                         )
 
             if step < max_steps - 1:
+                tool_hint = force_terminal or "the required action tool"
                 msgs.append(
                     {
                         "role": "user",
                         "content": (
-                            "You must call the required tool to submit your move. "
+                            f"Call `{tool_hint}` now to submit your move. "
                             "Do not respond with plain text only."
                         ),
                     }
@@ -257,7 +296,7 @@ class AgentClient:
                 "model": self.model_name,
                 "messages": messages,
                 "tools": _openai_tools(tools),
-                "tool_choice": "auto",
+                "tool_choice": tool_choice or "auto",
                 "timeout": 60,
             }
             if self._llm._is_new_openai_model():
@@ -553,6 +592,16 @@ def _fallback_parse_terminal(name: str, text: str) -> Optional[Dict[str, Any]]:
         w = re.findall(r"[A-Za-z]+", t.upper())
         if w:
             return {"word": max(w, key=len)[:8]}
+    if name == "submit_group":
+        try:
+            data = json.loads(t)
+            if isinstance(data, list) and len(data) >= 4:
+                return {"words": [str(x).upper() for x in data[:4]]}
+        except json.JSONDecodeError:
+            pass
+        words = re.findall(r"[A-Za-z]+", t.upper())
+        if len(words) >= 4:
+            return {"words": words[:4]}
     if name == "fire_shot" or name == "reveal_cell":
         m = re.search(r"(\d+)\s*[, ]\s*(\d+)", t)
         if m:

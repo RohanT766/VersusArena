@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from src.utils.common import BaseGame, LLMClient
-from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, AgentClient, terminal_result
 from src.engine.game_tools import BATTLESHIP_PLACEMENT_TOOLS, BATTLESHIP_SHOT_TOOLS
 
 BOARD_PRESETS: Dict[int, Dict[str, int]] = {
@@ -76,7 +76,10 @@ orientations are "horizontal" or "vertical". Indices are 0-based. Ships cannot o
 
         def executor(name: str, args: Dict[str, Any]) -> Any:
             if name == "place_ships":
-                return terminal_result({"ships": args.get("ships", [])})
+                ships = args.get("ships")
+                if not isinstance(ships, list) or not ships:
+                    return {"error": "place_ships requires a non-empty ships array"}
+                return terminal_result({"ships": ships})
             return {"error": f"Unknown tool {name}"}
 
         try:
@@ -85,7 +88,7 @@ orientations are "horizontal" or "vertical". Indices are 0-based. Ships cannot o
                 [{"role": "user", "content": prompt}],
                 BATTLESHIP_PLACEMENT_TOOLS,
                 executor,
-                max_steps=3,
+                max_steps=ARENA_AGENT_MAX_STEPS,
                 max_tokens=800,
                 temperature=0.2,
                 usage_out=usage,
@@ -409,9 +412,15 @@ Reply with ONLY one coordinate such as "{suggested}". Nothing else."""
                     "available_count": prompt.count(". "),
                 }
             if name == "fire_shot":
-                return terminal_result(
-                    {"row": int(args["row"]), "col": int(args["col"])}
-                )
+                try:
+                    r, c = int(args.get("row")), int(args.get("col"))
+                except (TypeError, ValueError):
+                    return {"error": "fire_shot requires integer row and col"}
+                if not (0 <= r < self.board_size and 0 <= c < self.board_size):
+                    return {
+                        "error": f"row/col must be in 0..{self.board_size - 1}, got ({r}, {c})"
+                    }
+                return terminal_result({"row": r, "col": c})
             return {"error": f"Unknown tool {name}"}
 
         agent = AgentClient(model_id)
@@ -420,7 +429,7 @@ Reply with ONLY one coordinate such as "{suggested}". Nothing else."""
                 [{"role": "user", "content": prompt}],
                 BATTLESHIP_SHOT_TOOLS,
                 executor,
-                max_steps=5,
+                max_steps=ARENA_AGENT_MAX_STEPS,
                 max_tokens=64,
                 temperature=0.3,
                 usage_out=usage_out,

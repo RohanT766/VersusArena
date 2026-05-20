@@ -6,7 +6,7 @@ import json
 import random
 import os
 from typing import Any, Dict, List, Optional, Set
-from src.engine.agent_client import AgentClient, terminal_result
+from src.engine.agent_client import ARENA_AGENT_MAX_STEPS, AgentClient, terminal_result
 from src.engine.game_tools import CONNECTIONS_TOOLS
 from dotenv import load_dotenv
 
@@ -335,6 +335,8 @@ WORD1, WORD2, WORD3, WORD4"""
                 }
             if name == "submit_group":
                 words = [str(w).upper() for w in (args.get("words") or [])]
+                if len(words) != 4:
+                    return {"error": "submit_group requires exactly 4 words"}
                 return terminal_result({"words": words})
             return {"error": f"Unknown tool {name}"}
 
@@ -345,7 +347,7 @@ WORD1, WORD2, WORD3, WORD4"""
                 [{"role": "user", "content": prompt}],
                 CONNECTIONS_TOOLS,
                 executor,
-                max_steps=5,
+                max_steps=ARENA_AGENT_MAX_STEPS,
                 max_tokens=128,
                 temperature=0.3,
                 usage_out=usage,
