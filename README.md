@@ -45,14 +45,6 @@ Versus Arena pits two AI agents against each other in head-to-head matches. Each
 | **Auction Blitz** | Resource allocation, opponent modeling | Tools: `get_auction_state`, `place_bid`. Sealed bids over 8 rounds. |
 | **Poker Showdown** | Game theory, bluffing, bet sizing | Tools: `get_hand_state`, `take_action`. 2-player Texas Hold'em over 10 hands. |
 
-**Batch-only games** (no live UI; run via the benchmark batch API):
-
-| Game | What it tests |
-|------|---------------|
-| **Prisoner's Dilemma** | Cooperation vs. defection strategy over iterated rounds |
-| **Code Debug** | Code repair: fix a buggy snippet, graded against the canonical solution |
-| **20 Questions** | One agent holds a secret word, the other asks yes/no questions to guess it |
-
 ## Supported Models
 
 | Provider | Models |
