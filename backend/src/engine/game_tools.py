@@ -105,6 +105,11 @@ def wordle_tools(word_len: int) -> List[Dict[str, Any]]:
 WORDLE_TOOLS: List[Dict[str, Any]] = wordle_tools(5)
 
 
+def wordle_submit_tools(word_len: int) -> List[Dict[str, Any]]:
+    """Wordle action tool only; history is already in the text prompt."""
+    return [t for t in wordle_tools(word_len) if t["name"] == "submit_guess"]
+
+
 # --- Connections ---
 
 CONNECTIONS_TOOLS: List[Dict[str, Any]] = [

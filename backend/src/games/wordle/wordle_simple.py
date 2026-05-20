@@ -12,7 +12,7 @@ from flask_cors import CORS
 
 from src.engine.agent_client import AgentClient, terminal_result
 from src.engine.agent_client import _fallback_parse_terminal
-from src.engine.game_tools import wordle_tools
+from src.engine.game_tools import wordle_submit_tools
 
 app = Flask(__name__)
 CORS(app)
@@ -318,17 +318,16 @@ def get_llm_guess(
     agent = AgentClient(model_id)
     turn = agent.run_turn(
         [{"role": "user", "content": prompt}],
-        wordle_tools(word_len),
+        wordle_submit_tools(word_len),
         executor,
-        max_steps=8,
+        max_steps=6,
         max_tokens=256,
         temperature=0.4,
         usage_out=usage,
         system=(
             f"You are playing Wordle ({word_len} letters). "
-            "Use get_feedback_history if needed, then call submit_guess with JSON "
-            f'{{"word": "YOURGUESS"}} where YOURGUESS is exactly {word_len} uppercase letters. '
-            "Do not call submit_guess until the word field is filled."
+            f'Call submit_guess with {{"word": "YOURGUESS"}} where YOURGUESS is exactly '
+            f"{word_len} uppercase letters. You must use the submit_guess tool; do not reply with text only."
         ),
     )
 

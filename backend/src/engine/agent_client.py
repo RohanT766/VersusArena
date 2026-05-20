@@ -103,7 +103,6 @@ class AgentClient:
         if os.getenv("ARENA_STUB_AGENT") == "1":
             return _stub_run_turn(tools, tool_executor, usage_out)
 
-        terminal = _terminal_tool_names(tools)
         tool_log: List[Dict[str, Any]] = []
         tools_used: List[str] = []
         total_latency = 0.0
@@ -113,17 +112,30 @@ class AgentClient:
         last_error: Optional[str] = None
 
         msgs = list(messages)
-        if system:
-            if self.model_type == "OPENAI":
-                msgs = [{"role": "system", "content": system}] + msgs
-            else:
-                msgs = [{"role": "user", "content": f"[System]\n{system}"}] + msgs
+        api_system = system
+        if system and self.model_type == "OPENAI":
+            msgs = [{"role": "system", "content": system}] + msgs
+            api_system = None
+
+        terminal = _terminal_tool_names(tools)
+        force_terminal = None
+        if len(terminal) == 1:
+            force_terminal = next(iter(terminal))
 
         for step in range(max_steps):
             step_usage: Dict[str, Any] = {}
+            tool_choice = None
+            if self.model_type == "ANTHROPIC" and force_terminal and step >= max_steps - 2:
+                tool_choice = {"type": "tool", "name": force_terminal}
             try:
                 text, calls = self._invoke_with_tools(
-                    msgs, tools, max_tokens, temperature, step_usage
+                    msgs,
+                    tools,
+                    max_tokens,
+                    temperature,
+                    step_usage,
+                    system=api_system,
+                    tool_choice=tool_choice,
                 )
             except Exception as e:
                 last_error = str(e)
@@ -192,7 +204,7 @@ class AgentClient:
 
                 continue
 
-            if text and step == max_steps - 1:
+            if text:
                 for tname in terminal:
                     parsed = _fallback_parse_terminal(tname, text)
                     if parsed is not None:
@@ -208,6 +220,18 @@ class AgentClient:
                             tool_calls_count=len(tool_log),
                             tools_used=tools_used,
                         )
+
+            if step < max_steps - 1:
+                msgs.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            "You must call the required tool to submit your move. "
+                            "Do not respond with plain text only."
+                        ),
+                    }
+                )
+                continue
             break
 
         if usage_out is not None:
@@ -223,6 +247,9 @@ class AgentClient:
         max_tokens: int,
         temperature: float,
         usage_out: Dict[str, Any],
+        *,
+        system: Optional[str] = None,
+        tool_choice: Optional[Dict[str, Any]] = None,
     ) -> Tuple[Optional[str], List[Any]]:
         t0 = time.time()
         if self.model_type == "OPENAI":
@@ -259,13 +286,18 @@ class AgentClient:
 
         if self.model_type == "ANTHROPIC":
             anthropic_msgs = self._to_anthropic_messages(messages)
-            response = self.client.messages.create(
-                model=self.model_name,
-                messages=anthropic_msgs,
-                tools=_anthropic_tools(tools),
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
+            params: Dict[str, Any] = {
+                "model": self.model_name,
+                "messages": anthropic_msgs,
+                "tools": _anthropic_tools(tools),
+                "max_tokens": max_tokens,
+                "temperature": temperature,
+            }
+            if system:
+                params["system"] = system
+            if tool_choice:
+                params["tool_choice"] = tool_choice
+            response = self.client.messages.create(**params)
             self._llm._fill_usage_anthropic(usage_out, response, t0)
             text_parts = []
             calls = []
@@ -317,25 +349,30 @@ class AgentClient:
         return text, calls
 
     def _to_anthropic_messages(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        out = []
+        out: List[Dict[str, Any]] = []
         for m in messages:
             role = m.get("role", "user")
             if role == "system":
-                out.append({"role": "user", "content": m.get("content", "")})
                 continue
             if role == "tool":
-                out.append(
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": m.get("tool_call_id", ""),
-                                "content": m.get("content", ""),
-                            }
-                        ],
-                    }
-                )
+                block = {
+                    "type": "tool_result",
+                    "tool_use_id": m.get("tool_call_id", ""),
+                    "content": m.get("content", ""),
+                }
+                if out and out[-1]["role"] == "user" and isinstance(out[-1].get("content"), list):
+                    out[-1]["content"].append(block)
+                else:
+                    out.append({"role": "user", "content": [block]})
+                continue
+            if (
+                out
+                and out[-1]["role"] == role
+                and role == "user"
+                and isinstance(m.get("content"), str)
+                and isinstance(out[-1].get("content"), str)
+            ):
+                out[-1]["content"] = f"{out[-1]['content']}\n\n{m['content']}"
                 continue
             out.append(m)
         return out
