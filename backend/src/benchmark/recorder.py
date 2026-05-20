@@ -7,6 +7,7 @@ import uuid
 from typing import Any, Dict, Optional, Tuple
 
 from src.db.database import get_connection, init_db, _lock
+from src.benchmark.analytics import is_production_run
 from src.benchmark.elo import INITIAL_RATING, update_elo_pair
 
 
@@ -46,6 +47,25 @@ class BenchmarkRecorder:
     def __init__(self) -> None:
         init_db()
 
+    def _cancel_stale_in_progress(
+        self,
+        conn,
+        game_type: str,
+        player1_model: str,
+        player2_model: str,
+        now: float,
+    ) -> None:
+        """Abandon prior in_progress runs for the same matchup (remount / strict-mode / back nav)."""
+        conn.execute(
+            """
+            UPDATE benchmark_runs
+            SET ended_at = ?, status = 'cancelled'
+            WHERE game_type = ? AND player1_model = ? AND player2_model = ?
+              AND status = 'in_progress'
+            """,
+            (now, game_type, player1_model, player2_model),
+        )
+
     def start_run(
         self,
         game_type: str,
@@ -59,6 +79,9 @@ class BenchmarkRecorder:
         with _lock:
             conn = get_connection()
             try:
+                self._cancel_stale_in_progress(
+                    conn, game_type, player1_model, player2_model, now,
+                )
                 conn.execute(
                     """
                     INSERT INTO benchmark_runs (id, game_type, player1_model, player2_model, started_at, status, config_json)
@@ -118,6 +141,26 @@ class BenchmarkRecorder:
             finally:
                 conn.close()
 
+    def cancel_stale_in_progress(self, older_than_seconds: float = 300) -> int:
+        """Cancel abandoned in_progress runs (no active client). Returns rows updated."""
+        now = time.time()
+        cutoff = now - older_than_seconds
+        with _lock:
+            conn = get_connection()
+            try:
+                cur = conn.execute(
+                    """
+                    UPDATE benchmark_runs
+                    SET ended_at = ?, status = 'cancelled'
+                    WHERE status = 'in_progress' AND started_at <= ?
+                    """,
+                    (now, cutoff),
+                )
+                conn.commit()
+                return cur.rowcount
+            finally:
+                conn.close()
+
     def cancel_run(self, run_id: str) -> bool:
         now = time.time()
         with _lock:
@@ -126,7 +169,9 @@ class BenchmarkRecorder:
                 row = conn.execute(
                     "SELECT status FROM benchmark_runs WHERE id = ?", (run_id,)
                 ).fetchone()
-                if not row or row["status"] == "finished":
+                if not row:
+                    return False
+                if row["status"] in ("finished", "cancelled"):
                     return False
                 conn.execute(
                     "UPDATE benchmark_runs SET ended_at = ?, status = ? WHERE id = ?",
@@ -173,7 +218,7 @@ class BenchmarkRecorder:
                     (run_id, winner_side, score_p1, score_p2, mj),
                 )
 
-                if winner_side is not None:
+                if winner_side is not None and is_production_run(game_type, m1, m2):
                     self._apply_elo(conn, game_type, m1, m2, winner_side)
 
                 conn.commit()

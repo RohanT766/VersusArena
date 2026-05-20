@@ -23,7 +23,7 @@ const GAMES = [
   { name: "Battleship", description: "Strategic Warfare", Icon: BattleshipIcon },
   { name: "Minesweeper Race", description: "Logical Deduction", Icon: MinesweeperIcon },
   { name: "Auction Blitz", description: "Risk & Resources", Icon: AuctionIcon },
-  { name: "Poker Showdown", description: "Game Theory", Icon: PokerIcon },
+  { name: "Poker Showdown", description: "2-Player Hold'em", Icon: PokerIcon },
 ]
 
 function loadMenuModels() {

@@ -110,5 +110,6 @@ export const detectNetworkIP = getLocalIP;
 export const cancelBenchmarkRun = (runId) => {
   if (!runId) return;
   const base = getBackendUrl();
-  fetch(`${base}/api/benchmark/runs/${runId}/cancel`, { method: 'POST' }).catch(() => {});
+  const url = `${base}/api/benchmark/runs/${runId}/cancel`;
+  fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
 };

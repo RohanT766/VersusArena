@@ -15,11 +15,13 @@ import ChipStacks from './ChipStacks';
 import { rackTotal } from '../../utils/chipUtils';
 import './PokerGame.css';
 
+const CHIP_FLY_MS = 1350;
+
 const STEP_DELAY = {
   deal_hole: 520,
-  post_blind: 720,
-  action: 950,
-  deal_board: 580,
+  post_blind: 1400,
+  action: 1100,
+  deal_board: 1050,
   showdown: 2800,
   hand_complete: 1200,
   default: 400,
@@ -33,10 +35,18 @@ function hasChipMove(step) {
   return step && (step.type === 'post_blind' || (step.type === 'action' && step.amount > 0));
 }
 
-function StreetChips({ rack, betRef }) {
+function StreetChips({ rack, betRef, amount, side }) {
+  const total = amount ?? rackTotal(rack);
+  const showAmt = total > 0;
+
   return (
-    <div ref={betRef} className="pk-bet-slot">
-      <ChipStacks inventory={rack} variant="street" />
+    <div className={`pk-street-bet-wrap pk-street-bet-wrap--${side}`}>
+      <div ref={betRef} className="pk-bet-slot">
+        <ChipStacks inventory={rack} variant="street" />
+      </div>
+      {showAmt && (
+        <p className="pk-street-bet-amt">{total.toLocaleString()}</p>
+      )}
     </div>
   );
 }
@@ -62,54 +72,65 @@ function PlayerSeat({
   const showBb = blindRole === 'BB';
   const showDealer = isButton;
 
-  const head = (
-    <div className="pk-seat-head">
-      <div className="pk-seat-name-row">
-        <span className="pk-seat-name">{name}</span>
-        <div className="pk-seat-badges">
-          {showBb && <span className="pk-blind-badge pk-blind-badge--bb">BB</span>}
-          {showDealer && (
-            <span className="pk-dealer-btn" title="Dealer (posts small blind in heads-up)">D</span>
-          )}
-          {blindRole === 'SB' && !isButton && (
-            <span className="pk-blind-badge pk-blind-badge--sb">SB</span>
-          )}
-        </div>
-      </div>
-      <div className="pk-seat-status">
-        <PlayerThinking active={thinking} activity={thinkingActivity} />
+  const thinkingSlot = (
+    <div className="pk-seat-thinking">
+      <PlayerThinking active={thinking} activity={thinkingActivity} />
+    </div>
+  );
+
+  const nameTag = (
+    <div className="pk-seat-name-row">
+      <span className="pk-seat-name">{name}</span>
+      <div className="pk-seat-badges">
+        {showBb && <span className="pk-blind-badge pk-blind-badge--bb">BB</span>}
+        {showDealer && (
+          <span className="pk-dealer-btn" title="Dealer (posts small blind in 2-player poker)">D</span>
+        )}
+        {blindRole === 'SB' && !isButton && (
+          <span className="pk-blind-badge pk-blind-badge--sb">SB</span>
+        )}
       </div>
     </div>
   );
 
-  const balance = (
-    <div ref={rackRef} className="pk-balance">
-      <span className="pk-balance-label">
-        Balance:
-        {' '}
-        {rackTotal(rack).toLocaleString()}
-      </span>
-      <ChipStacks inventory={rack} variant="seat" />
-    </div>
+  const balanceLabel = (
+    <p className="pk-balance-label">
+      Balance:
+      {' '}
+      {rackTotal(rack).toLocaleString()}
+    </p>
   );
 
-  const holeCards = (
-    <div ref={holeRef} className="pk-cards-slot">
-      {cards.map((c, i) => {
-        const justDealt = dealStep?.player === playerId && dealStep?.card_index === i;
-        return (
-          <PlayingCard
-            key={`${playerId}-${i}-${c}`}
-            card={c}
-            faceDown={holeFaceDown}
-            size="lg"
-            dealFromDeck={justDealt}
-            seatSide={position}
-            flipIn={holeFlipIn && !holeFaceDown}
-            style={justDealt ? undefined : { animationDelay: `${i * 0.05}s` }}
-          />
-        );
-      })}
+  const playRow = (
+    <div className="pk-seat-play">
+      <div ref={rackRef} className="pk-rack-slot">
+        <ChipStacks inventory={rack} variant="seat" />
+      </div>
+      <div ref={holeRef} className="pk-cards-slot">
+        {[0, 1].map((i) => {
+          const c = cards[i];
+          if (!c) return <div key={`${playerId}-slot-${i}`} className={`pk-hole-slot pk-hole-slot--${i}`} />;
+          const justDealt = dealStep?.player === playerId && dealStep?.card_index === i;
+          const dealAnim = justDealt
+            ? `pk-hole-deal pk-hole-deal--${position}`
+            : '';
+          const flipAnim = holeFlipIn && !holeFaceDown ? 'pk-hole-card--flip' : '';
+          return (
+            <div key={`${playerId}-slot-${i}`} className={`pk-hole-slot pk-hole-slot--${i}`}>
+              <div
+                className={`pk-hole-card ${dealAnim} ${flipAnim}`.trim()}
+                style={flipAnim ? { animationDelay: `${i * 0.08}s` } : undefined}
+              >
+                <PlayingCard
+                  card={c}
+                  faceDown={holeFaceDown}
+                  size="lg"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 
@@ -119,15 +140,17 @@ function PlayerSeat({
     <div ref={seatRef} className={`pk-seat pk-seat--${position} ${highlight ? 'pk-seat--active' : ''}`}>
       {isTop ? (
         <>
-          {head}
-          {balance}
-          {holeCards}
+          {thinkingSlot}
+          {nameTag}
+          {balanceLabel}
+          {playRow}
         </>
       ) : (
         <>
-          {balance}
-          {head}
-          {holeCards}
+          {playRow}
+          {balanceLabel}
+          {nameTag}
+          {thinkingSlot}
         </>
       )}
     </div>
@@ -157,6 +180,8 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
   const p1RackRef = useRef(null);
   const p2RackRef = useRef(null);
   const [holeRevealed, setHoleRevealed] = useState(false);
+  const [boardFlipped, setBoardFlipped] = useState(() => new Set());
+  const [boardFlipAnimIdx, setBoardFlipAnimIdx] = useState(null);
   const handNumRef = useRef(0);
 
   const p1Name = getDisplayName(player1Model);
@@ -249,7 +274,7 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
           chipsMoved: step.chips_moved,
           key: Date.now(),
         });
-        await new Promise((r) => setTimeout(r, 720));
+        await new Promise((r) => setTimeout(r, CHIP_FLY_MS));
         setChipFly(null);
       }
 
@@ -287,6 +312,7 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
   const holeP2 = view?.hole_p2 || [];
   const community = view?.community || [];
   const streetRacks = view?.street_chip_racks || { player1: {}, player2: {} };
+  const streetBets = view?.street_bets || { player1: 0, player2: 0 };
   const potRack = view?.pot_rack;
   const holeComplete = holeP1.length >= 2 && holeP2.length >= 2;
   const dealStep = step?.type === 'deal_hole' ? step : null;
@@ -297,14 +323,39 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
     if (handNum !== handNumRef.current) {
       handNumRef.current = handNum;
       setHoleRevealed(false);
+      setBoardFlipped(new Set());
+      setBoardFlipAnimIdx(null);
     }
     if (!holeComplete) {
       setHoleRevealed(false);
       return undefined;
     }
-    const t = setTimeout(() => setHoleRevealed(true), 420);
+    const t = setTimeout(() => setHoleRevealed(true), 560);
     return () => clearTimeout(t);
   }, [holeComplete, view?.hand_num]);
+
+  useEffect(() => {
+    if (step?.type === 'deal_board' && community.length > 0) {
+      const idx = community.length - 1;
+      const reveal = setTimeout(() => {
+        setBoardFlipped((prev) => new Set(prev).add(idx));
+        setBoardFlipAnimIdx(idx);
+      }, 540);
+      const clearFlip = setTimeout(() => setBoardFlipAnimIdx(null), 1000);
+      return () => {
+        clearTimeout(reveal);
+        clearTimeout(clearFlip);
+      };
+    }
+    if (community.length > 0 && step?.type !== 'deal_board') {
+      setBoardFlipped((prev) => {
+        const next = new Set(prev);
+        community.forEach((_, i) => next.add(i));
+        return next;
+      });
+    }
+    return undefined;
+  }, [step?.type, step?.card, community.length, view?.hand_num]);
   const toAct = view?.to_act ?? step?.to_act;
   const button = view?.button;
   const sbPlayer = view?.sb_player ?? button;
@@ -326,7 +377,7 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
 
   return (
     <GameLayout
-      gameName="Heads-Up Hold'em"
+      gameName="2-Player Texas Hold'em"
       player1Name={p1Name}
       player2Name={p2Name}
       onBack={() => {
@@ -336,7 +387,7 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
       statusText={
         view?.done
           ? `${winnerLabel()} wins the tournament`
-          : `Hand ${view?.hand_num || view?.hands_played || 0}/${view?.max_hands || 10} · Heads-up · ${blindsLabel}${phaseStreet ? ` · ${phaseStreet}` : ''}`
+          : `Hand ${view?.hand_num || view?.hands_played || 0}/${view?.max_hands || 10} · 2-Player · ${blindsLabel}${phaseStreet ? ` · ${phaseStreet}` : ''}`
       }
       actionFeed={actionFeed}
     >
@@ -395,7 +446,12 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
                 </div>
 
                 <div className="pk-zone pk-zone--bet-top">
-                  <StreetChips rack={streetRacks.player2} betRef={p2BetRef} />
+                  <StreetChips
+                    rack={streetRacks.player2}
+                    betRef={p2BetRef}
+                    amount={streetBets.player2}
+                    side="top"
+                  />
                 </div>
 
                 <div className="pk-zone pk-zone--pot">
@@ -413,16 +469,22 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
 
                 <div className="pk-zone pk-zone--board">
                   <div className="pk-board">
-                    {community.length > 0
-                      ? community.map((c, i) => (
-                          <PlayingCard
-                            key={`${c}-${i}`}
-                            card={c}
-                            size="board"
-                            deal={step?.type === 'deal_board' && i === community.length - 1}
-                          />
-                        ))
-                      : [0, 1, 2, 3, 4].map((i) => <div key={i} className="pk-board-slot" />)}
+                    {[0, 1, 2, 3, 4].map((i) => {
+                      const c = community[i];
+                      const justDealt = step?.type === 'deal_board' && i === community.length - 1 && Boolean(c);
+                      const faceDown = Boolean(c) && !boardFlipped.has(i);
+                      const dealAnim = justDealt ? 'pk-board-deal' : '';
+                      const flipAnim = boardFlipAnimIdx === i ? 'pk-board-card--flip' : '';
+                      return (
+                        <div key={`board-slot-${i}`} className="pk-board-slot">
+                          {c ? (
+                            <div className={`pk-board-card ${dealAnim} ${flipAnim}`.trim()}>
+                              <PlayingCard card={c} faceDown={faceDown} size="board" />
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
                   </div>
                   {step?.type === 'showdown' && step.winner && (
                     <p className="pk-winner-line">
@@ -432,7 +494,12 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
                 </div>
 
                 <div className="pk-zone pk-zone--bet-bottom">
-                  <StreetChips rack={streetRacks.player1} betRef={p1BetRef} />
+                  <StreetChips
+                    rack={streetRacks.player1}
+                    betRef={p1BetRef}
+                    amount={streetBets.player1}
+                    side="bottom"
+                  />
                 </div>
 
                 <div className="pk-zone pk-zone--seat-bottom">

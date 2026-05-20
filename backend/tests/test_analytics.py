@@ -8,6 +8,7 @@ import pytest
 from src.db.database import get_connection, init_db
 from src.benchmark.recorder import BenchmarkRecorder
 from src.benchmark.analytics import (
+    delete_all_benchmark_data,
     delete_run_hard,
     fetch_head_to_head,
     fetch_model_performance,
@@ -96,7 +97,41 @@ class TestDeleteAndEloRebuild:
             conn.close()
 
 
+class TestDeleteAllRuns:
+    def test_delete_all_clears_runs_and_elo(self, temp_db):
+        rec = BenchmarkRecorder()
+        _finish_run(rec, "wordle", "gpt-5.5", "claude-sonnet-4-6", 1)
+        rec.start_run("wordle", "gpt-5.5", "claude-sonnet-4-6", {})
+        conn = get_connection()
+        try:
+            out = delete_all_benchmark_data(conn)
+            assert out["deleted_runs"] >= 1
+            n = conn.execute("SELECT COUNT(*) AS n FROM benchmark_runs").fetchone()["n"]
+            elo = conn.execute("SELECT COUNT(*) AS n FROM elo_ratings").fetchone()["n"]
+            assert n == 0
+            assert elo == 0
+        finally:
+            conn.close()
+
+
 class TestCancelRun:
+    def test_start_run_cancels_previous_in_progress(self, temp_db):
+        rec = BenchmarkRecorder()
+        r1 = rec.start_run("minesweeper", "gpt-5.5", "claude-sonnet-4-6", {})
+        r2 = rec.start_run("minesweeper", "gpt-5.5", "claude-sonnet-4-6", {})
+        conn = get_connection()
+        try:
+            s1 = conn.execute(
+                "SELECT status FROM benchmark_runs WHERE id = ?", (r1,),
+            ).fetchone()["status"]
+            s2 = conn.execute(
+                "SELECT status FROM benchmark_runs WHERE id = ?", (r2,),
+            ).fetchone()["status"]
+            assert s1 == "cancelled"
+            assert s2 == "in_progress"
+        finally:
+            conn.close()
+
     def test_cancel_in_progress_run(self, temp_db):
         rec = BenchmarkRecorder()
         rid = rec.start_run("wordle", "gpt-5.5", "claude-sonnet-4-6", {})
@@ -140,7 +175,7 @@ class TestAnalyticsEndpoints:
         rec = BenchmarkRecorder()
         rid = rec.start_run("wordle", "gpt-5.5", "claude-sonnet-4-6", {})
         rec.finish_run(rid, "wordle", 1, 1.0, 0.0, {})
-        rec.start_run("wordle", "a", "b", {})  # in progress
+        rec.start_run("wordle", "gpt-5.5", "gemini-2.5-flash", {})  # in progress
 
         conn = get_connection()
         try:
@@ -164,6 +199,26 @@ class TestAnalyticsEndpoints:
             assert models[0]["model_id"]
             assert models[0]["display_name"]
             assert models[0]["display_name"] != "undefined"
+        finally:
+            conn.close()
+
+    def test_placeholder_runs_excluded(self, temp_db):
+        rec = BenchmarkRecorder()
+        _finish_run(rec, "test_game", "model_a", "model_b", 1)
+        _finish_run(rec, "wordle", "gpt-5.5", "claude-sonnet-4-6", 1)
+
+        conn = get_connection()
+        try:
+            rebuild_elo_ratings(conn)
+            conn.commit()
+            models = fetch_model_performance(conn, "overall")
+            ids = {m["model_id"] for m in models}
+            assert "model_a" not in ids
+            assert "model_b" not in ids
+            pairs = fetch_head_to_head(conn)
+            for p in pairs:
+                assert p["model_a"]["model_id"] not in ("model_a", "model_b")
+                assert p["model_b"]["model_id"] not in ("model_a", "model_b")
         finally:
             conn.close()
 

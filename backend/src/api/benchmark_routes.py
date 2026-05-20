@@ -23,7 +23,10 @@ from src.benchmark.analytics import (
     fetch_overview,
     fetch_quality,
     fetch_trends,
+    production_runs_where,
+    delete_all_benchmark_data,
     rebuild_elo_ratings,
+    PLACEHOLDER_MODEL_IDS,
 )
 
 router = APIRouter(prefix="/api/benchmark", tags=["benchmark"])
@@ -45,18 +48,24 @@ async def leaderboard(
 ):
     conn = get_connection()
     try:
-        rows = conn.execute(
-            """
-            SELECT model_id, game_scope, rating, games_played, wins,
-                   CASE WHEN games_played > 0 THEN round(100.0 * wins / games_played, 2) ELSE 0 END AS win_pct
-            FROM elo_ratings
-            WHERE game_scope = ?
-            ORDER BY rating DESC
-            LIMIT 100
-            """,
-            (scope,),
-        ).fetchall()
-        return {"scope": scope, "rows": _enrich_leaderboard_rows(rows)}
+        rebuild_elo_ratings(conn)
+        conn.commit()
+        from src.benchmark.analytics import fetch_model_performance
+
+        models = fetch_model_performance(conn, scope)
+        rows = [
+            {
+                "model_id": m["model_id"],
+                "game_scope": scope,
+                "rating": m["rating"],
+                "games_played": m["games_played"],
+                "wins": m["wins"],
+                "win_pct": m["win_pct"],
+                "display_name": m["display_name"],
+            }
+            for m in models
+        ]
+        return {"scope": scope, "rows": rows}
     finally:
         conn.close()
 
@@ -68,6 +77,13 @@ async def cancel_run(run_id: str):
     if not cancelled:
         raise HTTPException(status_code=404, detail="Run not found or already finished")
     return {"cancelled": True, "run_id": run_id}
+
+
+@router.post("/runs/cancel-stale")
+async def cancel_stale_runs(older_than_seconds: int = 0):
+    """Mark old in_progress runs as cancelled (e.g. user left mid-game). Default: all in_progress."""
+    n = get_recorder().cancel_stale_in_progress(float(older_than_seconds))
+    return {"cancelled_count": n}
 
 
 @router.delete("/runs/{run_id}")
@@ -138,6 +154,20 @@ async def analytics_rebuild_elo():
         conn.close()
 
 
+@router.delete("/runs")
+async def delete_all_runs(confirm: bool = Query(False)):
+    if not confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Pass confirm=true to delete all benchmark runs and moves.",
+        )
+    conn = get_connection()
+    try:
+        return delete_all_benchmark_data(conn)
+    finally:
+        conn.close()
+
+
 @router.get("/runs")
 async def list_runs(
     game_type: Optional[str] = None,
@@ -146,21 +176,32 @@ async def list_runs(
 ):
     conn = get_connection()
     try:
+        prod = production_runs_where("r")
         if game_type:
             rows = conn.execute(
-                """SELECT id, game_type, player1_model, player2_model,
+                f"""SELECT id, game_type, player1_model, player2_model,
                           started_at, ended_at, status, config_json
-                   FROM benchmark_runs WHERE game_type = ? ORDER BY started_at DESC LIMIT ? OFFSET ?""",
+                   FROM benchmark_runs r
+                   WHERE game_type = ? AND {prod}
+                   ORDER BY started_at DESC LIMIT ? OFFSET ?""",
                 (game_type, limit, offset),
             ).fetchall()
         else:
             rows = conn.execute(
-                """SELECT id, game_type, player1_model, player2_model,
+                f"""SELECT id, game_type, player1_model, player2_model,
                           started_at, ended_at, status, config_json
-                   FROM benchmark_runs ORDER BY started_at DESC LIMIT ? OFFSET ?""",
+                   FROM benchmark_runs r
+                   WHERE {prod}
+                   ORDER BY started_at DESC LIMIT ? OFFSET ?""",
                 (limit, offset),
             ).fetchall()
-        return {"runs": [dict(r) for r in rows]}
+        runs = []
+        for r in rows:
+            d = dict(r)
+            d["player1_display"] = display_name(d.get("player1_model"))
+            d["player2_display"] = display_name(d.get("player2_model"))
+            runs.append(d)
+        return {"runs": runs}
     finally:
         conn.close()
 

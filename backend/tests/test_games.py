@@ -339,7 +339,12 @@ class TestDatabase:
 
 
 class TestRecorder:
-    def test_start_and_finish_run(self):
+    def test_start_and_finish_run(self, monkeypatch, tmp_path):
+        db_file = tmp_path / "bench_test.sqlite"
+        monkeypatch.setenv("BENCHMARK_DB_PATH", str(db_file))
+        from src.db.database import init_db
+
+        init_db()
         rec = BenchmarkRecorder()
         rid = rec.start_run("test_game", "model_a", "model_b", {"k": "v"})
         assert rid is not None

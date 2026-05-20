@@ -169,6 +169,16 @@
   animation: none;
 }
 
+.game-player-thinking--error {
+  color: #ff6b6b;
+  animation: none;
+  white-space: normal;
+  max-width: 14rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.2rem;
+}
+
 @keyframes game-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

@@ -1,4 +1,4 @@
-"""Heads-up Texas Hold'em — turn-based steps, proper HU blinds & betting rounds."""
+"""2-player Texas Hold'em — turn-based steps, standard 2-handed blinds & betting."""
 
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ def _best_hand(hole: List[str], community: List[str]) -> Tuple[int, ...]:
 
 
 def _action_order(button: str, street: str) -> List[str]:
-    """HU: button posts SB and acts first preflop; BB acts first postflop."""
+    """2-player: dealer posts SB and acts first preflop; BB acts first postflop."""
     bb = _other(button)
     if street == "preflop":
         return [button, bb]
@@ -275,10 +275,10 @@ def _snapshot_racks(session: PokerSession) -> Dict[str, Any]:
     }
 
 
-def _hu_meta(hand: HandState) -> Dict[str, Any]:
+def _two_player_meta(hand: HandState) -> Dict[str, Any]:
     bb = _other(hand.button)
     return {
-        "format": "heads_up",
+        "format": "two_player_holdem",
         "sb_player": hand.button,
         "bb_player": bb,
         "preflop_first": hand.button,
@@ -289,7 +289,7 @@ def _hu_meta(hand: HandState) -> Dict[str, Any]:
 def _live_state(session: PokerSession, hand: HandState, step: Dict[str, Any]) -> Dict[str, Any]:
     return {
         **_snapshot_racks(session),
-        **_hu_meta(hand),
+        **_two_player_meta(hand),
         "hand_in_progress": True,
         "hand_num": hand.hand_num,
         "street": hand.street,
@@ -347,13 +347,13 @@ def _hand_state_for_agent(
         for a in hand.actions[-12:]
     ) or "none"
     return {
-        "format": "heads_up_texas_holdem",
+        "format": "two_player_texas_holdem",
         "hand_num": hand.hand_num,
         "max_hands_in_match": MAX_HANDS,
         "hands_completed_before_this": session.hand_num,
         "hands_remaining_after_this": max(0, MAX_HANDS - session.hand_num),
         "blinds": {"small": SMALL_BLIND, "big": BIG_BLIND},
-        "your_position": "button_and_small_blind" if player == hand.button else "big_blind",
+        "your_position": "dealer_small_blind" if player == hand.button else "big_blind",
         "your_hole_cards": hole,
         "opponent_hole_cards": "HIDDEN (you only see your own cards until showdown)",
         "community_cards": list(hand.community),
@@ -384,11 +384,11 @@ def _build_poker_prompt(session: PokerSession, hand: HandState, player: str) -> 
             for h in session.log[-5:]
         ) + "\n\n"
     return (
-        f"Heads-up Texas Hold'em tournament.\n"
+        f"2-player Texas Hold'em match.\n"
         f"HAND {st['hand_num']} of {st['max_hands_in_match']} "
         f"({st['hands_remaining_after_this']} hands left including this one).\n\n"
-        f"RULES: {SMALL_BLIND}/{BIG_BLIND} blinds. Button posts SB and acts first preflop; "
-        f"BB acts first on flop/turn/river. Standard hold'em hand rankings. "
+        f"RULES: {SMALL_BLIND}/{BIG_BLIND} blinds. Dealer button posts small blind and acts first preflop; "
+        f"big blind acts first on flop, turn, and river. Standard hold'em hand rankings. "
         f"You only see YOUR hole cards, not opponent's.\n\n"
         f"YOUR POSITION: {st['your_position']}\n"
         f"YOUR HOLE: {st['your_hole_cards']}\n"
@@ -446,7 +446,7 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
             temperature=0.4,
             usage_out=usage,
             system=(
-                "Heads-up Texas Hold'em. You cannot see opponent hole cards. "
+                "2-player Texas Hold'em. You cannot see opponent hole cards. "
                 "Use get_hand_state for full context, then take_action once."
             ),
         )
@@ -805,7 +805,7 @@ def winner_side(session: PokerSession) -> int:
 def session_state(session: PokerSession) -> Dict[str, Any]:
     st: Dict[str, Any] = {
         "session_id": session.id,
-        "format": "heads_up",
+        "format": "two_player_holdem",
         "chips_p1": session.chips_p1,
         "chips_p2": session.chips_p2,
         "rack_p1": copy_rack(session.rack_p1),
@@ -824,7 +824,7 @@ def session_state(session: PokerSession) -> Dict[str, Any]:
     }
     if session.active:
         hand = session.active
-        st.update(_hu_meta(hand))
+        st.update(_two_player_meta(hand))
         st["live"] = {
             "hand_num": hand.hand_num,
             "street": hand.street,

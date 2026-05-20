@@ -29,6 +29,7 @@ const MinesweeperGame = ({ player1Model, player2Model, onBack = () => window.his
   const gameLoopRunning = useRef(false);
   const loopStartedRef = useRef(false);
   const mountedRef = useRef(true);
+  const mountGenRef = useRef(0);
   const stateRef = useRef(null);
   const sessionIdRef = useRef('');
 
@@ -82,7 +83,6 @@ const MinesweeperGame = ({ player1Model, player2Model, onBack = () => window.his
     const data = await res.json();
     setSessionId(data.session_id);
     sessionIdRef.current = data.session_id;
-    benchmarkRunIdRef.current = data.benchmark_run_id || null;
     setState(data);
     setActionFeed([]);
     if (withCountdown) startCountdown();
@@ -162,6 +162,7 @@ const MinesweeperGame = ({ player1Model, player2Model, onBack = () => window.his
     gameLoopRunning.current = false;
     gameFinishedRef.current = false;
 
+    const gen = ++mountGenRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -169,16 +170,31 @@ const MinesweeperGame = ({ player1Model, player2Model, onBack = () => window.his
       if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
     };
     window.addEventListener('beforeunload', handleUnload);
-    startSession(controller.signal, true);
+
+    (async () => {
+      const data = await startSession(controller.signal, true);
+      if (
+        !data
+        || gen !== mountGenRef.current
+        || controller.signal.aborted
+        || !mountedRef.current
+      ) {
+        if (data?.benchmark_run_id) cancelBenchmarkRun(data.benchmark_run_id);
+        return;
+      }
+      benchmarkRunIdRef.current = data.benchmark_run_id || null;
+    })();
 
     return () => {
       mountedRef.current = false;
       stopLoopRef.current = true;
       controller.abort();
       window.removeEventListener('beforeunload', handleUnload);
-      if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
+      const rid = benchmarkRunIdRef.current;
+      if (!gameFinishedRef.current && rid) cancelBenchmarkRun(rid);
+      benchmarkRunIdRef.current = null;
     };
-  }, [startSession]);
+  }, [player1Model, player2Model, startSession]);
 
   const renderSide = (playerState, side) => {
     const name = side === 1 ? p1Name : p2Name;

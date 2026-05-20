@@ -195,7 +195,7 @@ AUCTION_TOOLS: List[Dict[str, Any]] = [
 POKER_TOOLS: List[Dict[str, Any]] = [
     _tool(
         "get_hand_state",
-        "Full hand context: your hole cards (not opponent's), community, pot, both stacks, street bets, to_call, legal actions, hand # and tournament progress.",
+        "Full hand context: your hole cards (not opponent's), community, pot, both stacks, street bets, to_call, legal actions, hand # and match progress (2-player Texas Hold'em).",
         {},
     ),
     _tool(

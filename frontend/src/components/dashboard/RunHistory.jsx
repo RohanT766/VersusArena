@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getDisplayName } from '../../utils/modelUtils';
 
 const RunHistory = ({ runs, onSelectRun, onDeleteRun, deletingId }) => {
   const [filter, setFilter] = useState('');
@@ -33,12 +34,6 @@ const RunHistory = ({ runs, onSelectRun, onDeleteRun, deletingId }) => {
           onChange={(e) => setFilter(e.target.value)}
         />
       </div>
-      {confirmId && (
-        <div className="dashboard-delete-banner" role="alert">
-          <strong>Irreversible:</strong> deleting a run removes all moves and results, then rebuilds Elo from remaining finished games.
-          <button type="button" className="dashboard-linkbtn" onClick={() => setConfirmId(null)}>Cancel</button>
-        </div>
-      )}
       <div className="dashboard-table-wrap">
         <table className="dashboard-table">
           <thead>
@@ -55,8 +50,12 @@ const RunHistory = ({ runs, onSelectRun, onDeleteRun, deletingId }) => {
             {filtered.map((r) => (
               <tr key={r.id}>
                 <td>{r.game_type}</td>
-                <td className="mono small">{r.player1_model}</td>
-                <td className="mono small">{r.player2_model}</td>
+                <td className="small" title={r.player1_model}>
+                  {r.player1_display || getDisplayName(r.player1_model)}
+                </td>
+                <td className="small" title={r.player2_model}>
+                  {r.player2_display || getDisplayName(r.player2_model)}
+                </td>
                 <td>{r.status}</td>
                 <td className="small">{new Date((r.started_at || 0) * 1000).toLocaleString()}</td>
                 <td className="dashboard-actions-cell">

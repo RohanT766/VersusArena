@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from src.benchmark.cost_estimate import estimate_cost_usd
+from src.engine.model_registry import anthropic_messages_create, effective_max_tokens
 from src.utils.common import LLMClient
 
 
@@ -85,6 +86,31 @@ def _anthropic_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     ]
 
 
+def _sanitize_schema_for_google(schema: Any) -> Any:
+    """Gemini function schemas reject JSON Schema fields like minLength/maxLength."""
+    if isinstance(schema, dict):
+        skip = {
+            "minLength",
+            "maxLength",
+            "minItems",
+            "maxItems",
+            "minimum",
+            "maximum",
+            "exclusiveMinimum",
+            "exclusiveMaximum",
+            "multipleOf",
+            "pattern",
+        }
+        return {
+            k: _sanitize_schema_for_google(v)
+            for k, v in schema.items()
+            if k not in skip
+        }
+    if isinstance(schema, list):
+        return [_sanitize_schema_for_google(item) for item in schema]
+    return schema
+
+
 def _google_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     decls = []
     for t in tools:
@@ -92,7 +118,7 @@ def _google_tools(tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             {
                 "name": t["name"],
                 "description": t["description"],
-                "parameters": t["parameters"],
+                "parameters": _sanitize_schema_for_google(t["parameters"]),
             }
         )
     return decls
@@ -165,11 +191,12 @@ class AgentClient:
                 terminal_tool=force_terminal,
                 has_tools=bool(tools),
             )
+            cap = effective_max_tokens(self.model_name, max_tokens, for_tools=True)
             try:
                 text, calls = self._invoke_with_tools(
                     msgs,
                     tools,
-                    max_tokens,
+                    cap,
                     temperature,
                     step_usage,
                     system=api_system,
@@ -297,13 +324,14 @@ class AgentClient:
                 "messages": messages,
                 "tools": _openai_tools(tools),
                 "tool_choice": tool_choice or "auto",
-                "timeout": 60,
+                "timeout": 120,
             }
+            cap = effective_max_tokens(self.model_name, max_tokens, for_tools=True)
             if self._llm._is_new_openai_model():
-                params["max_completion_tokens"] = max_tokens
+                params["max_completion_tokens"] = cap
             else:
                 params["temperature"] = temperature
-                params["max_tokens"] = max_tokens
+                params["max_tokens"] = cap
             response = self.client.chat.completions.create(**params)
             self._llm._fill_usage_openai(usage_out, response, t0)
             msg = response.choices[0].message
@@ -336,7 +364,7 @@ class AgentClient:
                 params["system"] = system
             if tool_choice:
                 params["tool_choice"] = tool_choice
-            response = self.client.messages.create(**params)
+            response = anthropic_messages_create(self.client, **params)
             self._llm._fill_usage_anthropic(usage_out, response, t0)
             text_parts = []
             calls = []
@@ -371,20 +399,27 @@ class AgentClient:
             ),
         )
         self._llm._fill_usage_google(usage_out, response, t0)
-        text = (getattr(response, "text", None) or "").strip() or None
+        text_parts: List[str] = []
         calls = []
-        for part in response.candidates[0].content.parts:
-            fc = getattr(part, "function_call", None)
-            if fc:
-                args = dict(fc.args) if fc.args else {}
-                calls.append(
-                    {
-                        "function_call": {
-                            "name": fc.name,
-                            "args": args,
+        candidates = getattr(response, "candidates", None) or []
+        if candidates:
+            parts = getattr(candidates[0].content, "parts", None) or []
+            for part in parts:
+                part_text = getattr(part, "text", None)
+                if part_text:
+                    text_parts.append(part_text)
+                fc = getattr(part, "function_call", None)
+                if fc:
+                    args = dict(fc.args) if fc.args else {}
+                    calls.append(
+                        {
+                            "function_call": {
+                                "name": fc.name,
+                                "args": args,
+                            }
                         }
-                    }
-                )
+                    )
+        text = ("\n".join(text_parts).strip() or None) if text_parts else None
         return text, calls
 
     def _to_anthropic_messages(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

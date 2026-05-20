@@ -17,7 +17,7 @@ STARTING_RACK: Dict[str, int] = {
 }
 
 CHIPS_PER_PLAYER = sum(int(d) * c for d, c in STARTING_RACK.items())  # 1000
-TOTAL_CHIPS_IN_PLAY = CHIPS_PER_PLAYER * 2  # heads-up
+TOTAL_CHIPS_IN_PLAY = CHIPS_PER_PLAYER * 2  # 2-player table
 
 
 def empty_rack() -> Dict[str, int]:

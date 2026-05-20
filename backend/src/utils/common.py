@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import asyncio
 
 from src.benchmark.cost_estimate import estimate_cost_usd
+from src.engine.model_registry import anthropic_messages_create, effective_max_tokens
 
 # Load environment variables from backend/.env
 backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))  # Go up 3 levels from src/utils/common.py
@@ -141,13 +142,14 @@ class LLMClient:
                     params = {
                         "model": self.model_name,
                         "messages": [{"role": "user", "content": prompt}],
-                        "timeout": 30,
+                        "timeout": 60,
                     }
+                    cap = effective_max_tokens(self.model_name, max_tokens)
                     if self._is_new_openai_model():
-                        params["max_completion_tokens"] = max_tokens
+                        params["max_completion_tokens"] = cap
                     else:
                         params["temperature"] = temperature
-                        params["max_tokens"] = max_tokens
+                        params["max_tokens"] = cap
                     response = self.client.chat.completions.create(**params)
                     text = response.choices[0].message.content
                     text = text.strip() if text else ""
@@ -156,7 +158,8 @@ class LLMClient:
                         out["error"] = None
                     return text
                 elif self.model_type == "ANTHROPIC":
-                    response = self.client.messages.create(
+                    response = anthropic_messages_create(
+                        self.client,
                         model=self.model_name,
                         messages=[{"role": "user", "content": prompt}],
                         temperature=temperature,
@@ -227,23 +230,25 @@ class LLMClient:
                             {"role": "system", "content": "You are playing Battleship. Reply with ONLY a coordinate like 'A5'. No other text."},
                             {"role": "user", "content": prompt}
                         ],
-                        "timeout": 30,
+                        "timeout": 60,
                     }
+                    cap = effective_max_tokens(self.model_name, 10)
                     if self._is_new_openai_model():
-                        params["max_completion_tokens"] = 10
+                        params["max_completion_tokens"] = cap
                     else:
                         params["temperature"] = 0.7
-                        params["max_tokens"] = 10
+                        params["max_tokens"] = cap
                     response = self.client.chat.completions.create(**params)
                     content = response.choices[0].message.content.strip()
                     if usage_out is not None:
                         self._fill_usage_openai(usage_out, response, t0)
                         usage_out["error"] = None
                 elif self.model_type == "ANTHROPIC":
-                    response = self.client.messages.create(
+                    response = anthropic_messages_create(
+                        self.client,
                         model=self.model_name,
                         messages=[{"role": "user", "content": prompt}],
-                        max_tokens=10,
+                        max_tokens=effective_max_tokens(self.model_name, 10),
                         temperature=0.7,
                     )
                     content = response.content[0].text.strip()

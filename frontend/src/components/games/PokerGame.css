@@ -1,4 +1,4 @@
-/* Heads-up poker — fixed layout map (1080×640), no overlap */
+/* 2-player Texas Hold'em — fixed layout map (1080×640), no overlap */
 
 .pk-arena {
   position: relative;
@@ -74,81 +74,110 @@
   z-index: 2;
 }
 
-/* —— Top villain: name at rail, fixed rack + card slots —— */
+/* —— Top seat: rail → center (thinking, name, balance, chips|cards) —— */
 .pk-zone--seat-top {
-  top: 8px;
+  top: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 360px;
-  height: 168px;
+  width: 400px;
+  height: 162px;
   align-items: flex-start;
+  overflow: visible;
+  z-index: 5;
 }
 
 .pk-zone--bet-top {
-  top: 228px;
+  top: 168px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 56px;
+  width: 220px;
+  height: 50px;
+  z-index: 4;
 }
 
-/* —— Center: pot chips on felt, label below; board separated —— */
+/* —— Pot then board — clear vertical gap, no overlap —— */
 .pk-zone--pot {
-  top: 178px;
+  top: 218px;
   left: 50%;
   transform: translateX(-50%);
-  width: 240px;
-  height: 96px;
-  z-index: 4;
+  width: 260px;
+  height: 64px;
+  z-index: 6;
   align-items: center;
+  overflow: visible;
 }
 
 .pk-zone--board {
-  top: 292px;
+  top: 286px;
   left: 50%;
   transform: translateX(-50%);
-  width: 360px;
-  min-height: 72px;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 3;
+  width: 280px;
+  height: 64px;
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  pointer-events: none;
 }
 
-/* —— Bottom hero —— */
+/* —— Bottom seat —— */
 .pk-zone--bet-bottom {
-  top: 368px;
+  top: 358px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 56px;
+  width: 220px;
+  height: 46px;
+  z-index: 7;
 }
 
 .pk-zone--seat-bottom {
-  top: 398px;
+  top: 408px;
   left: 50%;
   transform: translateX(-50%);
-  width: 360px;
-  height: 168px;
+  width: 400px;
+  height: 196px;
   align-items: flex-end;
+  overflow: visible;
+  z-index: 4;
 }
 
-/* —— Deck (right rail, clear of center stack) —— */
+/* —— Deck (right rail, inset from edge) —— */
 .pk-zone--deck {
   top: 50%;
-  right: 56px;
+  right: 118px;
   left: auto;
   transform: translateY(-50%);
   width: 52px;
 }
 
 /* Reserved bet row — worst-case street stack height */
+.pk-street-bet-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: 3px;
+  box-sizing: border-box;
+}
+
+.pk-street-bet-wrap--top {
+  justify-content: flex-start;
+}
+
+.pk-street-bet-wrap--bottom {
+  justify-content: flex-end;
+}
+
 .pk-bet-slot {
   width: 100%;
-  height: 56px;
+  height: 40px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   overflow: visible;
+  flex-shrink: 0;
 }
 
 /* Seats */
@@ -157,13 +186,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
 }
 
 .pk-seat--bottom {
   justify-content: flex-end;
+  padding-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.pk-seat-thinking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 1.35rem;
+  flex-shrink: 0;
+}
+
+.pk-seat-thinking .game-player-thinking--idle {
+  opacity: 0;
 }
 
 .pk-seat--active .pk-seat-name {
@@ -172,24 +217,15 @@
   box-shadow: 0 0 0 2px #ca8a04;
 }
 
-/* Fixed seat header — thinking never pushes name or blind badges */
-.pk-seat-head {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 260px;
-  min-height: 2.75rem;
-  flex-shrink: 0;
-}
-
 .pk-seat-name-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
+  max-width: 280px;
   min-height: 2rem;
+  flex-shrink: 0;
 }
 
 .pk-seat-badges {
@@ -199,20 +235,6 @@
   flex-shrink: 0;
   min-width: 52px;
   justify-content: flex-end;
-}
-
-.pk-seat-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 1.35rem;
-  margin-top: 2px;
-}
-
-.pk-seat-status .game-player-thinking--idle {
-  opacity: 0;
-  animation: none;
 }
 
 .pk-seat-name {
@@ -230,115 +252,183 @@
   flex-shrink: 1;
 }
 
-.pk-blind-badge {
-  font-size: 0.9rem;
-  padding: 2px 6px;
+.pk-blind-badge,
+.pk-dealer-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-family: 'VT323', monospace;
+  font-size: 0.7rem;
+  font-weight: bold;
+  line-height: 1;
   border: 2px solid;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  padding: 0;
+  letter-spacing: 0;
 }
 
 .pk-blind-badge--sb {
-  color: #86efac;
+  color: #ecfdf5;
   border-color: #22c55e;
-  background: #052e16;
+  background: #15803d;
 }
 
 .pk-blind-badge--bb {
-  color: #fde047;
+  color: #111;
   border-color: #ca8a04;
-  background: #422006;
+  background: #fde047;
 }
 
 .pk-dealer-btn {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: bold;
   color: #111;
   background: #fde047;
-  border: 2px solid #ca8a04;
-}
-
-.pk-balance {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  max-width: 320px;
-  min-height: 52px;
-  flex-shrink: 0;
+  border-color: #ca8a04;
 }
 
 .pk-balance-label {
-  font-size: 1.1rem;
+  margin: 0;
+  font-size: 1.05rem;
+  color: #fde047;
+  text-shadow: 2px 2px 0 #000;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 1.15rem;
+}
+
+/* Chips beside hole cards (horizontal), not stacked under name */
+.pk-seat-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.pk-rack-slot {
+  width: 208px;
+  min-height: 84px;
+  height: 84px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+  flex-shrink: 0;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.pk-cards-slot {
+  position: relative;
+  width: 104px;
+  height: 70px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Fixed hole-card slots — second card dealt no longer shoves the first sideways */
+.pk-hole-slot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 66px;
+}
+
+.pk-hole-slot--0 {
+  left: 0;
+}
+
+.pk-hole-slot--1 {
+  left: 56px;
+}
+
+.pk-hole-card {
+  width: 100%;
+  height: 100%;
+}
+
+.pk-hole-deal--bottom {
+  animation: pkHoleDealBottom 0.5s steps(8) both;
+}
+
+.pk-hole-deal--top {
+  animation: pkHoleDealTop 0.5s steps(8) both;
+}
+
+@keyframes pkHoleDealBottom {
+  from {
+    opacity: 0;
+    transform: translate(180px, -32px) scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pkHoleDealTop {
+  from {
+    opacity: 0;
+    transform: translate(180px, 32px) scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pk-hole-card--flip {
+  animation: pkCardFlipIn 0.42s steps(6) both;
+}
+
+.pk-street-bet-amt {
+  margin: 0;
+  font-size: 1.05rem;
   color: #fde047;
   text-shadow: 2px 2px 0 #000;
   line-height: 1.1;
   letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.pk-cards-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 66px;
   flex-shrink: 0;
-}
-
-.pk-street-bet {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 5px 14px;
-  background: #111;
-  border: 2px solid #ca8a04;
-}
-
-.pk-street-bet-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  color: #a3a3a3;
-}
-
-.pk-street-bet-amt {
-  font-size: 1.15rem;
-  color: #fde047;
+  white-space: nowrap;
 }
 
 .pk-pot-zone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 4px;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .pk-pot-chips {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  min-height: 44px;
+  min-height: 52px;
   width: 100%;
-  flex-shrink: 0;
+  overflow: visible;
+  flex: 1 1 auto;
+  padding-bottom: 4px;
+  box-sizing: border-box;
 }
 
 .pk-pot-label {
   margin: 0;
-  padding-top: 2px;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: #fde047;
   text-shadow: 2px 2px 0 #000;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
@@ -363,6 +453,8 @@
   justify-content: center;
   width: 100%;
   max-width: 300px;
+  overflow: visible;
+  padding-bottom: 4px;
 }
 
 .pk-chip-area--street {
@@ -379,6 +471,7 @@
 .pk-chip-column {
   position: relative;
   display: block;
+  overflow: visible;
 }
 
 .pk-chip {
@@ -419,22 +512,61 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
   height: 60px;
+  flex-shrink: 0;
 }
 
 .pk-board-slot {
   width: 44px;
   height: 60px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  overflow: visible;
+}
+
+.pk-board-card {
+  width: 44px;
+  height: 60px;
+}
+
+.pk-board-deal {
+  animation: pkBoardDealFromDeck 0.52s steps(8) both;
+}
+
+@keyframes pkBoardDealFromDeck {
+  from {
+    opacity: 0;
+    transform: translate(150px, 4px) scale(0.52);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pk-board-card--flip {
+  animation: pkCardFlipIn 0.42s steps(6) both;
 }
 
 .pk-winner-line {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
   font-size: 1.05rem;
   color: #fde047;
   text-align: center;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0 #000;
+  z-index: 11;
 }
 
 .pk-deck {
@@ -509,50 +641,6 @@
   height: 100%;
 }
 
-.pk-card--deal {
-  animation: pkDealFromDeck 0.4s steps(6) both;
-}
-
-@keyframes pkDealFromDeck {
-  from { opacity: 0; transform: translate(40px, -6px) scale(0.5); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Hole cards: fly from deck (right rail) then flip face-up */
-.pk-card--from-deck--bottom {
-  animation: pkDealFromDeckBottom 0.5s steps(8) both;
-}
-
-.pk-card--from-deck--top {
-  animation: pkDealFromDeckTop 0.5s steps(8) both;
-}
-
-@keyframes pkDealFromDeckBottom {
-  from {
-    opacity: 0;
-    transform: translate(200px, -36px) scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes pkDealFromDeckTop {
-  from {
-    opacity: 0;
-    transform: translate(200px, 36px) scale(0.5);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.pk-card--flip-in {
-  animation: pkCardFlipIn 0.42s steps(6) both;
-}
-
 @keyframes pkCardFlipIn {
   0% {
     transform: scaleX(0.08);
@@ -614,12 +702,13 @@
   justify-content: center;
   image-rendering: pixelated;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
-  animation: pkChipToPot 0.55s steps(8) forwards;
+  animation: pkChipToPot 1.05s steps(12) forwards;
 }
 
 @keyframes pkChipToPot {
   0% { transform: translate(var(--pk-sx), var(--pk-sy)) scale(1); opacity: 1; }
-  100% { transform: translate(var(--pk-ex), var(--pk-ey)) scale(0.5); opacity: 0; }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--pk-ex), var(--pk-ey)) scale(0.55); opacity: 0; }
 }
 
 /* Action toasts — overlay, never push table */

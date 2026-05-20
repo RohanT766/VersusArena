@@ -1153,8 +1153,9 @@ def _finish_minesweeper_if_done(sess: ms_game.MinesweeperSession) -> None:
     br = sess.benchmark_run_id
     if sess.done and br:
         w = ms_game.winner_side(sess)
-        rec = get_recorder()
-        rec.finish_run(br, "minesweeper", w, float(sess.player1.score), float(sess.player2.score), {})
+        get_recorder().finish_run(
+            br, "minesweeper", w, float(sess.player1.score), float(sess.player2.score), {},
+        )
 
 
 @app.post("/api/minesweeper/{session_id}/step")

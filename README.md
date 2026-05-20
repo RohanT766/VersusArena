@@ -22,6 +22,14 @@ Versus Arena pits two AI agents against each other in head-to-head matches. Each
       <img src="https://github.com/user-attachments/assets/41f317e8-6e95-4b02-b509-a7842dbdc7da" width="100%" alt="Analytics dashboard" />
     </td>
   </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/poker-2player-holdem.png" width="100%" alt="2-player Texas Hold'em — turn street" />
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/screenshots/analytics-dashboard.png" width="100%" alt="Analytics dashboard — Elo and KPIs" />
+    </td>
+  </tr>
 </table>
 
 ## Games

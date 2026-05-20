@@ -9,6 +9,31 @@ from typing import Any, Dict, List, Optional, Tuple
 from src.benchmark.elo import INITIAL_RATING, update_elo_pair
 from src.db.database import get_connection
 
+# Pytest / recorder smoke tests write these into the DB if not isolated — exclude from analytics.
+EXCLUDED_GAME_TYPES = ("test_game",)
+PLACEHOLDER_MODEL_IDS = ("model_a", "model_b", "a", "b")
+
+
+def production_runs_where(alias: str = "r") -> str:
+    """SQL fragment: only real arena benchmark runs."""
+    excluded_games = ",".join(repr(g) for g in EXCLUDED_GAME_TYPES)
+    placeholders = ",".join(repr(m) for m in PLACEHOLDER_MODEL_IDS)
+    return (
+        f"{alias}.game_type NOT IN ({excluded_games}) "
+        f"AND {alias}.player1_model NOT IN ({placeholders}) "
+        f"AND {alias}.player2_model NOT IN ({placeholders})"
+    )
+
+
+def is_production_run(game_type: str, player1_model: str, player2_model: str) -> bool:
+    """Same rules as run history / analytics — not test placeholders."""
+    if game_type in EXCLUDED_GAME_TYPES:
+        return False
+    if player1_model in PLACEHOLDER_MODEL_IDS or player2_model in PLACEHOLDER_MODEL_IDS:
+        return False
+    return True
+
+
 DISPLAY_NAMES: Dict[str, str] = {
     "gpt-5.5": "GPT-5.5",
     "gpt-5.4-mini": "GPT-5.4 Mini",
@@ -44,12 +69,13 @@ def rebuild_elo_ratings(conn) -> None:
     """Recompute elo_ratings from all finished benchmark results in chronological order."""
     conn.execute("DELETE FROM elo_ratings")
     rows = conn.execute(
-        """
+        f"""
         SELECT r.game_type, r.player1_model, r.player2_model, res.winner_side,
                COALESCE(r.ended_at, r.started_at) AS ts
         FROM benchmark_runs r
         JOIN benchmark_results res ON res.run_id = r.id
         WHERE r.status = 'finished' AND res.winner_side IS NOT NULL
+          AND {production_runs_where("r")}
         ORDER BY ts ASC
         """
     ).fetchall()
@@ -103,15 +129,17 @@ def rebuild_elo_ratings(conn) -> None:
 
 
 def fetch_overview(conn) -> Dict[str, Any]:
+    prod = production_runs_where("r")
     row = conn.execute(
-        """
+        f"""
         SELECT
             COUNT(*) AS total_runs,
             SUM(CASE WHEN status = 'finished' THEN 1 ELSE 0 END) AS finished_runs,
             SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress_runs,
             SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_runs,
             SUM(CASE WHEN status NOT IN ('finished', 'in_progress', 'cancelled') THEN 1 ELSE 0 END) AS other_status_runs
-        FROM benchmark_runs
+        FROM benchmark_runs r
+        WHERE {prod}
         """
     ).fetchone()
     total = int(row["total_runs"] or 0)
@@ -121,10 +149,10 @@ def fetch_overview(conn) -> Dict[str, Any]:
     other = int(row["other_status_runs"] or 0)
 
     dur_rows = conn.execute(
-        """
+        f"""
         SELECT (ended_at - started_at) AS dur
-        FROM benchmark_runs
-        WHERE status = 'finished' AND ended_at IS NOT NULL
+        FROM benchmark_runs r
+        WHERE r.status = 'finished' AND r.ended_at IS NOT NULL AND {prod}
         """
     ).fetchall()
     durs = sorted(float(r["dur"]) for r in dur_rows if r["dur"] is not None)
@@ -135,7 +163,7 @@ def fetch_overview(conn) -> Dict[str, Any]:
         median_duration = 0.0
 
     move_row = conn.execute(
-        """
+        f"""
         SELECT COUNT(*) AS moves,
                AVG(m.latency_ms) AS avg_latency_ms,
                AVG(m.cost_usd) AS avg_cost_usd,
@@ -143,17 +171,18 @@ def fetch_overview(conn) -> Dict[str, Any]:
                SUM(CASE WHEN m.error IS NOT NULL AND TRIM(m.error) != '' THEN 1 ELSE 0 END) AS move_errors
         FROM benchmark_moves m
         JOIN benchmark_runs r ON r.id = m.run_id
-        WHERE r.status = 'finished'
+        WHERE r.status = 'finished' AND {prod}
         """
     ).fetchone()
 
+    ph = ",".join(repr(m) for m in PLACEHOLDER_MODEL_IDS)
     unique_models = conn.execute(
-        """
+        f"""
         SELECT COUNT(DISTINCT model) AS n FROM (
-            SELECT player1_model AS model FROM benchmark_runs
+            SELECT player1_model AS model FROM benchmark_runs r WHERE {prod}
             UNION
-            SELECT player2_model AS model FROM benchmark_runs
-        ) WHERE model IS NOT NULL AND TRIM(model) != ''
+            SELECT player2_model AS model FROM benchmark_runs r WHERE {prod}
+        ) WHERE model IS NOT NULL AND TRIM(model) != '' AND model NOT IN ({ph})
         """
     ).fetchone()
 
@@ -177,38 +206,42 @@ def fetch_overview(conn) -> Dict[str, Any]:
 
 
 def fetch_model_performance(conn, scope: str = "overall") -> List[Dict[str, Any]]:
+    ph = ",".join(repr(m) for m in PLACEHOLDER_MODEL_IDS)
     rows = conn.execute(
-        """
+        f"""
         SELECT model_id, rating, games_played, wins,
                CASE WHEN games_played > 0 THEN round(100.0 * wins / games_played, 2) ELSE 0 END AS win_pct
         FROM elo_ratings
-        WHERE game_scope = ?
+        WHERE game_scope = ? AND model_id NOT IN ({ph})
         ORDER BY rating DESC
         """,
         (scope,),
     ).fetchall()
 
+    prod = production_runs_where("r")
     dur_by_model: Dict[str, List[float]] = defaultdict(list)
     if scope == "overall":
         dur_rows = conn.execute(
-            """
+            f"""
             SELECT player1_model AS model, (ended_at - started_at) AS dur
-            FROM benchmark_runs WHERE status = 'finished' AND ended_at IS NOT NULL
+            FROM benchmark_runs r
+            WHERE r.status = 'finished' AND r.ended_at IS NOT NULL AND {prod}
             UNION ALL
             SELECT player2_model AS model, (ended_at - started_at) AS dur
-            FROM benchmark_runs WHERE status = 'finished' AND ended_at IS NOT NULL
+            FROM benchmark_runs r
+            WHERE r.status = 'finished' AND r.ended_at IS NOT NULL AND {prod}
             """
         ).fetchall()
     else:
         dur_rows = conn.execute(
-            """
+            f"""
             SELECT player1_model AS model, (ended_at - started_at) AS dur
-            FROM benchmark_runs
-            WHERE status = 'finished' AND ended_at IS NOT NULL AND game_type = ?
+            FROM benchmark_runs r
+            WHERE r.status = 'finished' AND r.ended_at IS NOT NULL AND r.game_type = ? AND {prod}
             UNION ALL
             SELECT player2_model AS model, (ended_at - started_at) AS dur
-            FROM benchmark_runs
-            WHERE status = 'finished' AND ended_at IS NOT NULL AND game_type = ?
+            FROM benchmark_runs r
+            WHERE r.status = 'finished' AND r.ended_at IS NOT NULL AND r.game_type = ? AND {prod}
             """,
             (scope, scope),
         ).fetchall()
@@ -236,11 +269,12 @@ def fetch_model_performance(conn, scope: str = "overall") -> List[Dict[str, Any]
 
 def fetch_head_to_head(conn, limit: int = 20) -> List[Dict[str, Any]]:
     rows = conn.execute(
-        """
+        f"""
         SELECT r.player1_model AS p1, r.player2_model AS p2, res.winner_side
         FROM benchmark_runs r
         JOIN benchmark_results res ON res.run_id = r.id
         WHERE r.status = 'finished' AND res.winner_side IN (0, 1, 2)
+          AND {production_runs_where("r")}
         """
     ).fetchall()
 
@@ -289,8 +323,9 @@ def fetch_head_to_head(conn, limit: int = 20) -> List[Dict[str, Any]]:
 
 def fetch_quality(conn) -> Dict[str, Any]:
     by_model = _fetch_quality_by_model(conn)
+    prod = production_runs_where("r")
     by_game_rows = conn.execute(
-        """
+        f"""
         SELECT r.game_type AS game_type,
                COUNT(*) AS moves,
                AVG(m.latency_ms) AS avg_latency_ms,
@@ -298,7 +333,7 @@ def fetch_quality(conn) -> Dict[str, Any]:
                AVG(m.correctness) AS avg_correctness
         FROM benchmark_moves m
         JOIN benchmark_runs r ON r.id = m.run_id
-        WHERE r.status = 'finished'
+        WHERE r.status = 'finished' AND {prod}
         GROUP BY r.game_type
         ORDER BY moves DESC
         """
@@ -317,8 +352,10 @@ def fetch_quality(conn) -> Dict[str, Any]:
 
 
 def _fetch_quality_by_model(conn) -> List[Dict[str, Any]]:
+    prod = production_runs_where("r")
+    ph = ",".join(repr(m) for m in PLACEHOLDER_MODEL_IDS)
     rows = conn.execute(
-        """
+        f"""
         SELECT model, SUM(moves) AS moves,
                SUM(latency_sum) / NULLIF(SUM(moves), 0) AS avg_latency_ms,
                SUM(cost_sum) / NULLIF(SUM(moves), 0) AS avg_cost_usd,
@@ -332,7 +369,7 @@ def _fetch_quality_by_model(conn) -> List[Dict[str, Any]]:
                    SUM(CASE WHEN m.error IS NOT NULL AND TRIM(m.error) != '' THEN 1 ELSE 0 END) AS errors
             FROM benchmark_moves m
             JOIN benchmark_runs r ON r.id = m.run_id
-            WHERE r.status = 'finished'
+            WHERE r.status = 'finished' AND {prod}
             GROUP BY r.player1_model
             UNION ALL
             SELECT r.player2_model AS model, COUNT(*) AS moves,
@@ -342,7 +379,7 @@ def _fetch_quality_by_model(conn) -> List[Dict[str, Any]]:
                    SUM(CASE WHEN m.error IS NOT NULL AND TRIM(m.error) != '' THEN 1 ELSE 0 END) AS errors
             FROM benchmark_moves m
             JOIN benchmark_runs r ON r.id = m.run_id
-            WHERE r.status = 'finished'
+            WHERE r.status = 'finished' AND {prod}
             GROUP BY r.player2_model
         )
         GROUP BY model
@@ -353,7 +390,7 @@ def _fetch_quality_by_model(conn) -> List[Dict[str, Any]]:
     for row in rows:
         mid = row["model"]
         moves = int(row["moves"] or 0)
-        if not mid or moves == 0:
+        if not mid or moves == 0 or mid in PLACEHOLDER_MODEL_IDS:
             continue
         errors = int(row["errors"] or 0)
         result.append(
@@ -372,11 +409,12 @@ def _fetch_quality_by_model(conn) -> List[Dict[str, Any]]:
 
 def fetch_trends(conn, days: int = 14, top_models: int = 5) -> Dict[str, Any]:
     cutoff = time.time() - days * 86400
+    prod = production_runs_where("r")
     runs_per_day = conn.execute(
-        """
+        f"""
         SELECT date(COALESCE(ended_at, started_at), 'unixepoch') AS day, COUNT(*) AS runs
-        FROM benchmark_runs
-        WHERE COALESCE(ended_at, started_at) >= ?
+        FROM benchmark_runs r
+        WHERE COALESCE(ended_at, started_at) >= ? AND {prod}
         GROUP BY day
         ORDER BY day ASC
         """,
@@ -385,20 +423,23 @@ def fetch_trends(conn, days: int = 14, top_models: int = 5) -> Dict[str, Any]:
     daily_runs = [{"day": r["day"], "runs": int(r["runs"])} for r in runs_per_day]
 
     rows = conn.execute(
-        """
+        f"""
         SELECT r.id, r.game_type, r.player1_model, r.player2_model, res.winner_side,
                COALESCE(r.ended_at, r.started_at) AS ts
         FROM benchmark_runs r
         JOIN benchmark_results res ON res.run_id = r.id
         WHERE r.status = 'finished' AND res.winner_side IS NOT NULL
+          AND {prod}
         ORDER BY ts ASC
         """
     ).fetchall()
 
     model_counts: Dict[str, int] = defaultdict(int)
     for row in rows:
-        model_counts[row["player1_model"]] += 1
-        model_counts[row["player2_model"]] += 1
+        if row["player1_model"] not in PLACEHOLDER_MODEL_IDS:
+            model_counts[row["player1_model"]] += 1
+        if row["player2_model"] not in PLACEHOLDER_MODEL_IDS:
+            model_counts[row["player2_model"]] += 1
     top = [m for m, _ in sorted(model_counts.items(), key=lambda x: -x[1])[:top_models]]
 
     ratings: Dict[str, float] = {m: float(INITIAL_RATING) for m in top}
@@ -424,6 +465,24 @@ def fetch_trends(conn, days: int = 14, top_models: int = 5) -> Dict[str, Any]:
     return {
         "runs_per_day": daily_runs,
         "elo_trends": [{"model": model_payload(m), "points": elo_series[m]} for m in top if elo_series[m]],
+    }
+
+
+def delete_all_benchmark_data(conn) -> Dict[str, Any]:
+    """Remove every benchmark run/move/result and rebuild Elo from scratch (empty)."""
+    counts = conn.execute(
+        "SELECT COUNT(*) AS n FROM benchmark_runs",
+    ).fetchone()
+    n = int(counts["n"] or 0)
+    conn.execute("DELETE FROM benchmark_moves")
+    conn.execute("DELETE FROM benchmark_results")
+    conn.execute("DELETE FROM benchmark_runs")
+    rebuild_elo_ratings(conn)
+    conn.commit()
+    return {
+        "deleted_runs": n,
+        "elo_rebuilt": True,
+        "recalculated_at": time.time(),
     }
 
 

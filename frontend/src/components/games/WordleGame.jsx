@@ -30,8 +30,8 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   const [wordLength, setWordLength] = useState(5);
   const [hardMode, setHardMode] = useState(false);
   const [gameState, setGameState] = useState({
-    player1: { guesses: [], feedback: [], reasoning: [], isThinking: false },
-    player2: { guesses: [], feedback: [], reasoning: [], isThinking: false },
+    player1: { guesses: [], feedback: [], reasoning: [], isThinking: false, error: null },
+    player2: { guesses: [], feedback: [], reasoning: [], isThinking: false, error: null },
     gameOver: false,
     winner: null,
     secretWord: null,
@@ -161,9 +161,14 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
             feedback: [...prev.player1.feedback, r1.feedback],
             reasoning: [...prev.player1.reasoning, r1.reasoning],
             isThinking: false,
+            error: null,
           };
         } else {
-          next.player1 = { ...prev.player1, isThinking: false };
+          next.player1 = {
+            ...prev.player1,
+            isThinking: false,
+            error: r1?.message || 'Could not get guess',
+          };
         }
         if (r2 && !r2.error) {
           next.player2 = {
@@ -171,9 +176,14 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
             feedback: [...prev.player2.feedback, r2.feedback],
             reasoning: [...prev.player2.reasoning, r2.reasoning],
             isThinking: false,
+            error: null,
           };
         } else {
-          next.player2 = { ...prev.player2, isThinking: false };
+          next.player2 = {
+            ...prev.player2,
+            isThinking: false,
+            error: r2?.message || 'Could not get guess',
+          };
         }
         return next;
       });
@@ -222,22 +232,44 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   };
 
   const fetchGuess = async (gid, side, signal) => {
-    while (!signal.aborted && mountedRef.current) {
+    const maxAttempts = 16;
+    const retryDelayMs = 1800;
+    const fetchTimeoutMs = 120_000;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (signal.aborted || !mountedRef.current) return null;
+
+      const attemptAbort = new AbortController();
+      const onParentAbort = () => attemptAbort.abort();
+      signal.addEventListener('abort', onParentAbort);
+      const timeoutId = setTimeout(() => attemptAbort.abort(), fetchTimeoutMs);
+
       try {
         const response = await fetch(`${getBackendUrl()}/api/wordle/guess/${gid}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ side }),
-          signal,
+          signal: attemptAbort.signal,
         });
         if (response.ok) return await response.json();
-        await wait(900);
+        const body = await response.text().catch(() => '');
+        if (response.status >= 500 || response.status === 429) {
+          await wait(retryDelayMs);
+          continue;
+        }
+        return { error: true, message: body || `Guess failed (${response.status})` };
       } catch (error) {
-        if (error.name === 'AbortError') return null;
-        await wait(900);
+        if (error.name === 'AbortError' && signal.aborted) return null;
+        if (attempt === maxAttempts - 1) {
+          return { error: true, message: error.message || 'Network error' };
+        }
+        await wait(retryDelayMs);
+      } finally {
+        clearTimeout(timeoutId);
+        signal.removeEventListener('abort', onParentAbort);
       }
     }
-    return null;
+    return { error: true, message: 'Guess timed out' };
   };
 
   const renderGrid = (playerKey) => {
@@ -373,6 +405,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
             <PlayerLabel
               name={player1.name}
               thinking={gameState.player1.isThinking}
+              error={gameState.player1.error}
               className="wordle-label-p1"
             />
             {renderGrid('player1')}
@@ -385,6 +418,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
             <PlayerLabel
               name={player2.name}
               thinking={gameState.player2.isThinking}
+              error={gameState.player2.error}
               className="wordle-label-p2"
             />
             {renderGrid('player2')}
@@ -404,8 +438,8 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
               onClick={() => {
                 if (abortRef.current) abortRef.current.abort();
                 setGameState({
-                  player1: { guesses: [], feedback: [], reasoning: [], isThinking: false },
-                  player2: { guesses: [], feedback: [], reasoning: [], isThinking: false },
+                  player1: { guesses: [], feedback: [], reasoning: [], isThinking: false, error: null },
+                  player2: { guesses: [], feedback: [], reasoning: [], isThinking: false, error: null },
                   gameOver: false,
                   winner: null,
                   secretWord: null,

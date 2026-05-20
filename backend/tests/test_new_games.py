@@ -55,16 +55,16 @@ def test_poker_winner_side():
     assert poker.winner_side(sess) == 1
 
 
-def test_poker_heads_up_action_order():
+def test_poker_two_player_action_order():
     assert poker._action_order("player1", "preflop") == ["player1", "player2"]
     assert poker._action_order("player1", "flop") == ["player2", "player1"]
 
 
-def test_poker_hu_meta():
+def test_poker_two_player_meta():
     sess = poker.start_session("a", "b")
     hand = poker._start_hand(sess)
-    meta = poker._hu_meta(hand)
-    assert meta["format"] == "heads_up"
+    meta = poker._two_player_meta(hand)
+    assert meta["format"] == "two_player_holdem"
     assert meta["sb_player"] == hand.button
     assert meta["bb_player"] == poker._other(hand.button)
 

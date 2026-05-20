@@ -48,16 +48,11 @@ export default function PlayingCard({
   faceDown = false,
   size = 'md',
   deal = false,
-  dealFromDeck = false,
-  seatSide = null,
-  flipIn = false,
   style,
 }) {
   const cls = [
     `pk-card pk-card--${size}`,
-    deal && !dealFromDeck ? 'pk-card--deal' : '',
-    dealFromDeck && seatSide ? `pk-card--from-deck pk-card--from-deck--${seatSide}` : '',
-    flipIn ? 'pk-card--flip-in' : '',
+    deal ? 'pk-card--deal' : '',
   ]
     .filter(Boolean)
     .join(' ');

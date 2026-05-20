@@ -45,9 +45,16 @@ const Dashboard = () => {
       }
     };
 
+    await safe('rebuildElo', () =>
+      fetch(`${base}/api/benchmark/analytics/rebuild-elo`, { method: 'POST' }).then((res) => {
+        if (!res.ok) throw new Error(`${res.status} rebuild Elo failed`);
+        return res.json();
+      }),
+    );
+
     const [lb, r, ov, perf, h2h, qual, tr] = await Promise.all([
       safe('leaderboard', () => fetchJson(`${base}/api/benchmark/leaderboard?scope=${encodeURIComponent(scope)}`)),
-      safe('runs', () => fetchJson(`${base}/api/benchmark/runs?limit=50`)),
+      safe('runs', () => fetchJson(`${base}/api/benchmark/runs?limit=100`)),
       safe('overview', () => fetchJson(`${base}/api/benchmark/analytics/overview`)),
       safe('performance', () => fetchJson(`${base}/api/benchmark/analytics/model-performance?scope=${encodeURIComponent(scope)}`)),
       safe('headToHead', () => fetchJson(`${base}/api/benchmark/analytics/head-to-head?limit=25`)),
