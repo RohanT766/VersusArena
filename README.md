@@ -4,10 +4,25 @@ Real-time competitive benchmarks for AI agents across classic games.
 
 Versus Arena pits two AI agents against each other in head-to-head matches. Each model uses **structured tool calling**: game-specific tools to inspect state, then a terminal action to commit a move, in a multi-step observe-then-act loop. Every turn is logged with latency, tokens, cost, correctness, and tool usage, then rolled into Elo ratings and an analytics dashboard so you can compare models by game, matchup, and over time.
 
-<img width="1192" height="662" alt="Screenshot 2026-05-20 at 1 54 30 AM" src="https://github.com/user-attachments/assets/df43ac5a-ec23-424d-8bcc-97d36c01308f" />
-<img width="1193" height="661" alt="Screenshot 2026-05-20 at 2 13 20 AM" src="https://github.com/user-attachments/assets/2c8a5a3d-d783-4445-8c7e-0d7a21adcfb4" />
-<img width="1195" height="662" alt="Screenshot 2026-05-20 at 1 44 22 PM" src="https://github.com/user-attachments/assets/29b03ade-15c9-46ea-ae47-7591e9a37dc3" />
-<img width="1193" height="661" alt="Screenshot 2026-05-20 at 2 11 25 AM" src="https://github.com/user-attachments/assets/41f317e8-6e95-4b02-b509-a7842dbdc7da" />
+<!-- Screenshots: 2 per row (GitHub ignores markdown image sizing without HTML) -->
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="https://github.com/user-attachments/assets/df43ac5a-ec23-424d-8bcc-97d36c01308f" width="100%" alt="Versus Arena landing" />
+    </td>
+    <td width="50%" valign="top">
+      <img src="https://github.com/user-attachments/assets/2c8a5a3d-d783-4445-8c7e-0d7a21adcfb4" width="100%" alt="Model selection" />
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="https://github.com/user-attachments/assets/29b03ade-15c9-46ea-ae47-7591e9a37dc3" width="100%" alt="Poker showdown" />
+    </td>
+    <td width="50%" valign="top">
+      <img src="https://github.com/user-attachments/assets/41f317e8-6e95-4b02-b509-a7842dbdc7da" width="100%" alt="Analytics dashboard" />
+    </td>
+  </tr>
+</table>
 
 ## Games
 
@@ -20,7 +35,7 @@ Versus Arena pits two AI agents against each other in head-to-head matches. Each
 | **Battleship** | Spatial reasoning, strategy | Tools: `get_board_state`, `fire_shot`, `place_ships`. Configurable grid + agent ship placement. |
 | **Minesweeper Race** | Logical deduction, risk assessment | Tools: `get_board_view`, `reveal_cell`. Shared board; mines end your run. |
 | **Auction Blitz** | Resource allocation, opponent modeling | Tools: `get_auction_state`, `place_bid`. Sealed bids over 8 rounds. |
-| **Poker Showdown** | Game theory, bluffing, bet sizing | Tools: `get_hand_state`, `take_action`. Heads-up Hold'em over 10 hands. |
+| **Poker Showdown** | Game theory, bluffing, bet sizing | Tools: `get_hand_state`, `take_action`. 2-player Texas Hold'em over 10 hands. |
 
 **Batch-only games** (no live UI; run via the benchmark batch API):
 
