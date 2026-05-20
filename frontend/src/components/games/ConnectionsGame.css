@@ -18,6 +18,14 @@
 }
 
 /* === Player side === */
+.conn-label-p1 {
+  color: #10b981;
+}
+
+.conn-label-p2 {
+  color: #a78bfa;
+}
+
 .conn-player-side {
   flex: 1;
   display: flex;

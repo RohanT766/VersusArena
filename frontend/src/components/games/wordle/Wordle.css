@@ -51,6 +51,14 @@
   animation: winner-glow 2s ease-in-out infinite;
 }
 
+.wordle-label-p1 {
+  color: #10b981;
+}
+
+.wordle-label-p2 {
+  color: #a78bfa;
+}
+
 /* Thinking indicator */
 .thinking-dot {
   animation: bounce 1.4s ease-in-out infinite;

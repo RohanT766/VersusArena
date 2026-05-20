@@ -60,10 +60,7 @@ def test_minesweeper_completes():
     steps = 0
     while not sess.done and steps < 80:
         steps += 1
-        for player in ("player1", "player2"):
-            if sess.done:
-                break
-            minesweeper.play_step(sess, player)
+        minesweeper.play_round(sess)
     assert sess.done
     assert minesweeper.winner_side(sess) in (0, 1, 2)
 

@@ -1,15 +1,15 @@
 import { useLayoutEffect, useState } from 'react';
-
-const DISC_COUNT = 4;
+import { chipsMovedToFlyList } from '../../../utils/chipUtils';
 
 /**
- * Animate chips from seat anchor → pot using measured DOM positions.
+ * Animate exact denomination chips from player rack → street bet zone.
  */
-export default function ChipFly({ from, amount, feltEl, fromEl, toEl }) {
+export default function ChipFly({ player, chipsMoved, feltEl, fromEl, toEl }) {
   const [path, setPath] = useState(null);
+  const chips = chipsMovedToFlyList(chipsMoved);
 
   useLayoutEffect(() => {
-    if (!from || !amount || !feltEl || !fromEl || !toEl) {
+    if (!player || !chips.length || !feltEl || !fromEl || !toEl) {
       setPath(null);
       return undefined;
     }
@@ -29,26 +29,31 @@ export default function ChipFly({ from, amount, feltEl, fromEl, toEl }) {
     };
 
     measure();
-    const t = setTimeout(() => setPath(null), 650);
+    const t = setTimeout(() => setPath(null), 720);
     return () => clearTimeout(t);
-  }, [from, amount, feltEl, fromEl, toEl]);
+  }, [player, chips.length, feltEl, fromEl, toEl, chipsMoved]);
 
-  if (!path) return null;
+  if (!path || !chips.length) return null;
 
   return (
     <div className="pk-chip-fly-layer" aria-hidden="true">
-      {Array.from({ length: DISC_COUNT }).map((_, i) => (
+      {chips.map((denom, i) => (
         <span
-          key={i}
+          key={`${denom.value}-${i}`}
           className="pk-chip-fly-disc"
           style={{
             '--pk-sx': `${path.sx}px`,
             '--pk-sy': `${path.sy}px`,
             '--pk-ex': `${path.ex}px`,
             '--pk-ey': `${path.ey}px`,
-            animationDelay: `${i * 0.06}s`,
+            background: denom.color,
+            borderColor: denom.rim,
+            color: denom.text || '#fff',
+            animationDelay: `${i * 0.05}s`,
           }}
-        />
+        >
+          {chips.length <= 4 ? denom.label : ''}
+        </span>
       ))}
     </div>
   );

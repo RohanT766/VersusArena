@@ -90,8 +90,10 @@
 .game-layout-content {
   flex: 1;
   display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 /* === Shared split view === */
@@ -134,19 +136,37 @@
   letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 8px;
-  min-height: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+/* Fixed slot so thinking line does not shift boards */
+.game-player-label__status {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  min-height: 1.35rem;
+  width: 100%;
 }
 
 .game-player-thinking {
   display: block;
   font-size: 1rem;
+  line-height: 1.35rem;
   color: #f9df6d;
+  white-space: nowrap;
+}
+
+.game-player-thinking--active {
   animation: game-pulse 1.5s infinite;
-  margin-top: 4px;
+}
+
+.game-player-thinking--idle {
+  visibility: hidden;
+  animation: none;
 }
 
 @keyframes game-pulse {

@@ -1,6 +1,6 @@
 import { inventoryToGroups, rackTotal } from '../../../utils/chipUtils';
 
-/** Compact stack: dollar total + at most two chip discs (no cluttered columns). */
+/** Pixel stack readout: total + up to two chip discs. */
 export default function StackDisplay({ inventory, variant = 'seat' }) {
   const total = rackTotal(inventory);
   const groups = inventoryToGroups(inventory, 1).slice(0, 2);

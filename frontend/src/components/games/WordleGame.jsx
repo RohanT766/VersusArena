@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
 import GameOverModal from '../common/GameOverModal';
 import { getDisplayName } from '../../utils/modelUtils';
-import { cancelBenchmarkRun } from '../../utils/networkUtils';
+import { cancelBenchmarkRun, getBackendUrl } from '../../utils/networkUtils';
+import { fetchUntilOk, wait } from '../../utils/silentRetry';
 import useGameFlow from '../../hooks/useGameFlow';
+import PlayerLabel from '../common/PlayerLabel';
 import './wordle/Wordle.css';
 
 const getApiBase = () => {
@@ -42,8 +44,6 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   const gameFinishedRef = useRef(false);
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
   const { isSetup, isCountdown, isRunning, goToSetup, startCountdown, startRunning } = useGameFlow();
-  const [errorMsg, setErrorMsg] = useState(null);
-
   useEffect(() => {
     mountedRef.current = true;
     const handleUnload = () => {
@@ -71,10 +71,9 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
 
   const startGame = async () => {
     const word = (selectedWord || WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]).toUpperCase();
-    setErrorMsg(null);
 
-    try {
-      const response = await fetch(`${getApiBase()}/api/wordle/start`, {
+    while (mountedRef.current) {
+      const response = await fetchUntilOk(`${getBackendUrl()}/api/wordle/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -85,11 +84,10 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           hard_mode: hardMode,
         }),
       });
-
+      if (!response || !mountedRef.current) return;
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({}));
-        setErrorMsg(errBody.detail || `Backend error: ${response.status}`);
-        return;
+        await wait(800);
+        continue;
       }
 
       const data = await response.json();
@@ -102,8 +100,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       setGameState((prev) => ({ ...prev, gameStarted: true, secretWord: displaySecret }));
       pendingGameRef.current = data.game_id;
       startCountdown();
-    } catch (error) {
-      setErrorMsg(`Cannot reach backend at ${getApiBase()}. Is the server running?`);
+      return;
     }
   };
 
@@ -155,13 +152,6 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       ]);
 
       if (signal.aborted || !mountedRef.current) break;
-
-      const agentErr = [r1, r2].find((r) => r?.agentError);
-      if (agentErr) {
-        setErrorMsg(agentErr.agentError);
-        gameLoopRunning.current = false;
-        break;
-      }
 
       setGameState((prev) => {
         const next = { ...prev };
@@ -232,22 +222,22 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
   };
 
   const fetchGuess = async (gid, side, signal) => {
-    try {
-      const response = await fetch(`${getApiBase()}/api/wordle/guess/${gid}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ side }),
-        signal,
-      });
-      if (response.ok) return await response.json();
-      const errBody = await response.json().catch(() => ({}));
-      const detail = errBody.detail || `Agent failed (${response.status})`;
-      const label = side === 'player1' ? player1.name : player2.name;
-      return { error: true, agentError: `${label}: ${detail}` };
-    } catch (error) {
-      if (error.name === 'AbortError') return null;
-      return { error: true, agentError: error.message };
+    while (!signal.aborted && mountedRef.current) {
+      try {
+        const response = await fetch(`${getBackendUrl()}/api/wordle/guess/${gid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ side }),
+          signal,
+        });
+        if (response.ok) return await response.json();
+        await wait(900);
+      } catch (error) {
+        if (error.name === 'AbortError') return null;
+        await wait(900);
+      }
     }
+    return null;
   };
 
   const renderGrid = (playerKey) => {
@@ -298,9 +288,31 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
 
   const statusText = gameState.gameOver
     ? `${winnerLabel()} wins!  [${gameState.secretWord}]`
-    : gameState.gameStarted && gameState.secretWord && !/^\?+$/.test(gameState.secretWord)
-      ? `SECRET (${wordLength}L${hardMode ? ', hard' : ''}): ${gameState.secretWord}`
-      : `Hidden word — ${wordLength} letters${hardMode ? ' (hard mode)' : ''}`;
+    : `Round ${Math.max(gameState.player1.guesses.length, gameState.player2.guesses.length) + 1} · ${wordLength} letters${hardMode ? ' · hard' : ''}`;
+
+  const actionFeed = useMemo(() => {
+    const items = [];
+    const n = Math.max(gameState.player1.guesses.length, gameState.player2.guesses.length);
+    if (n === 0) return items;
+    const i = n - 1;
+    if (gameState.player1.guesses[i]) {
+      items.push({
+        id: `w1-${i}-${gameState.player1.guesses[i]}`,
+        side: 'player1',
+        verb: 'guessed',
+        detail: gameState.player1.guesses[i],
+      });
+    }
+    if (gameState.player2.guesses[i]) {
+      items.push({
+        id: `w2-${i}-${gameState.player2.guesses[i]}`,
+        side: 'player2',
+        verb: 'guessed',
+        detail: gameState.player2.guesses[i],
+      });
+    }
+    return items;
+  }, [gameState.player1.guesses, gameState.player2.guesses]);
 
   return (
     <GameLayout
@@ -309,6 +321,7 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
       player2Name={player2.name}
       onBack={handleGoBack}
       statusText={statusText}
+      actionFeed={actionFeed}
     >
       {isCountdown && (
         <GameCountdown
@@ -344,18 +357,11 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
               />
               <p className="word-hint">Models: {player1.id} vs {player2.id}</p>
             </div>
-            {errorMsg && <p style={{ color: '#ef4444', fontSize: '18px', margin: '10px 0' }}>{errorMsg}</p>}
             <button onClick={startGame} className="start-button">
               Start Match
             </button>
           </div>
         </div>
-      )}
-
-      {errorMsg && gameState.gameStarted && (
-        <p className="wordle-agent-error" role="alert">
-          {errorMsg}
-        </p>
       )}
 
       {gameState.gameStarted && isRunning && (
@@ -364,10 +370,11 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', padding: '20px' }}
         >
           <div className="player-section">
-            <div className="game-player-label" style={{ color: '#10b981' }}>
-              {player1.name}
-              {gameState.player1.isThinking && <span className="game-player-thinking">Agent thinking…</span>}
-            </div>
+            <PlayerLabel
+              name={player1.name}
+              thinking={gameState.player1.isThinking}
+              className="wordle-label-p1"
+            />
             {renderGrid('player1')}
             <div className="guess-count">Guesses: {gameState.player1.guesses.length}/6</div>
           </div>
@@ -375,10 +382,11 @@ const WordleGame = ({ player1Model: propPlayer1, player2Model: propPlayer2, onBa
           <div className="game-split-vs">VS</div>
 
           <div className="player-section">
-            <div className="game-player-label" style={{ color: '#a78bfa' }}>
-              {player2.name}
-              {gameState.player2.isThinking && <span className="game-player-thinking">Agent thinking…</span>}
-            </div>
+            <PlayerLabel
+              name={player2.name}
+              thinking={gameState.player2.isThinking}
+              className="wordle-label-p2"
+            />
             {renderGrid('player2')}
             <div className="guess-count">Guesses: {gameState.player2.guesses.length}/6</div>
           </div>

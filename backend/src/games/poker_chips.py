@@ -62,6 +62,17 @@ def merge_racks(dest: Dict[str, int], src: Dict[str, int]) -> None:
         src[key] = 0
 
 
+def chips_moved_breakdown(before: Dict[str, int], after: Dict[str, int]) -> Dict[str, int]:
+    """Count chips removed from `before` rack (denom key → count)."""
+    out: Dict[str, int] = {}
+    for d in CHIP_DENOMS:
+        key = str(d)
+        n = int(before.get(key, 0)) - int(after.get(key, 0))
+        if n > 0:
+            out[key] = n
+    return out
+
+
 def transfer_chips(from_rack: Dict[str, int], to_rack: Dict[str, int], amount: int) -> int:
     """Move physical chips (largest first) up to `amount`. Returns value moved."""
     if amount <= 0:

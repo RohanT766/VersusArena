@@ -93,7 +93,8 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
         setStatus('Models are analyzing the code...');
       }
     } catch (e) {
-      setStatus(`Error: ${e.message}`);
+      setStatus('Connecting…');
+      setTimeout(() => { if (mountedRef.current) performSessionStart(); }, 1200);
     } finally {
       setBusy(false);
       setStartingSession(false);
@@ -143,7 +144,10 @@ const BenchmarkGame = ({ gameType, player1Model, player2Model, onBack }) => {
         setStatus('Match complete.');
       }
     } catch (e) {
-      if (mountedRef.current) setStatus(`Error: ${e.message}`);
+      if (mountedRef.current) {
+        setStatus('Resuming…');
+        setTimeout(() => { if (mountedRef.current && !done) step(); }, 1200);
+      }
     } finally {
       if (mountedRef.current) setBusy(false);
     }

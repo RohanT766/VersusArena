@@ -5,6 +5,7 @@ import GameOverModal from '../../common/GameOverModal';
 import { getDisplayName } from '../../../utils/modelUtils';
 import { cancelBenchmarkRun } from '../../../utils/networkUtils';
 import useGameFlow from '../../../hooks/useGameFlow';
+import PlayerLabel from '../../common/PlayerLabel';
 import './Battleship.css';
 import { ShipSegmentSprite, FLEET_HULL_COLOR } from './ShipSprites';
 import { ShotEffect } from './ShotEffect';
@@ -56,11 +57,12 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const [player1Shots, setPlayer1Shots] = useState(() => emptyBoard(BOARD_SIZE));
   const [player2Shots, setPlayer2Shots] = useState(() => emptyBoard(BOARD_SIZE));
   const [message, setMessage] = useState('Starting game...');
+  const [actionFeed, setActionFeed] = useState([]);
   const [winner, setWinner] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const { isCountdown, isRunning, startCountdown, startRunning } = useGameFlow();
   const wsRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
   const handlerRef = useRef(null);
   const benchmarkRunIdRef = useRef(null);
   const gameFinishedRef = useRef(false);
@@ -146,18 +148,31 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     window.addEventListener('beforeunload', handleUnload);
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
       if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
     };
   }, [startCountdown]);
 
-  const connectWebSocket = (gid) => {
+  const connectWebSocket = useCallback((gid) => {
+    const retryLater = () => {
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      if (gameFinishedRef.current) return;
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null;
+        if (!gameFinishedRef.current) connectWebSocket(gid);
+      }, 1500);
+    };
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.close();
+      wsRef.current = null;
+    }
     try {
       const h = window.location.hostname;
       const wsHost = (h === 'localhost' || h === '127.0.0.1') ? 'localhost:8000' : `${h}:8000`;
       const ws = new WebSocket(`ws://${wsHost}/games/battleship/${gid}`);
       ws.onopen = () => {
-        setIsConnected(true);
         setMessage('Connected! Setting up ships...');
         if (!gameStarted) {
           ws.send(JSON.stringify({
@@ -171,37 +186,20 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
           setGameStatus(GAME_STATUS.IN_PROGRESS);
         }
       };
-      ws.onmessage = (event) => { try { handlerRef.current(JSON.parse(event.data)); } catch(e) {} };
-      ws.onerror = () => { setIsConnected(false); setupDemoGame(); };
-      ws.onclose = () => { setIsConnected(false); if (!winner) setupDemoGame(); };
+      ws.onmessage = (event) => { try { handlerRef.current(JSON.parse(event.data)); } catch (e) { /* ignore */ } };
+      ws.onerror = () => {
+        setMessage('Connection lost — retrying…');
+      };
+      ws.onclose = () => {
+        wsRef.current = null;
+        retryLater();
+      };
       wsRef.current = ws;
-    } catch { setupDemoGame(); }
-  };
-
-  const setupDemoGame = () => {
-    const sz = BOARD_SIZE;
-    const b1 = emptyBoard(sz), b2 = emptyBoard(sz);
-    for (let i = 0; i < 5; i++) b1[0][i] = 'carrier';
-    for (let i = 0; i < 4; i++) b1[2][i] = 'battleship';
-    for (let i = 0; i < 3; i++) b1[4][i] = 'cruiser';
-    for (let i = 0; i < 3; i++) b1[i][6] = 'submarine';
-    for (let i = 0; i < 2; i++) b1[6][i] = 'patrol';
-    for (let i = 0; i < 5; i++) b2[1][i+1] = 'carrier';
-    for (let i = 0; i < 4; i++) b2[3][i+2] = 'battleship';
-    for (let i = 0; i < 3; i++) b2[5][i] = 'cruiser';
-    for (let i = 0; i < 3; i++) b2[i+3][7] = 'submarine';
-    for (let i = 0; i < 2; i++) b2[7][i+4] = 'patrol';
-    setPlayer1Board(b1); setPlayer2Board(b2);
-    setGameStatus(GAME_STATUS.IN_PROGRESS);
-    setMessage('Demo mode - AI battle simulation');
-    setTimeout(() => {
-      const s1 = emptyBoard(sz), s2 = emptyBoard(sz);
-      s1[1][1] = 'hit'; s1[3][3] = 'miss'; s1[1][2] = 'hit';
-      s2[0][0] = 'hit'; s2[2][1] = 'miss'; s2[0][1] = 'hit';
-      setPlayer1Shots(s1); setPlayer2Shots(s2);
-      setMessage(`${player1DisplayName} and ${player2DisplayName} exchanging fire!`);
-    }, 2000);
-  };
+    } catch {
+      setMessage('Could not connect — retrying…');
+      retryLater();
+    }
+  }, [backendPlayer1, backendPlayer2, gameStarted]);
 
   const handleGameStateUpdate = useCallback((data) => {
     if (data.benchmark_run_id) benchmarkRunIdRef.current = data.benchmark_run_id;
@@ -242,11 +240,25 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
     const onP1 = findNewShot(prevShotsRef.current.p2, player2Shots, boardSize);
     if (onP1) {
       setActiveShotAnim({ board: 'p1', ...onP1 });
+      setActionFeed((prev) => [...prev, {
+        id: `bs-p1-${onP1.row}-${onP1.col}-${Date.now()}`,
+        side: 'player1',
+        verb: onP1.result === 'hit' ? 'hit' : 'miss',
+        detail: `(${onP1.row + 1},${getColumnLabel(onP1.col)})`,
+      }].slice(-8));
       prevShotsRef.current = { p1: player1Shots, p2: player2Shots };
       return;
     }
     const onP2 = findNewShot(prevShotsRef.current.p1, player1Shots, boardSize);
-    if (onP2) setActiveShotAnim({ board: 'p2', ...onP2 });
+    if (onP2) {
+      setActiveShotAnim({ board: 'p2', ...onP2 });
+      setActionFeed((prev) => [...prev, {
+        id: `bs-p2-${onP2.row}-${onP2.col}-${Date.now()}`,
+        side: 'player2',
+        verb: onP2.result === 'hit' ? 'hit' : 'miss',
+        detail: `(${onP2.row + 1},${getColumnLabel(onP2.col)})`,
+      }].slice(-8));
+    }
     prevShotsRef.current = { p1: player1Shots, p2: player2Shots };
   }, [player1Shots, player2Shots, boardSize, activeShotAnim]);
 
@@ -283,7 +295,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       if (!val) return null;
       const seg = getShipSegment(board, row, col);
       return (
-        <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`}>
+        <div className={`cell-ship-px ${isHit ? 'cell-ship-damaged' : ''}`} data-seg={seg}>
           <ShipSegmentSprite seg={seg} damaged={isHit} />
           {isHit && <div className="damage-overlay" />}
         </div>
@@ -354,21 +366,26 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
   const isP1Active = currentPlayer === 1 && !winner && gameStatus === GAME_STATUS.IN_PROGRESS;
   const isP2Active = currentPlayer === 2 && !winner && gameStatus === GAME_STATUS.IN_PROGRESS;
 
-  const bsStatusText = winner
-    ? `${winner === 1 ? player1DisplayName : player2DisplayName} Wins!`
-    : message;
+  const bsPhaseText = winner
+    ? `${winner === 1 ? player1DisplayName : player2DisplayName} wins`
+    : gameStatus === GAME_STATUS.WAITING
+      ? 'Setting up fleets'
+      : message?.toLowerCase().includes('placement')
+        ? 'Placing ships'
+        : 'Turn-based battle';
 
   return (
     <GameLayout
       gameName="Battleship"
       player1Name={player1DisplayName}
       player2Name={player2DisplayName}
+      actionFeed={actionFeed}
       onBack={() => {
         if (!gameFinishedRef.current) cancelBenchmarkRun(benchmarkRunIdRef.current);
         if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
         onBack();
       }}
-      statusText={bsStatusText}
+      statusText={bsPhaseText}
     >
       {isCountdown && (
         <GameCountdown player1Name={player1DisplayName} player2Name={player2DisplayName}
@@ -407,7 +424,7 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
       {isRunning && !isCountdown && (
         <div className="bs-main">
           <div className={`bs-side ${isP1Active ? 'side-active' : ''}`}>
-            {isP1Active && <div className="firing-badge">FIRING</div>}
+            <PlayerLabel name={player1DisplayName} thinking={isP1Active} className="bs-label-p1" />
             {renderBoard(player1Board, revealedP2Shots, 'p1')}
             <FleetPanel ships={p1Ships} />
           </div>
@@ -415,16 +432,13 @@ const Battleship = ({ player1Model, player2Model, onBack = () => window.history.
           <div className="game-split-vs">VS</div>
 
           <div className={`bs-side ${isP2Active ? 'side-active' : ''}`}>
-            {isP2Active && <div className="firing-badge">FIRING</div>}
+            <PlayerLabel name={player2DisplayName} thinking={isP2Active} className="bs-label-p2" />
             {renderBoard(player2Board, revealedP1Shots, 'p2')}
             <FleetPanel ships={p2Ships} />
           </div>
         </div>
       )}
 
-      {isRunning && !isCountdown && !isConnected && (
-        <div className="bs-demo-badge">DEMO MODE</div>
-      )}
     </GameLayout>
   );
 };

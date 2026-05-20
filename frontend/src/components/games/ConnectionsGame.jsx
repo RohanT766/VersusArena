@@ -3,8 +3,10 @@ import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
 import GameOverModal from '../common/GameOverModal';
 import { getDisplayName } from '../../utils/modelUtils';
-import { cancelBenchmarkRun } from '../../utils/networkUtils';
+import { cancelBenchmarkRun, getBackendUrl } from '../../utils/networkUtils';
+import { fetchUntilOk, wait } from '../../utils/silentRetry';
 import useGameFlow from '../../hooks/useGameFlow';
+import PlayerLabel from '../common/PlayerLabel';
 import './ConnectionsGame.css';
 
 const MAX_INCORRECT = 15;
@@ -14,7 +16,6 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   const [player1State, setPlayer1State] = useState(null);
   const [player2State, setPlayer2State] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [player1Processing, setPlayer1Processing] = useState(false);
   const [player2Processing, setPlayer2Processing] = useState(false);
   const [ws, setWs] = useState(null);
@@ -47,39 +48,46 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
   };
 
   const startNewGame = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${getApiBase()}/api/connections/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player1_model: player1Model, player2_model: player2Model }),
-        signal: abortRef.current?.signal,
-      });
-      
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
-      
+    const signal = abortRef.current?.signal;
+    setLoading(true);
+    while (!signal?.aborted) {
+      const response = await fetchUntilOk(
+        `${getBackendUrl()}/api/connections/start`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player1_model: player1Model, player2_model: player2Model }),
+          signal,
+        },
+        { signal },
+      );
+      if (!response || signal?.aborted) {
+        setLoading(false);
+        return;
+      }
+      if (!response.ok) {
+        await wait(800);
+        continue;
+      }
+
       const data = await response.json();
       setGameId(data.game_id);
       benchmarkRunIdRef.current = data.benchmark_run_id || null;
-      const stateRes = await fetch(`${getApiBase()}/api/connections/game/${data.game_id}/state`, {
-        signal: abortRef.current?.signal,
-      });
-      if (stateRes.ok) {
+      const stateRes = await fetchUntilOk(
+        `${getBackendUrl()}/api/connections/game/${data.game_id}/state`,
+        { signal },
+        { signal },
+      );
+      if (stateRes?.ok) {
         const stateData = await stateRes.json();
         setPlayer1State(stateData.player1_state || null);
         setPlayer2State(stateData.player2_state || null);
-      } else {
-        setPlayer1State(null);
-        setPlayer2State(null);
       }
       setLoading(false);
-      setError(null);
       startCountdown();
-    } catch (err) {
-      if (err.name === 'AbortError') return;
-      setError(err.message);
-      setLoading(false);
+      return;
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -200,10 +208,10 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
     : bothDone ? `${getWinner() ? getWinner() + ' Wins!' : 'Draw!'}`
     : player1State ? `Puzzle #${player1State.puzzle_id} - ${player1State.date}` : null;
 
-  const renderPlayerBoard = (state, processing, playerDone) => (
+  const renderPlayerBoard = (state, processing, playerDone, playerName, sideClass) => (
     <div className="conn-player-side">
+      <PlayerLabel name={playerName} thinking={processing && !playerDone} className={sideClass} />
       <div className="conn-status-bar">
-        {processing && <span className="game-player-thinking">Agents using tools…</span>}
         {playerDone && !processing && <span className="conn-done-tag">Done</span>}
         <div className="conn-stats">
           <span>Groups: <strong>{state.found_groups.length}/4</strong></span>
@@ -287,9 +295,9 @@ const ConnectionsGame = ({ player1Model, player2Model, onBack = () => window.his
 
       {isRunning && !isCountdown && player1State && player2State ? (
         <div className="connections-split-view">
-          {renderPlayerBoard(player1State, player1Processing, p1Done)}
+          {renderPlayerBoard(player1State, player1Processing, p1Done, p1Name, 'conn-label-p1')}
           <div className="game-split-vs">VS</div>
-          {renderPlayerBoard(player2State, player2Processing, p2Done)}
+          {renderPlayerBoard(player2State, player2Processing, p2Done, p2Name, 'conn-label-p2')}
         </div>
       ) : isRunning && !isCountdown ? (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', fontSize: '1.5rem' }}>

@@ -55,6 +55,9 @@ logs/
 *.sqlite
 *.sqlite3
 
+# Minesweeper session snapshots (runtime)
+data/minesweeper_sessions/
+
 # Temporary files
 tmp/
 temp/

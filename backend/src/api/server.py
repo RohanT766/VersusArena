@@ -43,6 +43,7 @@ from src.games.code_debug_challenge import (
     run_player as code_debug_run_player,
 )
 from src.games import minesweeper as ms_game
+from src.games import minesweeper_persist as ms_persist
 from src.games import auction as auc_game
 from src.games import poker as poker_game
 
@@ -86,6 +87,26 @@ connections_games: Dict[str, Dict] = {}
 
 code_debug_sessions: Dict[str, Dict] = {}
 minesweeper_sessions: Dict[str, ms_game.MinesweeperSession] = {}
+
+
+def _minesweeper_get(session_id: str) -> Optional[ms_game.MinesweeperSession]:
+    """RAM first, then disk snapshot (survives server restart / cold workers)."""
+    sess = minesweeper_sessions.get(session_id)
+    if sess is not None:
+        return sess
+    loaded = ms_persist.load_session(session_id)
+    if loaded is not None:
+        minesweeper_sessions[session_id] = loaded
+        return loaded
+    return None
+
+
+def _minesweeper_put(sess: ms_game.MinesweeperSession) -> None:
+    minesweeper_sessions[sess.id] = sess
+    if sess.done:
+        ms_persist.delete_session(sess.id)
+    else:
+        ms_persist.persist_session(sess)
 auction_sessions: Dict[str, auc_game.AuctionSession] = {}
 poker_sessions: Dict[str, poker_game.PokerSession] = {}
 
@@ -1102,50 +1123,84 @@ async def minesweeper_start(body: MinesweeperStartBody):
     rec = get_recorder()
     br = rec.start_run("minesweeper", body.player1_model, body.player2_model, {"rows": sess.rows, "mines": len(sess.mine_set)})
     sess.benchmark_run_id = br
-    minesweeper_sessions[sess.id] = sess
+    _minesweeper_put(sess)
     st = ms_game.session_state(sess)
     st["benchmark_run_id"] = br
     return st
 
 
+def _record_minesweeper_step(sess: ms_game.MinesweeperSession, player: str, result: dict) -> None:
+    br = sess.benchmark_run_id
+    if not br or result.get("skipped"):
+        return
+    u = result.get("usage") or {}
+    rec = get_recorder()
+    rec.add_move(
+        br,
+        player,
+        result.get("move_seq") or sess.move_seq,
+        latency_ms=u.get("latency_ms"),
+        input_tokens=u.get("input_tokens"),
+        output_tokens=u.get("output_tokens"),
+        cost_usd=u.get("cost_usd"),
+        correctness=1.0 if not result.get("hit_mine") else 0.0,
+        error=u.get("error"),
+        extra=agent_extra_from_usage(u),
+    )
+
+
+def _finish_minesweeper_if_done(sess: ms_game.MinesweeperSession) -> None:
+    br = sess.benchmark_run_id
+    if sess.done and br:
+        w = ms_game.winner_side(sess)
+        rec = get_recorder()
+        rec.finish_run(br, "minesweeper", w, float(sess.player1.score), float(sess.player2.score), {})
+
+
 @app.post("/api/minesweeper/{session_id}/step")
 async def minesweeper_step(session_id: str, body: dict):
-    sess = minesweeper_sessions.get(session_id)
+    sess = _minesweeper_get(session_id)
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found — server may have restarted")
     player = body.get("player", "player1")
     if player not in ("player1", "player2"):
         raise HTTPException(status_code=400, detail="player must be player1 or player2")
     try:
-        result = ms_game.play_step(sess, player)
+        result = await asyncio.to_thread(ms_game.play_step, sess, player)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
-    br = sess.benchmark_run_id
-    if br and not result.get("skipped"):
-        u = result.get("usage") or {}
-        rec = get_recorder()
-        rec.add_move(
-            br, player, sess.move_seq,
-            latency_ms=u.get("latency_ms"),
-            input_tokens=u.get("input_tokens"),
-            output_tokens=u.get("output_tokens"),
-            cost_usd=u.get("cost_usd"),
-            correctness=1.0 if not result.get("hit_mine") else 0.0,
-            error=u.get("error"),
-            extra=agent_extra_from_usage(u),
-        )
-    if sess.done and br:
-        w = ms_game.winner_side(sess)
-        rec = get_recorder()
-        rec.finish_run(br, "minesweeper", w, float(sess.player1.score), float(sess.player2.score), {})
+    _record_minesweeper_step(sess, player, result)
+    _finish_minesweeper_if_done(sess)
+    _minesweeper_put(sess)
     out = ms_game.session_state(sess)
     out["step"] = {k: v for k, v in result.items() if k != "usage"}
     return out
 
 
+@app.post("/api/minesweeper/{session_id}/round")
+async def minesweeper_round(session_id: str):
+    sess = _minesweeper_get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found — server may have restarted")
+    try:
+        out = await asyncio.to_thread(ms_game.play_round, sess)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    for player, step in (out.get("round") or {}).items():
+        _record_minesweeper_step(sess, player, step)
+    _finish_minesweeper_if_done(sess)
+    _minesweeper_put(sess)
+    client_round = {
+        p: {k: v for k, v in step.items() if k != "usage"}
+        for p, step in (out.get("round") or {}).items()
+    }
+    out["round"] = client_round
+    return out
+
+
 @app.get("/api/minesweeper/{session_id}/state")
 async def minesweeper_state(session_id: str):
-    sess = minesweeper_sessions.get(session_id)
+    sess = _minesweeper_get(session_id)
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found")
     return ms_game.session_state(sess)
@@ -1165,7 +1220,7 @@ class AuctionStartBody(BaseModel):
 async def auction_start(body: AuctionStartBody):
     sess = auc_game.start_session(body.player1_model, body.player2_model)
     rec = get_recorder()
-    br = rec.start_run("auction", body.player1_model, body.player2_model, {"rounds": len(sess.rounds)})
+    br = rec.start_run("auction", body.player1_model, body.player2_model, {"rounds": len(sess.items)})
     sess.benchmark_run_id = br
     auction_sessions[sess.id] = sess
     st = auc_game.session_state(sess)
@@ -1173,34 +1228,75 @@ async def auction_start(body: AuctionStartBody):
     return st
 
 
-@app.post("/api/auction/{session_id}/round")
-async def auction_round(session_id: str):
+def _record_auction_step(sess: auc_game.AuctionSession, step: dict) -> None:
+    br = sess.benchmark_run_id
+    if not br:
+        return
+    player = step.get("player")
+    if not player or step.get("type") in ("item_start", "game_over"):
+        return
+    u = step.get("usage") or {}
+    rec = get_recorder()
+    sess.move_seq += 1
+    rec.add_move(
+        br,
+        player,
+        sess.move_seq,
+        latency_ms=u.get("latency_ms"),
+        input_tokens=u.get("input_tokens"),
+        output_tokens=u.get("output_tokens"),
+        cost_usd=u.get("cost_usd"),
+        error=u.get("error"),
+        extra=agent_extra_from_usage(u),
+    )
+
+
+def _finish_auction_if_done(sess: auc_game.AuctionSession) -> None:
+    br = sess.benchmark_run_id
+    if sess.done and br:
+        w = auc_game.winner_side(sess)
+        rec = get_recorder()
+        rec.finish_run(br, "auction", w, float(sess.value_p1), float(sess.value_p2), {})
+
+
+@app.post("/api/auction/{session_id}/step")
+async def auction_step(session_id: str):
     sess = auction_sessions.get(session_id)
     if not sess:
         raise HTTPException(status_code=404, detail="Session not found")
     if sess.done:
         raise HTTPException(status_code=400, detail="Auction finished")
-    result = auc_game.play_round(sess)
-    br = sess.benchmark_run_id
-    if br:
-        rec = get_recorder()
-        for side, ukey in (("player1", "usage_p1"), ("player2", "usage_p2")):
-            u = result.get(ukey) or {}
-            rec.add_move(
-                br, side, sess.move_seq,
-                latency_ms=u.get("latency_ms"),
-                input_tokens=u.get("input_tokens"),
-                output_tokens=u.get("output_tokens"),
-                cost_usd=u.get("cost_usd"),
-                error=u.get("error"),
-                extra=agent_extra_from_usage(u),
-            )
-    if sess.done and br:
-        w = auc_game.winner_side(sess)
-        rec.finish_run(br, "auction", w, float(sess.value_p1), float(sess.value_p2), {})
-    out = auc_game.session_state(sess)
-    out["round_result"] = result.get("round_result")
-    return out
+    try:
+        result = await asyncio.to_thread(auc_game.advance_step, sess)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    step = result.get("step") or {}
+    if step.get("type") in ("bid", "pass"):
+        _record_auction_step(sess, step)
+    _finish_auction_if_done(sess)
+    return result
+
+
+@app.post("/api/auction/{session_id}/round")
+async def auction_round(session_id: str):
+    """Legacy: runs one full item auction via repeated steps."""
+    sess = auction_sessions.get(session_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if sess.done:
+        raise HTTPException(status_code=400, detail="Auction finished")
+    result: Dict[str, Any] = {}
+    for _ in range(auc_game.MAX_ACTIONS_PER_ITEM + 4):
+        result = await asyncio.to_thread(auc_game.advance_step, sess)
+        step = result.get("step") or {}
+        if step.get("type") in ("bid", "pass"):
+            _record_auction_step(sess, step)
+        if step.get("type") == "item_settled":
+            break
+        if sess.done:
+            break
+    _finish_auction_if_done(sess)
+    return result
 
 
 @app.get("/api/auction/{session_id}/state")

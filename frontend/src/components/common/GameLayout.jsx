@@ -1,7 +1,13 @@
 import React from 'react';
+import GameActionFeed from './GameActionFeed';
 import './GameLayout.css';
 
-const GameLayout = ({ gameName, player1Name, player2Name, onBack, children, statusText }) => {
+/**
+ * @param {object} props
+ * @param {string} [props.statusText] — game phase only (round, hand, puzzle); not agent thinking
+ * @param {Array<{ side?: string, text: string, id?: string }>} [props.actionFeed] — bottom action overlay
+ */
+const GameLayout = ({ gameName, player1Name, player2Name, onBack, children, statusText, actionFeed }) => {
   return (
     <div className="game-layout">
       <div className="game-layout-header">
@@ -24,6 +30,9 @@ const GameLayout = ({ gameName, player1Name, player2Name, onBack, children, stat
 
       <div className="game-layout-content">
         {children}
+        {actionFeed?.length > 0 && (
+          <GameActionFeed items={actionFeed} p1Name={player1Name} p2Name={player2Name} />
+        )}
       </div>
     </div>
   );

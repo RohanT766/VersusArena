@@ -1,5 +1,7 @@
 /**
- * Top-down naval ship segments — unified steel grey (classic Battleship aesthetic).
+ * Top-down naval ship segments — unified hull band so adjacent cells align as one ship.
+ * Horizontal: hull band y=11..29 (18px). Vertical: hull band x=11..29 (18px).
+ * Connection faces sit on cell edges (x=0/40 or y=0/40).
  */
 
 const HULL = '#556575';
@@ -8,6 +10,11 @@ const HULL_LO = '#2e3a45';
 const DECK = '#455563';
 const SUPER = '#2a343d';
 const TURRET = '#1e262d';
+
+const HY0 = 11;
+const HY1 = 29;
+const HX0 = 11;
+const HX1 = 29;
 
 /** @param {{ seg: string, damaged?: boolean }} props */
 export function ShipSegmentSprite({ seg, damaged = false }) {
@@ -18,26 +25,44 @@ export function ShipSegmentSprite({ seg, damaged = false }) {
     viewBox: '0 0 40 40',
     width: '100%',
     height: '100%',
+    className: `ship-seg ship-seg--${seg}`,
     style: { display: 'block', opacity: op, filter },
     preserveAspectRatio: 'none',
   };
 
-  // Bow pointing right
+  // Bow: point left, flat connector on right (x=40)
   if (seg === 'h-bow') {
     return (
       <svg {...svgProps}>
         <path
-          d="M2 12 L26 10 L36 20 L26 30 L2 28 Z"
+          d={`M4 20 L14 ${HY0} L40 ${HY0} L40 ${HY1} L14 ${HY1} Z`}
           fill={HULL}
           stroke={HULL_LO}
-          strokeWidth="0.8"
+          strokeWidth="0.6"
         />
-        <path d="M4 14 L24 12 L30 16 L24 18 L6 18 Z" fill={HULL_HI} opacity="0.35" />
-        <ellipse cx="18" cy="20" rx="6" ry="8" fill={DECK} />
-        <rect x="14" y="15" width="8" height="10" rx="1" fill={SUPER} />
-        <circle cx="30" cy="20" r="3.5" fill={TURRET} stroke={HULL_LO} strokeWidth="0.6" />
-        <circle cx="30" cy="20" r="1.5" fill={HULL_LO} />
-        <circle cx="12" cy="20" r="2.5" fill={TURRET} stroke={HULL_LO} strokeWidth="0.5" />
+        <path d={`M6 20 L15 ${HY0 + 2} L38 ${HY0 + 1} L38 ${HY1 - 1} L15 ${HY1 - 2} Z`} fill={HULL_HI} opacity="0.3" />
+        <rect x="22" y={HY0 + 2} width="14" height={HY1 - HY0 - 4} rx="1" fill={DECK} />
+        <rect x="25" y={HY0 + 4} width="9" height={HY1 - HY0 - 8} rx="1" fill={SUPER} />
+        <circle cx="32" cy="20" r="2.5" fill={TURRET} stroke={HULL_LO} strokeWidth="0.5" />
+        <circle cx="16" cy="20" r="2" fill={TURRET} stroke={HULL_LO} strokeWidth="0.4" />
+      </svg>
+    );
+  }
+
+  // Stern: flat connector on left (x=0), rounded stern on right
+  if (seg === 'h-stern') {
+    return (
+      <svg {...svgProps}>
+        <path
+          d={`M0 ${HY0} L26 ${HY0} L38 20 L26 ${HY1} L0 ${HY1} Z`}
+          fill={HULL}
+          stroke={HULL_LO}
+          strokeWidth="0.6"
+        />
+        <path d={`M0 ${HY0 + 1} L24 ${HY0 + 1} L35 20 L24 ${HY1 - 1} L0 ${HY1 - 1} Z`} fill={HULL_HI} opacity="0.25" />
+        <rect x="4" y={HY0 + 2} width="14" height={HY1 - HY0 - 4} rx="1" fill={DECK} />
+        <rect x="7" y={HY0 + 4} width="9" height={HY1 - HY0 - 8} rx="1" fill={SUPER} />
+        <circle cx="8" cy="20" r="2" fill={TURRET} />
       </svg>
     );
   }
@@ -45,51 +70,51 @@ export function ShipSegmentSprite({ seg, damaged = false }) {
   if (seg === 'h-mid') {
     return (
       <svg {...svgProps}>
-        <rect x="0" y="10" width="40" height="20" fill={HULL} stroke={HULL_LO} strokeWidth="0.6" />
-        <rect x="0" y="10" width="40" height="6" fill={HULL_HI} opacity="0.22" />
-        <line x1="0" y1="20" x2="40" y2="20" stroke={HULL_LO} strokeWidth="0.8" />
-        <rect x="11" y="12" width="18" height="12" rx="1" fill={DECK} />
-        <rect x="14" y="13" width="12" height="8" rx="1" fill={SUPER} />
-        <rect x="16" y="14" width="8" height="5" fill={HULL_LO} opacity="0.5" />
-        <circle cx="6" cy="24" r="2.2" fill={TURRET} />
-        <circle cx="34" cy="24" r="2.2" fill={TURRET} />
-        <ellipse cx="20" cy="11" rx="4" ry="2" fill={SUPER} opacity="0.8" />
+        <rect x="0" y={HY0} width="40" height={HY1 - HY0} fill={HULL} stroke={HULL_LO} strokeWidth="0.5" />
+        <rect x="0" y={HY0} width="40" height="5" fill={HULL_HI} opacity="0.2" />
+        <line x1="0" y1="20" x2="40" y2="20" stroke={HULL_LO} strokeWidth="0.6" opacity="0.7" />
+        <rect x="11" y={HY0 + 2} width="18" height={HY1 - HY0 - 4} rx="1" fill={DECK} />
+        <rect x="14" y={HY0 + 4} width="12" height={HY1 - HY0 - 8} rx="1" fill={SUPER} />
+        <circle cx="6" cy={HY1 - 3} r="2" fill={TURRET} />
+        <circle cx="34" cy={HY1 - 3} r="2" fill={TURRET} />
+        <ellipse cx="20" cy={HY0 + 1} rx="4" ry="2" fill={SUPER} opacity="0.75" />
       </svg>
     );
   }
 
-  if (seg === 'h-stern') {
-    return (
-      <svg {...svgProps}>
-        <path
-          d="M0 12 L30 10 L38 16 L38 24 L30 30 L0 28 Z"
-          fill={HULL}
-          stroke={HULL_LO}
-          strokeWidth="0.8"
-        />
-        <path d="M0 14 L28 12 L34 16 L28 18 L0 18 Z" fill={HULL_HI} opacity="0.25" />
-        <ellipse cx="10" cy="20" rx="5" ry="7" fill={DECK} />
-        <rect x="6" y="15" width="8" height="10" rx="1" fill={SUPER} />
-        <circle cx="4" cy="20" r="2" fill={TURRET} />
-      </svg>
-    );
-  }
-
-  // Bow pointing up
+  // Bow: point up, flat connector on bottom (y=40)
   if (seg === 'v-bow') {
     return (
       <svg {...svgProps}>
         <path
-          d="M12 2 L28 2 L32 26 L20 38 L8 26 Z"
+          d={`M20 4 L${HX1} 14 L${HX1} 40 L${HX0} 40 L${HX0} 14 Z`}
           fill={HULL}
           stroke={HULL_LO}
-          strokeWidth="0.8"
+          strokeWidth="0.6"
         />
-        <path d="M14 4 L26 4 L28 14 L20 16 L12 14 Z" fill={HULL_HI} opacity="0.35" />
-        <ellipse cx="20" cy="22" rx="8" ry="6" fill={DECK} />
-        <rect x="15" y="18" width="10" height="8" rx="1" fill={SUPER} />
-        <circle cx="20" cy="6" r="3.5" fill={TURRET} stroke={HULL_LO} strokeWidth="0.6" />
-        <circle cx="20" cy="28" r="2.5" fill={TURRET} />
+        <path d={`M20 6 L${HX1 - 2} 15 L${HX1 - 2} 38 L${HX0 + 2} 38 L${HX0 + 2} 15 Z`} fill={HULL_HI} opacity="0.3" />
+        <rect x={HX0 + 2} y="22" width={HX1 - HX0 - 4} height="14" rx="1" fill={DECK} />
+        <rect x={HX0 + 4} y="25" width={HX1 - HX0 - 8} height="9" rx="1" fill={SUPER} />
+        <circle cx="20" cy="10" r="2.5" fill={TURRET} stroke={HULL_LO} strokeWidth="0.5" />
+        <circle cx="20" cy="30" r="2" fill={TURRET} stroke={HULL_LO} strokeWidth="0.4" />
+      </svg>
+    );
+  }
+
+  // Stern: flat connector on top (y=0), rounded stern on bottom
+  if (seg === 'v-stern') {
+    return (
+      <svg {...svgProps}>
+        <path
+          d={`M${HX0} 0 L${HX1} 0 L${HX1} 26 L20 38 L${HX0} 26 Z`}
+          fill={HULL}
+          stroke={HULL_LO}
+          strokeWidth="0.6"
+        />
+        <path d={`M${HX0 + 1} 0 L${HX1 - 1} 0 L${HX1 - 1} 24 L20 35 L${HX0 + 1} 24 Z`} fill={HULL_HI} opacity="0.25" />
+        <rect x={HX0 + 2} y="4" width={HX1 - HX0 - 4} height="14" rx="1" fill={DECK} />
+        <rect x={HX0 + 4} y="7" width={HX1 - HX0 - 8} height="9" rx="1" fill={SUPER} />
+        <circle cx="20" cy="32" r="2" fill={TURRET} />
       </svg>
     );
   }
@@ -97,44 +122,27 @@ export function ShipSegmentSprite({ seg, damaged = false }) {
   if (seg === 'v-mid') {
     return (
       <svg {...svgProps}>
-        <rect x="10" y="0" width="20" height="40" fill={HULL} stroke={HULL_LO} strokeWidth="0.6" />
-        <rect x="10" y="0" width="6" height="40" fill={HULL_HI} opacity="0.2" />
-        <line x1="20" y1="0" x2="20" y2="40" stroke={HULL_LO} strokeWidth="0.8" />
-        <rect x="12" y="13" width="16" height="14" rx="1" fill={DECK} />
-        <rect x="14" y="15" width="12" height="9" rx="1" fill={SUPER} />
-        <circle cx="24" cy="8" r="2.2" fill={TURRET} />
-        <circle cx="24" cy="32" r="2.2" fill={TURRET} />
-        <ellipse cx="20" cy="20" rx="3" ry="5" fill={HULL_LO} opacity="0.35" />
+        <rect x={HX0} y="0" width={HX1 - HX0} height="40" fill={HULL} stroke={HULL_LO} strokeWidth="0.5" />
+        <rect x={HX0} y="0" width="5" height="40" fill={HULL_HI} opacity="0.2" />
+        <line x1="20" y1="0" x2="20" y2="40" stroke={HULL_LO} strokeWidth="0.6" opacity="0.7" />
+        <rect x={HX0 + 2} y="13" width={HX1 - HX0 - 4} height="14" rx="1" fill={DECK} />
+        <rect x={HX0 + 4} y="15" width={HX1 - HX0 - 8} height="9" rx="1" fill={SUPER} />
+        <circle cx={HX1 - 3} cy="8" r="2" fill={TURRET} />
+        <circle cx={HX1 - 3} cy="32" r="2" fill={TURRET} />
+        <ellipse cx="20" cy="20" rx="3" ry="4" fill={HULL_LO} opacity="0.35" />
       </svg>
     );
   }
 
-  if (seg === 'v-stern') {
-    return (
-      <svg {...svgProps}>
-        <path
-          d="M10 0 L30 0 L32 30 L22 38 L18 38 L8 30 Z"
-          fill={HULL}
-          stroke={HULL_LO}
-          strokeWidth="0.8"
-        />
-        <path d="M12 2 L28 2 L30 10 L20 12 L10 10 Z" fill={HULL_HI} opacity="0.25" />
-        <ellipse cx="20" cy="10" rx="6" ry="5" fill={DECK} />
-        <rect x="15" y="6" width="10" height="8" rx="1" fill={SUPER} />
-        <circle cx="20" cy="34" r="2" fill={TURRET} />
-      </svg>
-    );
-  }
-
-  // Patrol / single cell
+  // Patrol / single cell — same beam as mid sections
   return (
     <svg {...svgProps}>
-      <ellipse cx="20" cy="20" rx="14" ry="10" fill={HULL} stroke={HULL_LO} strokeWidth="0.8" />
-      <ellipse cx="20" cy="17" rx="11" ry="5" fill={HULL_HI} opacity="0.28" />
-      <ellipse cx="20" cy="20" rx="7" ry="5" fill={DECK} />
-      <rect x="16" y="16" width="8" height="6" rx="1" fill={SUPER} />
-      <circle cx="20" cy="12" r="2.5" fill={TURRET} />
-      <circle cx="26" cy="22" r="1.8" fill={TURRET} />
+      <rect x={HX0} y={HY0} width={HX1 - HX0} height={HY1 - HY0} rx="3" fill={HULL} stroke={HULL_LO} strokeWidth="0.6" />
+      <rect x={HX0 + 1} y={HY0 + 1} width={HX1 - HX0 - 2} height="5" fill={HULL_HI} opacity="0.25" />
+      <rect x={HX0 + 3} y={HY0 + 3} width={HX1 - HX0 - 6} height={HY1 - HY0 - 6} rx="1" fill={DECK} />
+      <rect x={HX0 + 5} y={HY0 + 5} width={HX1 - HX0 - 10} height={HY1 - HY0 - 10} rx="1" fill={SUPER} />
+      <circle cx="20" cy={HY0 + 2} r="2.2" fill={TURRET} />
+      <circle cx={HX1 - 4} cy="20" r="1.8" fill={TURRET} />
     </svg>
   );
 }

@@ -1,0 +1,52 @@
+.game-action-feed {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: min(520px, 92vw);
+  pointer-events: none;
+}
+
+.game-action-feed__item {
+  font-family: 'VT323', monospace;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  padding: 4px 14px;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid #333;
+  color: #ccc;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.game-action-feed__item--toast {
+  animation: game-action-toast 2.4s ease forwards;
+}
+
+@keyframes game-action-toast {
+  0% { opacity: 0; transform: translateY(8px); }
+  8% { opacity: 1; transform: translateY(0); }
+  72% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.game-action-feed__item strong {
+  font-weight: normal;
+  text-transform: uppercase;
+}
+
+.game-action-feed__p1 strong {
+  color: #10b981;
+}
+
+.game-action-feed__p2 strong {
+  color: #a78bfa;
+}

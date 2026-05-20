@@ -50,3 +50,16 @@ export function rackTotal(inventory) {
   if (!inventory) return 0;
   return Object.entries(inventory).reduce((sum, [d, n]) => sum + Number(d) * Number(n), 0);
 }
+
+/** Expand backend chips_moved map into individual chip objects for fly animation. */
+export function chipsMovedToFlyList(chipsMoved, maxChips = 16) {
+  if (!chipsMoved) return [];
+  const list = [];
+  for (const denom of CHIP_DENOMS) {
+    const n = Number(chipsMoved[String(denom.value)] || 0);
+    for (let i = 0; i < n && list.length < maxChips; i += 1) {
+      list.push(denom);
+    }
+  }
+  return list;
+}

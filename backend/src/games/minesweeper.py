@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import random
 import re
+import threading
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -91,6 +93,7 @@ class MinesweeperSession:
     done: bool = False
     benchmark_run_id: Optional[str] = None
     move_seq: int = 0
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False, compare=False)
 
     @property
     def safe_cells(self) -> int:
@@ -137,32 +140,32 @@ def _pick_fallback(revealed: Set[Tuple[int, int]], rows: int, cols: int) -> Tupl
     return 0, 0
 
 
-def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
+def _can_step(session: MinesweeperSession, player: str) -> bool:
     if session.done:
-        return {"done": True, "player": player}
+        return False
+    ps = session.player1 if player == "player1" else session.player2
+    steps = session.steps_p1 if player == "player1" else session.steps_p2
+    return ps.alive and steps < MAX_STEPS_PER_PLAYER
 
+
+def _agent_pick_cell(session: MinesweeperSession, player: str) -> Dict[str, Any]:
+    """LLM tool loop only (safe to run in parallel for both players)."""
     ps = session.player1 if player == "player1" else session.player2
     other = session.player2 if player == "player1" else session.player1
     steps_attr = "steps_p1" if player == "player1" else "steps_p2"
     max_steps = MAX_STEPS_PER_PLAYER
-
-    if not ps.alive or getattr(session, steps_attr) >= max_steps:
-        _check_done(session)
-        return _step_result(session, player, skipped=True)
-
     model_id = session.model1 if player == "player1" else session.model2
     steps_left = max_steps - getattr(session, steps_attr)
     move_num = getattr(session, steps_attr) + 1
-    opp_score = other.score
-    opp_moves = session.steps_p2 if player == "player1" else session.steps_p1
     system = (
         "You are playing Minesweeper Race. Use tools to inspect the board, then call reveal_cell once per turn."
     )
     user_msg = (
         f"Minesweeper race on {session.rows}x{session.cols} (rows 0-{session.rows - 1}, cols 0-{session.cols - 1}).\n"
         "RULES: Reveal one hidden cell per turn. Hit a mine = eliminated. Win by most safe reveals.\n"
-        f"Your move {move_num}/{max_steps} ({steps_left} left) | Opponent moves: {opp_moves}/{max_steps}\n"
-        f"Your score: {ps.score}/{session.safe_cells} | Opponent: {opp_score} | "
+        f"Your move {move_num}/{max_steps} ({steps_left} left) | Opponent moves: "
+        f"{session.steps_p2 if player == 'player1' else session.steps_p1}/{max_steps}\n"
+        f"Your score: {ps.score}/{session.safe_cells} | Opponent: {other.score} | "
         f"You: {'alive' if ps.alive else 'out'} | Opponent: {'alive' if other.alive else 'out'}"
     )
 
@@ -202,15 +205,23 @@ def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
         )
         cell = (turn.action_args.get("row"), turn.action_args.get("col"))
         tool_trace = turn.tool_calls
-    except Exception:
+    except Exception as exc:
         cell = _pick_fallback(ps.revealed, session.rows, session.cols)
         tool_trace = []
-        usage.setdefault("error", "agent_turn_failed")
+        usage["error"] = str(exc)
 
     if cell[0] is None or cell[1] is None or cell in ps.revealed:
         cell = _pick_fallback(ps.revealed, session.rows, session.cols)
 
-    r, c = cell
+    return {"cell": cell, "usage": usage, "tool_calls": tool_trace}
+
+
+def _apply_step(session: MinesweeperSession, player: str, pick: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply one reveal under lock (shared session state)."""
+    ps = session.player1 if player == "player1" else session.player2
+    other = session.player2 if player == "player1" else session.player1
+    steps_attr = "steps_p1" if player == "player1" else "steps_p2"
+    r, c = pick["cell"]
     hit_mine = (r, c) in session.mine_set
     newly: List[Tuple[int, int]] = []
 
@@ -229,8 +240,8 @@ def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
 
     setattr(session, steps_attr, getattr(session, steps_attr) + 1)
     session.move_seq += 1
-
     _check_done(session)
+
     return {
         "player": player,
         "row": r,
@@ -242,10 +253,51 @@ def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
         "opponent_score": other.score,
         "done": session.done,
         "winner_side": winner_side(session) if session.done else None,
-        "usage": usage,
-        "tool_calls": tool_trace,
+        "usage": pick.get("usage") or {},
+        "tool_calls": pick.get("tool_calls") or [],
         "move_seq": session.move_seq,
     }
+
+
+def play_step(session: MinesweeperSession, player: str) -> Dict[str, Any]:
+    if session.done:
+        return {"done": True, "player": player, "skipped": True}
+
+    if not _can_step(session, player):
+        _check_done(session)
+        return _step_result(session, player, skipped=True)
+
+    pick = _agent_pick_cell(session, player)
+    with session._lock:
+        if session.done or not _can_step(session, player):
+            _check_done(session)
+            return _step_result(session, player, skipped=True)
+        return _apply_step(session, player, pick)
+
+
+def play_round(session: MinesweeperSession) -> Dict[str, Any]:
+    """One race round: both alive players pick cells in parallel, then apply under lock."""
+    players = [p for p in ("player1", "player2") if _can_step(session, p)]
+    round_out: Dict[str, Dict[str, Any]] = {}
+
+    if players:
+        picks: Dict[str, Dict[str, Any]] = {}
+        with ThreadPoolExecutor(max_workers=len(players)) as pool:
+            futs = {pool.submit(_agent_pick_cell, session, p): p for p in players}
+            for fut in as_completed(futs):
+                picks[futs[fut]] = fut.result()
+
+        with session._lock:
+            for player in players:
+                if session.done or not _can_step(session, player):
+                    continue
+                round_out[player] = _apply_step(session, player, picks[player])
+    else:
+        _check_done(session)
+
+    state = session_state(session)
+    state["round"] = round_out
+    return state
 
 
 def _check_done(session: MinesweeperSession) -> None:

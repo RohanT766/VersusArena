@@ -3,91 +3,218 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-  gap: 1.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  gap: 1.25rem;
+  font-family: 'VT323', monospace;
+  min-height: 0;
+  overflow: auto;
 }
 
 .auc-players {
   display: flex;
-  gap: 3rem;
+  gap: 2rem;
   width: 100%;
-  max-width: 700px;
+  max-width: 820px;
   justify-content: space-between;
 }
 
 .auc-player {
   flex: 1;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #18181b;
-  border: 1px solid #3f3f46;
+  padding: 0.85rem 1rem;
+  background: #111;
+  border: 3px solid #333;
+  position: relative;
 }
 
 .auc-p1 { border-color: #10b981; }
 .auc-p2 { border-color: #a78bfa; }
 
+.auc-player--active {
+  box-shadow: 0 0 0 2px #fde047;
+}
+
 .auc-name {
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
 }
 
-.auc-budget, .auc-value {
+.auc-stat {
   color: #a1a1aa;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
-.auc-item-card, .auc-reveal {
+.auc-stat strong {
+  color: #fde047;
+}
+
+.auc-to-act {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 2px 8px;
+  background: #422006;
+  border: 2px solid #ca8a04;
+  color: #fde047;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  animation: aucPulse 0.8s steps(2) infinite;
+}
+
+@keyframes aucPulse {
+  50% { opacity: 0.5; }
+}
+
+.auc-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 520px;
+}
+
+.auc-item-card,
+.auc-reveal {
   text-align: center;
-  padding: 2rem 3rem;
-  background: linear-gradient(135deg, #27272a 0%, #18181b 100%);
-  border: 2px solid #f59e0b;
-  border-radius: 12px;
-  min-width: 280px;
+  padding: 1.25rem 1.75rem;
+  background: #18181b;
+  border: 3px solid #f59e0b;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auc-round-tag {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  color: #71717a;
+  letter-spacing: 0.12em;
+}
+
+.auc-item-card h3,
+.auc-reveal h3 {
+  margin: 0.25rem 0;
+  font-size: 1.5rem;
 }
 
 .auc-hint {
   color: #a1a1aa;
-  margin: 0.5rem 0;
+  margin: 0.35rem 0;
+  font-size: 1.05rem;
 }
 
-.auc-value-hidden {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #f59e0b;
+.auc-high {
+  margin: 0.75rem 0 0;
+  color: #fde047;
+  font-size: 1.1rem;
+}
+
+.auc-log {
+  width: 100%;
+  background: #0a0a0a;
+  border: 2px solid #3f3f46;
+  padding: 0.75rem 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.auc-log-title {
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  color: #71717a;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.auc-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.auc-log-entry {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #27272a;
+  font-size: 1.1rem;
+}
+
+.auc-log-entry:last-child {
+  border-bottom: none;
+}
+
+.auc-log-entry--player1 .auc-log-who { color: #10b981; }
+.auc-log-entry--player2 .auc-log-who { color: #a78bfa; }
+
+.auc-log-entry--pass .auc-log-action {
+  color: #71717a;
+}
+
+.auc-log-entry--bid .auc-log-action {
+  color: #fde047;
 }
 
 .auc-true-value {
-  font-size: 1.8rem;
-  font-weight: bold;
+  font-size: 1.6rem;
   color: #22c55e;
-  animation: aucPop 0.5s ease-out;
+  margin: 0.5rem 0;
 }
 
 .auc-reveal-pop {
-  animation: aucPop 0.4s ease-out;
+  animation: aucPop 0.35s steps(4);
 }
 
 @keyframes aucPop {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 
 .auc-bids {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   justify-content: center;
-  margin: 1rem 0;
+  margin: 0.75rem 0;
   font-size: 1.1rem;
 }
 
 .auc-round-winner {
   color: #fbbf24;
-  font-weight: bold;
+  font-size: 1.15rem;
 }
 
 .auc-thinking {
+  color: #86efac;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.auc-history {
+  width: 100%;
+  max-width: 820px;
+  padding: 0.5rem 0;
+}
+
+.auc-history-title {
+  font-size: 0.9rem;
   color: #71717a;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.35rem;
+}
+
+.auc-history-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.auc-history-chip {
+  font-size: 0.95rem;
+  padding: 3px 8px;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  color: #a1a1aa;
 }
 
 .auc-final {
@@ -95,9 +222,13 @@
   gap: 2rem;
   justify-content: center;
   margin: 1rem 0;
+  font-size: 1.2rem;
 }
 
 .auc-error {
-  color: #ef4444;
+  color: #fca5a5;
   text-align: center;
+  background: #111;
+  border: 2px solid #7f1d1d;
+  padding: 0.5rem 1rem;
 }

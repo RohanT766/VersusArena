@@ -20,6 +20,7 @@ from src.games.poker_chips import (
     merge_racks,
     rack_total,
     split_rack_between,
+    chips_moved_breakdown,
     transfer_chips,
 )
 
@@ -139,6 +140,24 @@ def _rack(session: "PokerSession", player: str) -> Dict[str, int]:
     return session.rack_p1 if player == "player1" else session.rack_p2
 
 
+def _empty_street_racks() -> Dict[str, Dict[str, int]]:
+    return {"player1": empty_rack(), "player2": empty_rack()}
+
+
+def _copy_street_racks(hand: "HandState") -> Dict[str, Dict[str, int]]:
+    return {
+        "player1": copy_rack(hand.street_chip_racks["player1"]),
+        "player2": copy_rack(hand.street_chip_racks["player2"]),
+    }
+
+
+def _merge_street_to_pot(session: PokerSession, hand: HandState) -> None:
+    """Collect current-street bets into the center pot."""
+    for player in ("player1", "player2"):
+        merge_racks(session.pot_rack, hand.street_chip_racks[player])
+    hand.street_chip_racks = _empty_street_racks()
+
+
 @dataclass
 class HandState:
     deck: List[str]
@@ -147,6 +166,7 @@ class HandState:
     community: List[str] = field(default_factory=list)
     street: str = "preflop"
     street_bets: Dict[str, int] = field(default_factory=lambda: {"player1": 0, "player2": 0})
+    street_chip_racks: Dict[str, Dict[str, int]] = field(default_factory=_empty_street_racks)
     in_hand: Dict[str, bool] = field(default_factory=lambda: {"player1": True, "player2": True})
     button: str = "player1"
     actions: List[Dict[str, Any]] = field(default_factory=list)
@@ -203,7 +223,7 @@ def _next_to_act(hand: HandState, session: PokerSession) -> Optional[str]:
             continue
         chips = _chips(session, player)
         bet = hand.street_bets[player]
-        if bet < max_bet:
+        if bet < max_bet and chips > 0:
             return player
         if chips > 0 and player not in hand.acted_since_raise:
             return player
@@ -214,14 +234,16 @@ def _betting_complete(hand: HandState, session: PokerSession) -> bool:
     return _next_to_act(hand, session) is None
 
 
-def _apply_pay(session: PokerSession, hand: HandState, player: str, pay: int) -> int:
+def _apply_pay(session: PokerSession, hand: HandState, player: str, pay: int) -> Tuple[int, Dict[str, int]]:
     if pay <= 0:
-        return 0
+        return 0, {}
     rack = _rack(session, player)
-    moved = transfer_chips(rack, session.pot_rack, pay)
+    street_rack = hand.street_chip_racks[player]
+    before = copy_rack(rack)
+    moved = transfer_chips(rack, street_rack, pay)
     hand.street_bets[player] += moved
     _sync_chip_totals(session)
-    return moved
+    return moved, chips_moved_breakdown(before, rack)
 
 
 def _board_cards_for_street(street: str) -> int:
@@ -253,9 +275,21 @@ def _snapshot_racks(session: PokerSession) -> Dict[str, Any]:
     }
 
 
+def _hu_meta(hand: HandState) -> Dict[str, Any]:
+    bb = _other(hand.button)
+    return {
+        "format": "heads_up",
+        "sb_player": hand.button,
+        "bb_player": bb,
+        "preflop_first": hand.button,
+        "postflop_first": bb,
+    }
+
+
 def _live_state(session: PokerSession, hand: HandState, step: Dict[str, Any]) -> Dict[str, Any]:
     return {
         **_snapshot_racks(session),
+        **_hu_meta(hand),
         "hand_in_progress": True,
         "hand_num": hand.hand_num,
         "street": hand.street,
@@ -265,67 +299,129 @@ def _live_state(session: PokerSession, hand: HandState, step: Dict[str, Any]) ->
         "hole_p2": list(hand.hole_p2),
         "community": list(hand.community),
         "street_bets": dict(hand.street_bets),
+        "street_chip_racks": _copy_street_racks(hand),
         "in_hand": dict(hand.in_hand),
         "to_act": step.get("to_act"),
         "step": step,
         "actions": list(hand.actions),
-        "pot": rack_total(session.pot_rack),
+        "pot": rack_total(session.pot_rack)
+        + rack_total(hand.street_chip_racks["player1"])
+        + rack_total(hand.street_chip_racks["player2"]),
     }
 
 
-def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> Dict[str, Any]:
+def _action_order_note(hand: HandState, player: str) -> str:
+    first = _action_order(hand.button, hand.street)[0]
+    if first == player:
+        return "You act first this betting round."
+    return "Opponent acts first this betting round."
+
+
+def _legal_actions_text(to_call: int, chips: int, in_hand: bool) -> str:
+    if not in_hand:
+        return "none (you folded)"
+    opts = []
+    if to_call > 0:
+        opts.append("fold")
+        opts.append(f"call {min(to_call, chips)}")
+    else:
+        opts.append("check")
+    if chips > to_call:
+        opts.append("raise (set total bet this street)")
+    return ", ".join(opts)
+
+
+def _hand_state_for_agent(
+    session: PokerSession, hand: HandState, player: str,
+) -> Dict[str, Any]:
     opp = _other(player)
     to_call = max(0, hand.street_bets[opp] - hand.street_bets[player])
     chips = _chips(session, player)
     opp_chips = _chips(session, opp)
     max_bet = max(hand.street_bets.values())
     min_raise_to = max_bet + BIG_BLIND
-
     hole = hand.hole_p1 if player == "player1" else hand.hole_p2
-    model_id = session.model1 if player == "player1" else session.model2
-    recent = hand.actions[-8:]
     hist = "; ".join(
         f"{a['player']} {a['action']}" + (f" {a['amount']}" if a.get("amount") else "")
-        + (f" ({a['street']})" if a.get("street") else "")
-        for a in recent
+        + (f" on {a.get('street', '?')}" if a.get("street") else "")
+        for a in hand.actions[-12:]
     ) or "none"
-    btn_label = "button/SB" if player == hand.button else "BB"
+    return {
+        "format": "heads_up_texas_holdem",
+        "hand_num": hand.hand_num,
+        "max_hands_in_match": MAX_HANDS,
+        "hands_completed_before_this": session.hand_num,
+        "hands_remaining_after_this": max(0, MAX_HANDS - session.hand_num),
+        "blinds": {"small": SMALL_BLIND, "big": BIG_BLIND},
+        "your_position": "button_and_small_blind" if player == hand.button else "big_blind",
+        "your_hole_cards": hole,
+        "opponent_hole_cards": "HIDDEN (you only see your own cards until showdown)",
+        "community_cards": list(hand.community),
+        "street": hand.street,
+        "pot": rack_total(session.pot_rack),
+        "your_stack": chips,
+        "opponent_stack": opp_chips,
+        "your_bet_this_street": hand.street_bets[player],
+        "opponent_bet_this_street": hand.street_bets[opp],
+        "to_call": to_call,
+        "min_raise_to_total_this_street": min_raise_to,
+        "max_total_bet_this_street": hand.street_bets[player] + chips,
+        "you_in_hand": hand.in_hand[player],
+        "opponent_in_hand": hand.in_hand[opp],
+        "action_order": _action_order_note(hand, player),
+        "legal_actions": _legal_actions_text(to_call, chips, hand.in_hand[player]),
+        "action_history_this_hand": hist,
+        "recent_completed_hands": session.log[-5:],
+    }
+
+
+def _build_poker_prompt(session: PokerSession, hand: HandState, player: str) -> str:
+    st = _hand_state_for_agent(session, hand, player)
     prior = ""
     if session.log:
-        prior = "Tournament so far: " + "; ".join(
-            f"H{h['hand']} pot {h['pot']} → {h.get('winner') or 'split'}"
-            for h in session.log[-4:]
-        ) + "\n"
-    prompt = (
-        f"Heads-up Texas Hold'em — HAND {hand.hand_num} OF {MAX_HANDS}.\n"
-        f"You are {btn_label}. Blinds {SMALL_BLIND}/{BIG_BLIND}.\n"
+        prior = "Completed hands:\n" + "\n".join(
+            f"  Hand {h.get('hand')}: pot {h.get('pot')}, winner {h.get('winner') or 'none'}"
+            for h in session.log[-5:]
+        ) + "\n\n"
+    return (
+        f"Heads-up Texas Hold'em tournament.\n"
+        f"HAND {st['hand_num']} of {st['max_hands_in_match']} "
+        f"({st['hands_remaining_after_this']} hands left including this one).\n\n"
+        f"RULES: {SMALL_BLIND}/{BIG_BLIND} blinds. Button posts SB and acts first preflop; "
+        f"BB acts first on flop/turn/river. Standard hold'em hand rankings. "
+        f"You only see YOUR hole cards, not opponent's.\n\n"
+        f"YOUR POSITION: {st['your_position']}\n"
+        f"YOUR HOLE: {st['your_hole_cards']}\n"
+        f"COMMUNITY: {st['community_cards'] or '[]'}\n"
+        f"STREET: {st['street']}\n"
+        f"POT: {st['pot']}\n"
+        f"YOUR STACK: {st['your_stack']} | OPPONENT STACK: {st['opponent_stack']}\n"
+        f"YOUR BET THIS STREET: {st['your_bet_this_street']} | "
+        f"OPPONENT BET: {st['opponent_bet_this_street']} | TO CALL: {st['to_call']}\n"
+        f"MIN RAISE TO (total this street): {st['min_raise_to_total_this_street']} | "
+        f"MAX: {st['max_total_bet_this_street']}\n"
+        f"{st['action_order']}\n"
+        f"LEGAL: {st['legal_actions']}\n"
+        f"ACTION HISTORY: {st['action_history_this_hand']}\n\n"
         f"{prior}"
-        f"Street: {hand.street}. Community: {hand.community or '(none)'}.\n"
-        f"Your hole: {hole}. Pot: {rack_total(session.pot_rack)}. "
-        f"Your stack: {chips}, opponent: {opp_chips}.\n"
-        f"Your bet this street: {hand.street_bets[player]}, opponent: {hand.street_bets[opp]}, to_call: {to_call}.\n"
-        f"Min raise TO (total this street): {min_raise_to}. Max: {hand.street_bets[player] + chips}.\n"
-        f"History: {hist}\n"
-        "Reply: FOLD, CHECK (only if to_call=0), CALL, or RAISE <total bet this street>"
+        "Use get_hand_state then take_action once."
     )
+
+
+def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> Dict[str, Any]:
+    opp = _other(player)
+    to_call = max(0, hand.street_bets[opp] - hand.street_bets[player])
+    chips = _chips(session, player)
+    max_bet = max(hand.street_bets.values())
+    min_raise_to = max_bet + BIG_BLIND
+
+    model_id = session.model1 if player == "player1" else session.model2
+    prompt = _build_poker_prompt(session, hand, player)
     usage: Dict[str, Any] = {}
 
     def executor(name: str, args: Dict[str, Any]) -> Any:
         if name == "get_hand_state":
-            return {
-                "hand_num": hand.hand_num,
-                "street": hand.street,
-                "hole": hole,
-                "community": hand.community,
-                "pot": rack_total(session.pot_rack),
-                "your_stack": chips,
-                "opponent_stack": opp_chips,
-                "your_street_bet": hand.street_bets[player],
-                "opponent_street_bet": hand.street_bets[opp],
-                "to_call": to_call,
-                "min_raise_to": min_raise_to,
-                "history": hist,
-            }
+            return _hand_state_for_agent(session, hand, player)
         if name == "take_action":
             action = str(args.get("action", "")).lower().strip()
             if action not in ("fold", "check", "call", "raise"):
@@ -349,7 +445,10 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
             max_tokens=64,
             temperature=0.4,
             usage_out=usage,
-            system="Heads-up poker: review hand state, then take_action once.",
+            system=(
+                "Heads-up Texas Hold'em. You cannot see opponent hole cards. "
+                "Use get_hand_state for full context, then take_action once."
+            ),
         )
         usage["tool_calls"] = turn.tool_calls
         action = str(turn.action_args.get("action", "check")).lower()
@@ -372,29 +471,37 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
         record["action"] = "check"
         hand.acted_since_raise.add(player)
     elif action in ("call",) or (action == "check" and to_call > 0):
-        pay = _apply_pay(session, hand, player, min(to_call, chips))
+        pay, chips_moved = _apply_pay(session, hand, player, min(to_call, chips))
         record["action"] = "call" if pay >= to_call else "all-in"
         record["amount"] = pay
+        if chips_moved:
+            record["chips_moved"] = chips_moved
         hand.acted_since_raise.add(player)
     elif action == "raise":
         raise_to = max(amount, min_raise_to)
         raise_to = min(raise_to, hand.street_bets[player] + chips)
-        pay = _apply_pay(session, hand, player, raise_to - hand.street_bets[player])
+        pay, chips_moved = _apply_pay(session, hand, player, raise_to - hand.street_bets[player])
         if pay <= to_call and to_call > 0:
             record["action"] = "call" if pay < chips else "all-in"
             record["amount"] = pay
+            if chips_moved:
+                record["chips_moved"] = chips_moved
             hand.acted_since_raise.add(player)
         else:
             record["action"] = "raise" if pay < chips else "all-in"
             record["amount"] = pay
+            if chips_moved:
+                record["chips_moved"] = chips_moved
             hand.acted_since_raise = {player}
     elif to_call == 0:
         record["action"] = "check"
         hand.acted_since_raise.add(player)
     else:
-        pay = _apply_pay(session, hand, player, min(to_call, chips))
+        pay, chips_moved = _apply_pay(session, hand, player, min(to_call, chips))
         record["action"] = "call" if pay < chips else "all-in"
         record["amount"] = pay
+        if chips_moved:
+            record["chips_moved"] = chips_moved
         hand.acted_since_raise.add(player)
 
     record.update(_snapshot_racks(session))
@@ -411,6 +518,7 @@ def _execute_llm_action(session: PokerSession, hand: HandState, player: str) -> 
 
 
 def _settle_hand(session: PokerSession, hand: HandState) -> Dict[str, Any]:
+    _merge_street_to_pot(session, hand)
     winner = None
     if hand.in_hand["player1"] and not hand.in_hand["player2"]:
         winner = "player1"
@@ -524,21 +632,35 @@ def advance_step(session: PokerSession) -> Dict[str, Any]:
     if hand.phase == "post_blinds":
         if hand.blind_step == 0:
             sb = hand.button
-            moved = _apply_pay(session, hand, sb, SMALL_BLIND)
+            moved, chips_moved = _apply_pay(session, hand, sb, SMALL_BLIND)
             hand.blind_step = 1
             return _live_state(
                 session,
                 hand,
-                {"type": "post_blind", "player": sb, "blind": "SB", "amount": moved, "to_act": None},
+                {
+                    "type": "post_blind",
+                    "player": sb,
+                    "blind": "SB",
+                    "amount": moved,
+                    "chips_moved": chips_moved,
+                    "to_act": None,
+                },
             )
         bb = _other(hand.button)
-        moved = _apply_pay(session, hand, bb, BIG_BLIND)
+        moved, chips_moved = _apply_pay(session, hand, bb, BIG_BLIND)
         hand.acted_since_raise = set()
         hand.phase = "bet"
         return _live_state(
             session,
             hand,
-            {"type": "post_blind", "player": bb, "blind": "BB", "amount": moved, "to_act": _next_to_act(hand, session)},
+            {
+                "type": "post_blind",
+                "player": bb,
+                "blind": "BB",
+                "amount": moved,
+                "chips_moved": chips_moved,
+                "to_act": _next_to_act(hand, session),
+            },
         )
 
     # --- Betting ---
@@ -564,6 +686,7 @@ def advance_step(session: PokerSession) -> Dict[str, Any]:
             hand.phase = "showdown"
             return advance_step(session)
 
+        _merge_street_to_pot(session, hand)
         next_street = STREETS[idx + 1]
         hand.street = next_street
         hand.street_bets = {"player1": 0, "player2": 0}
@@ -682,6 +805,7 @@ def winner_side(session: PokerSession) -> int:
 def session_state(session: PokerSession) -> Dict[str, Any]:
     st: Dict[str, Any] = {
         "session_id": session.id,
+        "format": "heads_up",
         "chips_p1": session.chips_p1,
         "chips_p2": session.chips_p2,
         "rack_p1": copy_rack(session.rack_p1),
@@ -700,6 +824,7 @@ def session_state(session: PokerSession) -> Dict[str, Any]:
     }
     if session.active:
         hand = session.active
+        st.update(_hu_meta(hand))
         st["live"] = {
             "hand_num": hand.hand_num,
             "street": hand.street,
@@ -709,9 +834,12 @@ def session_state(session: PokerSession) -> Dict[str, Any]:
             "hole_p2": list(hand.hole_p2),
             "community": list(hand.community),
             "street_bets": dict(hand.street_bets),
+            "street_chip_racks": _copy_street_racks(hand),
             "in_hand": dict(hand.in_hand),
             "to_act": _next_to_act(hand, session),
             "actions": list(hand.actions),
-            "pot": rack_total(session.pot_rack),
+            "pot": rack_total(session.pot_rack)
+            + rack_total(hand.street_chip_racks["player1"])
+            + rack_total(hand.street_chip_racks["player2"]),
         }
     return st

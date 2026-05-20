@@ -167,16 +167,24 @@ MINESWEEPER_TOOLS: List[Dict[str, Any]] = [
 AUCTION_TOOLS: List[Dict[str, Any]] = [
     _tool(
         "get_auction_state",
-        "Get current round item hint, budgets, value won, and recent round history.",
+        "Get live auction: item hint, both budgets, both players' points won, rounds left, bid log, current high bid.",
         {},
     ),
     _tool(
-        "place_bid",
-        "Place your sealed bid for the current item (0 to your remaining budget).",
+        "auction_action",
+        "Bid (raise above high) or pass. Pass ends the item only when opponent already has the high bid; otherwise bidding can continue many rounds.",
         {
-            "amount": {"type": "integer", "description": "Bid amount"},
+            "action": {
+                "type": "string",
+                "enum": ["bid", "pass"],
+                "description": "bid to raise, pass to stop bidding",
+            },
+            "amount": {
+                "type": "integer",
+                "description": "Required for bid: must be greater than current high bid",
+            },
         },
-        ["amount"],
+        ["action"],
         terminal=True,
     ),
 ]
@@ -187,7 +195,7 @@ AUCTION_TOOLS: List[Dict[str, Any]] = [
 POKER_TOOLS: List[Dict[str, Any]] = [
     _tool(
         "get_hand_state",
-        "Get hole cards, community cards, pot, stacks, to_call, and legal actions.",
+        "Full hand context: your hole cards (not opponent's), community, pot, both stacks, street bets, to_call, legal actions, hand # and tournament progress.",
         {},
     ),
     _tool(

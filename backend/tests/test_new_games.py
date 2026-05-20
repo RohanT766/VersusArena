@@ -9,6 +9,13 @@ def test_minesweeper_board_generation():
     assert len(mines) == 10
 
 
+def test_minesweeper_play_round_structure():
+    sess = minesweeper.start_session("a", "b")
+    st = minesweeper.play_round(sess)
+    assert "round" in st
+    assert "player1" in st or "player2" in st.get("round", {})
+
+
 def test_minesweeper_session_state():
     sess = minesweeper.start_session("a", "b")
     st = minesweeper.session_state(sess)
@@ -18,7 +25,27 @@ def test_minesweeper_session_state():
 
 def test_auction_rounds():
     sess = auction.start_session("a", "b")
-    assert len(sess.rounds) == auction.ROUNDS
+    assert len(sess.items) == auction.ROUNDS
+
+
+def test_auction_sequential_pass_wins():
+    sess = auction.start_session("a", "b")
+    live = auction._start_live(sess)
+    auction._apply_action(sess, live, "player1", "bid", 50)
+    assert live.high_bidder == "player1"
+    status, rec = auction._apply_action(sess, live, "player2", "pass", 0)
+    assert status == "settled"
+    assert rec["winner"] == "player1"
+    assert sess.budget_p1 == auction.STARTING_BUDGET - 50
+
+
+def test_auction_double_pass_no_winner():
+    sess = auction.start_session("a", "b")
+    live = auction._start_live(sess)
+    auction._apply_action(sess, live, "player1", "pass", 0)
+    status, rec = auction._apply_action(sess, live, "player2", "pass", 0)
+    assert status == "settled"
+    assert rec["winner"] is None
 
 
 def test_poker_winner_side():
@@ -31,6 +58,41 @@ def test_poker_winner_side():
 def test_poker_heads_up_action_order():
     assert poker._action_order("player1", "preflop") == ["player1", "player2"]
     assert poker._action_order("player1", "flop") == ["player2", "player1"]
+
+
+def test_poker_hu_meta():
+    sess = poker.start_session("a", "b")
+    hand = poker._start_hand(sess)
+    meta = poker._hu_meta(hand)
+    assert meta["format"] == "heads_up"
+    assert meta["sb_player"] == hand.button
+    assert meta["bb_player"] == poker._other(hand.button)
+
+
+def test_poker_street_chip_rack_on_bet():
+    from src.games.poker_chips import rack_total
+
+    sess = poker.start_session("a", "b")
+    hand = poker.HandState(deck=[])
+    moved, chips_moved = poker._apply_pay(sess, hand, "player1", 5)
+    assert moved == 5
+    assert sum(int(v) for v in chips_moved.values()) >= 1
+    assert rack_total(sess.pot_rack) == 0
+    assert rack_total(hand.street_chip_racks["player1"]) == 5
+    assert sess.chips_p1 == 995
+
+
+def test_poker_merge_street_to_pot():
+    from src.games.poker_chips import rack_total
+
+    sess = poker.start_session("a", "b")
+    hand = poker.HandState(deck=[])
+    poker._apply_pay(sess, hand, "player1", 10)
+    poker._apply_pay(sess, hand, "player2", 20)
+    poker._merge_street_to_pot(sess, hand)
+    assert rack_total(sess.pot_rack) == 30
+    assert rack_total(hand.street_chip_racks["player1"]) == 0
+    assert rack_total(hand.street_chip_racks["player2"]) == 0
 
 
 def test_poker_start_hand_deal_steps():

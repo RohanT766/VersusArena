@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import GameCountdown from '../common/GameCountdown';
 import GameLayout from '../common/GameLayout';
 import GameOverModal from '../common/GameOverModal';
 import { getDisplayName } from '../../utils/modelUtils';
-import { cancelBenchmarkRun } from '../../utils/networkUtils';
+import { cancelBenchmarkRun, getBackendUrl } from '../../utils/networkUtils';
+import { fetchUntilOk, wait } from '../../utils/silentRetry';
 import useGameFlow from '../../hooks/useGameFlow';
-import { formatAgentActivity, agentThinkingLabel } from '../../utils/agentActivity';
+import { formatAgentActivity } from '../../utils/agentActivity';
+import PlayerThinking from '../common/PlayerThinking';
 import PlayingCard from './poker/PlayingCard';
 import DeckStack from './poker/DeckStack';
 import ChipFly from './poker/ChipFly';
-import StackDisplay from './poker/StackDisplay';
+import ChipStacks from './ChipStacks';
 import { rackTotal } from '../../utils/chipUtils';
 import './PokerGame.css';
 
@@ -31,51 +33,103 @@ function hasChipMove(step) {
   return step && (step.type === 'post_blind' || (step.type === 'action' && step.amount > 0));
 }
 
+function StreetChips({ rack, betRef }) {
+  return (
+    <div ref={betRef} className="pk-bet-slot">
+      <ChipStacks inventory={rack} variant="street" />
+    </div>
+  );
+}
+
 function PlayerSeat({
   name,
   rack,
   cards,
-  faceDown,
+  playerId,
+  holeFaceDown,
+  holeFlipIn,
+  dealStep,
   position,
   highlight,
+  thinking,
+  thinkingActivity,
   isButton,
-  streetBet,
+  blindRole,
   seatRef,
+  rackRef,
   holeRef,
 }) {
+  const showBb = blindRole === 'BB';
+  const showDealer = isButton;
+
+  const head = (
+    <div className="pk-seat-head">
+      <div className="pk-seat-name-row">
+        <span className="pk-seat-name">{name}</span>
+        <div className="pk-seat-badges">
+          {showBb && <span className="pk-blind-badge pk-blind-badge--bb">BB</span>}
+          {showDealer && (
+            <span className="pk-dealer-btn" title="Dealer (posts small blind in heads-up)">D</span>
+          )}
+          {blindRole === 'SB' && !isButton && (
+            <span className="pk-blind-badge pk-blind-badge--sb">SB</span>
+          )}
+        </div>
+      </div>
+      <div className="pk-seat-status">
+        <PlayerThinking active={thinking} activity={thinkingActivity} />
+      </div>
+    </div>
+  );
+
+  const balance = (
+    <div ref={rackRef} className="pk-balance">
+      <span className="pk-balance-label">
+        Balance:
+        {' '}
+        {rackTotal(rack).toLocaleString()}
+      </span>
+      <ChipStacks inventory={rack} variant="seat" />
+    </div>
+  );
+
+  const holeCards = (
+    <div ref={holeRef} className="pk-cards-slot">
+      {cards.map((c, i) => {
+        const justDealt = dealStep?.player === playerId && dealStep?.card_index === i;
+        return (
+          <PlayingCard
+            key={`${playerId}-${i}-${c}`}
+            card={c}
+            faceDown={holeFaceDown}
+            size="lg"
+            dealFromDeck={justDealt}
+            seatSide={position}
+            flipIn={holeFlipIn && !holeFaceDown}
+            style={justDealt ? undefined : { animationDelay: `${i * 0.05}s` }}
+          />
+        );
+      })}
+    </div>
+  );
+
+  const isTop = position === 'top';
+
   return (
     <div ref={seatRef} className={`pk-seat pk-seat--${position} ${highlight ? 'pk-seat--active' : ''}`}>
-      <div className="pk-seat-meta">
-        <span className="pk-seat-name">{name}</span>
-        {isButton && <span className="pk-dealer-btn" title="Dealer">D</span>}
-      </div>
-      <div className="pk-seat-body">
-        <StackDisplay inventory={rack} variant="seat" />
-        <div ref={holeRef} className="pk-hole-anchor">
-          {cards.length > 0
-            ? cards.map((c, i) => (
-                <PlayingCard
-                  key={`${c}-${i}`}
-                  card={c}
-                  faceDown={faceDown}
-                  size="lg"
-                  deal
-                  style={{ animationDelay: `${i * 0.08}s` }}
-                />
-              ))
-            : (
-              <>
-                <PlayingCard faceDown size="lg" />
-                <PlayingCard faceDown size="lg" />
-              </>
-            )}
-        </div>
-        {streetBet > 0 && (
-          <div className="pk-bet-pile">
-            <span className="pk-bet-pile-amt">{streetBet}</span>
-          </div>
-        )}
-      </div>
+      {isTop ? (
+        <>
+          {head}
+          {balance}
+          {holeCards}
+        </>
+      ) : (
+        <>
+          {balance}
+          {head}
+          {holeCards}
+        </>
+      )}
     </div>
   );
 }
@@ -83,7 +137,6 @@ function PlayerSeat({
 const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.back() }) => {
   const [sessionId, setSessionId] = useState('');
   const [view, setView] = useState(null);
-  const [error, setError] = useState(null);
   const [stepBusy, setStepBusy] = useState(false);
   const [chipFly, setChipFly] = useState(null);
   const [gameOverDismissed, setGameOverDismissed] = useState(false);
@@ -99,14 +152,15 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
   const p2SeatRef = useRef(null);
   const p1HoleRef = useRef(null);
   const p2HoleRef = useRef(null);
+  const p1BetRef = useRef(null);
+  const p2BetRef = useRef(null);
+  const p1RackRef = useRef(null);
+  const p2RackRef = useRef(null);
+  const [holeRevealed, setHoleRevealed] = useState(false);
+  const handNumRef = useRef(0);
 
   const p1Name = getDisplayName(player1Model);
   const p2Name = getDisplayName(player2Model);
-
-  const getApiBase = () => {
-    const h = window.location.hostname;
-    return h === 'localhost' || h === '127.0.0.1' ? 'http://localhost:8000' : `http://${h}:8000`;
-  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -123,27 +177,31 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
   }, []);
 
   const startGame = useCallback(async (isRecovery = false) => {
-    try {
-      setError(null);
-      stopLoopRef.current = false;
-      const res = await fetch(`${getApiBase()}/api/poker/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player1_model: player1Model, player2_model: player2Model }),
-        signal: abortRef.current?.signal,
-      });
-      if (!res.ok) throw new Error(`Could not start (${res.status})`);
+    const signal = abortRef.current?.signal;
+    stopLoopRef.current = false;
+    while (!signal?.aborted) {
+      const res = await fetchUntilOk(
+        `${getBackendUrl()}/api/poker/start`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ player1_model: player1Model, player2_model: player2Model }),
+          signal,
+        },
+        { signal },
+      );
+      if (!res || signal?.aborted) return;
+      if (!res.ok) {
+        await wait(800);
+        continue;
+      }
       const data = await res.json();
       setSessionId(data.session_id);
       if (!isRecovery) benchmarkRunIdRef.current = data.benchmark_run_id || null;
       setView(data);
       if (!isRecovery) startCountdown();
       else startRunning();
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        stopLoopRef.current = true;
-        setError(e.message);
-      }
+      return;
     }
   }, [player1Model, player2Model, startCountdown, startRunning]);
 
@@ -159,31 +217,43 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
     steppingRef.current = true;
     setStepBusy(true);
     try {
-      const res = await fetch(`${getApiBase()}/api/poker/${sessionId}/step`, {
-        method: 'POST',
-        signal: abortRef.current?.signal,
-      });
-      if (res.status === 404) {
-        setError('Session lost (server restarted). Starting fresh…');
-        await startGame(true);
-        return;
+      const signal = abortRef.current?.signal;
+      let data = null;
+      while (!signal?.aborted && !data) {
+        try {
+          const res = await fetch(`${getBackendUrl()}/api/poker/${sessionId}/step`, {
+            method: 'POST',
+            signal,
+          });
+          if (res.status === 404) {
+            await startGame(true);
+            return;
+          }
+          if (!res.ok) {
+            await wait(900);
+            continue;
+          }
+          data = await res.json();
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+          await wait(900);
+        }
       }
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        const detail = body.detail || `HTTP ${res.status}`;
-        throw new Error(typeof detail === 'string' ? detail : 'Step failed');
-      }
-      const data = await res.json();
+      if (!data) return;
+
       const step = data.step || {};
 
-      if (hasChipMove(step)) {
-        setChipFly({ from: step.player, amount: step.amount, key: Date.now() });
-        await new Promise((r) => setTimeout(r, 680));
+      if (hasChipMove(step) && step.chips_moved) {
+        setChipFly({
+          player: step.player,
+          chipsMoved: step.chips_moved,
+          key: Date.now(),
+        });
+        await new Promise((r) => setTimeout(r, 720));
         setChipFly(null);
       }
 
       setView(data);
-      setError(null);
 
       if (data.done) {
         gameFinishedRef.current = true;
@@ -192,11 +262,6 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
 
       const pause = data.hand_complete ? STEP_DELAY.hand_complete : stepPause(step.type);
       await new Promise((r) => setTimeout(r, pause));
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        stopLoopRef.current = true;
-        setError(e.message);
-      }
     } finally {
       setStepBusy(false);
       steppingRef.current = false;
@@ -221,28 +286,47 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
   const holeP1 = view?.hole_p1 || [];
   const holeP2 = view?.hole_p2 || [];
   const community = view?.community || [];
-  const streetBets = view?.street_bets || {};
-  const showFaces = step?.type === 'showdown' || view?.last_hand?.winner;
+  const streetRacks = view?.street_chip_racks || { player1: {}, player2: {} };
+  const potRack = view?.pot_rack;
+  const holeComplete = holeP1.length >= 2 && holeP2.length >= 2;
+  const dealStep = step?.type === 'deal_hole' ? step : null;
+  const potAmount = rackTotal(potRack);
+
+  useEffect(() => {
+    const handNum = view?.hand_num ?? 0;
+    if (handNum !== handNumRef.current) {
+      handNumRef.current = handNum;
+      setHoleRevealed(false);
+    }
+    if (!holeComplete) {
+      setHoleRevealed(false);
+      return undefined;
+    }
+    const t = setTimeout(() => setHoleRevealed(true), 420);
+    return () => clearTimeout(t);
+  }, [holeComplete, view?.hand_num]);
   const toAct = view?.to_act ?? step?.to_act;
   const button = view?.button;
-  const potTotal = view?.pot ?? rackTotal(view?.pot_rack);
+  const sbPlayer = view?.sb_player ?? button;
+  const bbPlayer = view?.bb_player ?? (button === 'player1' ? 'player2' : 'player1');
+  const blindsLabel = `SB ${view?.small_blind ?? 10} / BB ${view?.big_blind ?? 20}`;
 
   const toolActivity = formatAgentActivity(view?.step);
-  const statusDetail = stepBusy
-    ? agentThinkingLabel(stepBusy, toolActivity) || (toAct
-      ? `${toAct === 'player1' ? p1Name : p2Name} to act`
-      : 'Dealing…')
-    : step?.type === 'action'
-      ? `${step.player === 'player1' ? p1Name : p2Name} ${step.action}${step.amount ? ` ${step.amount}` : ''}`
-      : step?.type === 'post_blind'
-        ? `${step.blind} ${step.amount || ''}`
-        : step?.type === 'showdown' && step.winner
-          ? `${step.winner === 'player1' ? p1Name : p2Name} wins`
-          : view?.street || '';
+  const phaseStreet = view?.street ? String(view.street).toUpperCase() : '';
+
+  const actionFeed = useMemo(
+    () => (view?.actions || []).map((a, i) => ({
+      id: `pk-${i}-${a.player}-${a.action}`,
+      side: a.player,
+      verb: a.action,
+      detail: a.amount ? String(a.amount) : '',
+    })),
+    [view?.actions],
+  );
 
   return (
     <GameLayout
-      gameName="Poker Showdown"
+      gameName="Heads-Up Hold'em"
       player1Name={p1Name}
       player2Name={p2Name}
       onBack={() => {
@@ -252,8 +336,9 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
       statusText={
         view?.done
           ? `${winnerLabel()} wins the tournament`
-          : `Hand ${view?.hand_num || view?.hands_played || 0}/${view?.max_hands || 10}${statusDetail ? ` · ${statusDetail}` : ''}`
+          : `Hand ${view?.hand_num || view?.hands_played || 0}/${view?.max_hands || 10} · Heads-up · ${blindsLabel}${phaseStreet ? ` · ${phaseStreet}` : ''}`
       }
+      actionFeed={actionFeed}
     >
       {isCountdown && <GameCountdown player1Name={p1Name} player2Name={p2Name} onComplete={startRunning} />}
 
@@ -273,43 +358,60 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
       {isRunning && !isCountdown && view && (
         <div className="pk-arena">
           <div className="pk-table-outer">
+            <div className="pk-table-stage">
             <div className="pk-table-rail">
               <div ref={feltRef} className="pk-table-felt">
                 {chipFly && (
                   <ChipFly
                     key={chipFly.key}
-                    from={chipFly.from}
-                    amount={chipFly.amount}
+                    player={chipFly.player}
+                    chipsMoved={chipFly.chipsMoved}
                     feltEl={feltRef.current}
-                    fromEl={chipFly.from === 'player1' ? p1HoleRef.current : p2HoleRef.current}
-                    toEl={potRef.current}
+                    fromEl={chipFly.player === 'player1' ? p1RackRef.current : p2RackRef.current}
+                    toEl={chipFly.player === 'player1' ? p1BetRef.current : p2BetRef.current}
                   />
                 )}
 
+                <div className="pk-felt-grid">
+                <div className="pk-zone pk-zone--seat-top">
                 <PlayerSeat
                   position="top"
+                  playerId="player2"
                   name={p2Name}
                   rack={view.rack_p2}
                   cards={holeP2}
-                  faceDown={!showFaces}
+                  holeFaceDown={!holeRevealed}
+                  holeFlipIn={holeRevealed}
+                  dealStep={dealStep}
                   highlight={toAct === 'player2'}
+                  thinking={stepBusy && toAct === 'player2'}
+                  thinkingActivity={toolActivity}
                   isButton={button === 'player2'}
-                  streetBet={streetBets.player2 || 0}
+                  blindRole={sbPlayer === 'player2' ? 'SB' : bbPlayer === 'player2' ? 'BB' : null}
                   seatRef={p2SeatRef}
+                  rackRef={p2RackRef}
                   holeRef={p2HoleRef}
                 />
+                </div>
 
-                <div className="pk-mid">
-                  <div id="pk-pot-anchor" ref={potRef} className="pk-pot">
-                    <span className="pk-pot-title">Pot</span>
-                    <span className="pk-pot-amt">{potTotal > 0 ? potTotal.toLocaleString() : '—'}</span>
-                    {potTotal > 0 && (
-                      <div className="pk-pot-chips" aria-hidden="true">
-                        <span className="pk-pot-chip" />
-                        <span className="pk-pot-chip" />
-                      </div>
-                    )}
+                <div className="pk-zone pk-zone--bet-top">
+                  <StreetChips rack={streetRacks.player2} betRef={p2BetRef} />
+                </div>
+
+                <div className="pk-zone pk-zone--pot">
+                  <div id="pk-pot-anchor" ref={potRef} className="pk-pot-zone">
+                    <div className="pk-pot-chips">
+                      <ChipStacks inventory={potRack} variant="pot" />
+                    </div>
+                    <p className="pk-pot-label">
+                      Pot:
+                      {' '}
+                      {potAmount > 0 ? potAmount.toLocaleString() : '0'}
+                    </p>
                   </div>
+                </div>
+
+                <div className="pk-zone pk-zone--board">
                   <div className="pk-board">
                     {community.length > 0
                       ? community.map((c, i) => (
@@ -324,45 +426,50 @@ const PokerGame = ({ player1Model, player2Model, onBack = () => window.history.b
                   </div>
                   {step?.type === 'showdown' && step.winner && (
                     <p className="pk-winner-line">
-                      {step.winner === 'player1' ? p1Name : p2Name} wins
+                      {step.winner === 'player1' ? p1Name : p2Name} WINS
                     </p>
                   )}
                 </div>
 
-                <DeckStack
-                  active={stepBusy}
-                  count={Math.max(0, 52 - holeP1.length - holeP2.length - community.length)}
-                />
+                <div className="pk-zone pk-zone--bet-bottom">
+                  <StreetChips rack={streetRacks.player1} betRef={p1BetRef} />
+                </div>
 
+                <div className="pk-zone pk-zone--seat-bottom">
                 <PlayerSeat
                   position="bottom"
+                  playerId="player1"
                   name={p1Name}
                   rack={view.rack_p1}
                   cards={holeP1}
-                  faceDown={!showFaces}
+                  holeFaceDown={!holeRevealed}
+                  holeFlipIn={holeRevealed}
+                  dealStep={dealStep}
                   highlight={toAct === 'player1'}
+                  thinking={stepBusy && toAct === 'player1'}
+                  thinkingActivity={toolActivity}
                   isButton={button === 'player1'}
-                  streetBet={streetBets.player1 || 0}
+                  blindRole={sbPlayer === 'player1' ? 'SB' : bbPlayer === 'player1' ? 'BB' : null}
                   seatRef={p1SeatRef}
+                  rackRef={p1RackRef}
                   holeRef={p1HoleRef}
                 />
+                </div>
+
+                <div className="pk-zone pk-zone--deck">
+                <DeckStack
+                  active={stepBusy && (dealStep || step?.type === 'deal_board')}
+                  count={Math.max(0, 52 - holeP1.length - holeP2.length - community.length)}
+                />
+                </div>
+                </div>
               </div>
+            </div>
             </div>
           </div>
 
-          {(view.actions || []).length > 0 && (
-            <div className="pk-action-bar">
-              {(view.actions || []).slice(-6).map((a, i) => (
-                <span key={i} className="pk-action-item">
-                  <strong>{a.player === 'player1' ? p1Name : p2Name}</strong>
-                  {' '}{a.action}{a.amount ? ` ${a.amount}` : ''}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       )}
-      {error && <p className="pk-error">{error}</p>}
     </GameLayout>
   );
 };
