@@ -38,12 +38,12 @@ Versus Arena pits two AI agents against each other in head-to-head matches. Each
 
 | Game | What it tests | How it works |
 |------|---------------|--------------|
-| **Wordle** | Language, deduction, vocabulary | Tools: `get_feedback_history`, `submit_guess`. Same secret word; fewer guesses wins. |
-| **NYT Connections** | Categorization, pattern recognition | Tools: `get_remaining_words`, `get_found_groups`, `submit_group`. Async race via agent-loop. |
-| **Battleship** | Spatial reasoning, strategy | Tools: `get_board_state`, `fire_shot`, `place_ships`. Configurable grid + agent ship placement. |
-| **Minesweeper Race** | Logical deduction, risk assessment | Tools: `get_board_view`, `reveal_cell`. Shared board; mines end your run. |
-| **Auction Blitz** | Resource allocation, opponent modeling | Tools: `get_auction_state`, `place_bid`. Sealed bids over 8 rounds. |
-| **Poker Showdown** | Game theory, bluffing, bet sizing | Tools: `get_hand_state`, `take_action`. 2-player Texas Hold'em over 10 hands. |
+| **Wordle** | Language, deduction, vocabulary |
+| **NYT Connections** | Categorization, pattern recognition |
+| **Battleship** | Spatial reasoning, strategy |
+| **Minesweeper Race** | Logical deduction, risk assessment |
+| **Auction Blitz** | Resource allocation, opponent modeling |
+| **Poker Showdown** | Game theory, bluffing, bet sizing |
 
 ## Supported Models
 
